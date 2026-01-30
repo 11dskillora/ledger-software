@@ -1,36 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Compound Journal & Ledger</title>
+
+<style>
+body{
+    font-family:Arial;
+    background:#eef2f3;
+    padding:20px;
+}
+h1{text-align:center}
+button{
+    padding:10px;
+    margin:5px;
+    border:none;
+    background:#34495e;
+    color:white;
+    cursor:pointer;
+}
+.card{
+    background:white;
+    padding:15px;
+    margin-top:15px;
+    border-radius:8px;
+}
+.row{
+    display:flex;
+    gap:10px;
+    margin-top:5px;
+}
+input{
+    padding:6px;
+    width:100%;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+th,td{
+    border:1px solid #999;
+    padding:6px;
+    text-align:center;
+}
+th{background:#34495e;color:white;}
+</style>
+</head>
+
+<body>
+
+<h1>📘 Compound Journal & Ledger</h1>
+
+<button onclick="addEntryUI()">Add Compound Journal Entry</button>
+<button onclick="viewJournal()">View Compound Journal</button>
+<button onclick="viewLedger()">View Ledger</button>
+
+<div id="content"></div>
+
 <script>
 let journal = [];
 let ledger = {};
-let dark=false;
 
-/* ---------------- ADD ENTRY UI ---------------- */
-function showEntry(){
+/* ---------------- ADD ENTRY ---------------- */
+function addEntryUI(){
 document.getElementById("content").innerHTML=`
 <div class="card">
-<h3>Compound Journal Entry</h3>
+Date <input type="date" id="date">
 
-<label>Date</label>
-<input type="date" id="date">
-
-<h4>Debit Accounts</h4>
+<h3>Debit Accounts</h3>
 <div id="debits"></div>
-<button class="add-btn" onclick="addRow('debits')">+ Add Debit</button>
+<button onclick="addRow('debits')">+ Debit</button>
 
-<h4>Credit Accounts</h4>
+<h3>Credit Accounts</h3>
 <div id="credits"></div>
-<button class="add-btn" onclick="addRow('credits')">+ Add Credit</button>
+<button onclick="addRow('credits')">+ Credit</button>
 
-<label>Narration</label>
-<input id="narration" placeholder="Being ...">
+Narration <input id="narr">
 
-<button class="save-btn" onclick="saveEntry()">💾 Save Entry</button>
+<br><br>
+<button onclick="saveEntry()">Save Entry</button>
 </div>`;
-addRow('debits');
-addRow('credits');
+addRow("debits");
+addRow("credits");
 }
 
-function addRow(type){
-document.getElementById(type).innerHTML+=`
+function addRow(id){
+document.getElementById(id).innerHTML+=`
 <div class="row">
 <input placeholder="Account Name">
 <input type="number" placeholder="Amount">
@@ -40,118 +96,104 @@ document.getElementById(type).innerHTML+=`
 /* ---------------- SAVE ENTRY ---------------- */
 function saveEntry(){
 let date=document.getElementById("date").value;
-let narration=document.getElementById("narration").value;
+let narr=document.getElementById("narr").value;
 
-let dr=[],cr=[],drTotal=0,crTotal=0;
+let dr=[],cr=[],drT=0,crT=0;
 
 document.querySelectorAll("#debits .row").forEach(r=>{
-let acc=r.children[0].value;
-let amt=parseFloat(r.children[1].value);
-if(acc && amt){dr.push({acc,amt});drTotal+=amt;}
+let a=r.children[0].value;
+let m=+r.children[1].value;
+if(a && m){dr.push({a,m});drT+=m;}
 });
 
 document.querySelectorAll("#credits .row").forEach(r=>{
-let acc=r.children[0].value;
-let amt=parseFloat(r.children[1].value);
-if(acc && amt){cr.push({acc,amt});crTotal+=amt;}
+let a=r.children[0].value;
+let m=+r.children[1].value;
+if(a && m){cr.push({a,m});crT+=m;}
 });
 
-if(drTotal!==crTotal || drTotal===0){
-alert("Debit & Credit totals must be equal");
+if(drT!==crT || drT===0){
+alert("Debit & Credit must match");
 return;
 }
 
-/* STORE JOURNAL */
-journal.push({date,debits:dr,credits:cr,narration});
+/* STORE JOURNAL ENTRY */
+journal.push({date,dr,cr,narr});
 
 /* POST TO LEDGER */
 dr.forEach(d=>{
-if(!ledger[d.acc]) ledger[d.acc]=[];
-ledger[d.acc].push({date,particulars:"To "+cr.map(c=>c.acc).join(", "),dr:d.amt,cr:""});
+if(!ledger[d.a]) ledger[d.a]=[];
+ledger[d.a].push({date,p:"To "+cr.map(x=>x.a).join(", "),dr:d.m,cr:""});
 });
-
 cr.forEach(c=>{
-if(!ledger[c.acc]) ledger[c.acc]=[];
-ledger[c.acc].push({date,particulars:"By "+dr.map(d=>d.acc).join(", "),dr:"",cr:c.amt});
+if(!ledger[c.a]) ledger[c.a]=[];
+ledger[c.a].push({date,p:"By "+dr.map(x=>x.a).join(", "),dr:"",cr:c.m});
 });
 
 alert("Compound Journal Entry Saved ✅");
 }
 
-/* ---------------- VIEW COMPOUND JOURNAL ---------------- */
-function showJournal(){
+/* ---------------- VIEW JOURNAL ---------------- */
+function viewJournal(){
 if(journal.length===0){
 document.getElementById("content").innerHTML=
-`<div class="card">📘 No Journal Entries</div>`;
+"<div class='card'>No Journal Entries</div>";
 return;
 }
 
-let html=`<div class="card"><h3>Compound Journal Book</h3>`;
+let h="<div class='card'><h3>Compound Journal Book</h3>";
 
-journal.forEach((j,i)=>{
-html+=`
+journal.forEach(j=>{
+h+=`
 <table>
-<tr>
-<th>Date</th><th>Particulars</th><th>Dr (₹)</th><th>Cr (₹)</th>
-</tr>`;
-
-j.debits.forEach(d=>{
-html+=`
-<tr>
+<tr><th>Date</th><th>Particulars</th><th>Dr (₹)</th><th>Cr (₹)</th></tr>`;
+j.dr.forEach(d=>{
+h+=`<tr>
 <td>${j.date}</td>
-<td>${d.acc} A/c</td>
-<td>${d.amt}</td>
+<td>${d.a} A/c</td>
+<td>${d.m}</td>
 <td></td>
 </tr>`;
 });
-
-j.credits.forEach(c=>{
-html+=`
-<tr>
+j.cr.forEach(c=>{
+h+=`<tr>
 <td></td>
-<td style="padding-left:25px;">To ${c.acc} A/c</td>
+<td>To ${c.a} A/c</td>
 <td></td>
-<td>${c.amt}</td>
+<td>${c.m}</td>
 </tr>`;
 });
-
-html+=`
-<tr>
+h+=`<tr>
 <td></td>
-<td colspan="3"><em>${j.narration}</em></td>
-</tr>
-</table><br>`;
+<td colspan="3"><i>${j.narr}</i></td>
+</tr></table><br>`;
 });
 
-html+=`</div>`;
-document.getElementById("content").innerHTML=html;
+h+="</div>";
+document.getElementById("content").innerHTML=h;
 }
 
-/* ---------------- LEDGER ---------------- */
-function showLedger(){
-let html=`<div class="card"><h3>Ledger</h3>`;
-for(let acc in ledger){
-html+=`<h4>${acc}</h4>
+/* ---------------- VIEW LEDGER ---------------- */
+function viewLedger(){
+let h="<div class='card'><h3>Ledger</h3>";
+for(let a in ledger){
+h+=`<h4>${a}</h4>
 <table>
 <tr><th>Date</th><th>Particulars</th><th>Dr</th><th>Cr</th></tr>`;
-ledger[acc].forEach(t=>{
-html+=`
-<tr>
+ledger[a].forEach(t=>{
+h+=`<tr>
 <td>${t.date}</td>
-<td>${t.particulars}</td>
+<td>${t.p}</td>
 <td>${t.dr}</td>
 <td>${t.cr}</td>
 </tr>`;
 });
-html+=`</table>`;
+h+="</table>";
 }
-html+=`</div>`;
-document.getElementById("content").innerHTML=html;
-}
-
-/* ---------------- DARK MODE ---------------- */
-function toggleMode(){
-dark=!dark;
-document.body.classList.toggle("dark");
+h+="</div>";
+document.getElementById("content").innerHTML=h;
 }
 </script>
+
+</body>
+</html>
