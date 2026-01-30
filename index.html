@@ -2,314 +2,244 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ledger Software (Dual Mode)</title>
+<title>Smart Ledger Software</title>
+
 <style>
-    /* =======================
-       GLOBAL STYLES
-    ======================= */
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
+*{
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
 
-    body {
-        font-family: 'Roboto', sans-serif;
-        background: linear-gradient(to right, #ece9e6, #ffffff);
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-        transition: background 0.5s;
-    }
+body{
+    margin:0;
+    padding:20px;
+    min-height:100vh;
+    background:linear-gradient(135deg,#74ebd5,#acb6e5);
+    transition:0.5s;
+}
 
-    h1 {
-        text-align: center;
-        margin-bottom: 30px;
-        font-size: 2.2rem;
-        color: #2c3e50;
-        text-shadow: 1px 1px 2px #bdc3c7;
-    }
+h1{
+    text-align:center;
+    color:#2c3e50;
+    margin-bottom:25px;
+}
 
-    .menu {
-        width: 100%;
-        max-width: 500px;
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 12px;
-        margin-bottom: 20px;
-    }
+.menu{
+    max-width:600px;
+    margin:auto;
+    display:grid;
+    gap:12px;
+}
 
-    .menu button {
-        background: #3498db;
-        color: white;
-        border: none;
-        padding: 14px;
-        font-size: 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
+.menu button{
+    padding:14px;
+    font-size:16px;
+    border:none;
+    border-radius:10px;
+    background:#34495e;
+    color:#fff;
+    cursor:pointer;
+    transition:0.3s;
+}
 
-    .menu button:hover {
-        background: #2980b9;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 10px rgba(0,0,0,0.15);
-    }
+.menu button:hover{
+    transform:translateY(-2px);
+    background:#2c3e50;
+}
 
-    .card {
-        background: #fff;
-        padding: 20px;
-        border-radius: 12px;
-        max-width: 500px;
-        width: 100%;
-        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-        animation: fadeIn 0.5s ease;
-    }
+.card{
+    max-width:600px;
+    margin:25px auto;
+    background:rgba(255,255,255,0.9);
+    backdrop-filter:blur(10px);
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 15px 30px rgba(0,0,0,0.2);
+    animation:fade 0.5s;
+}
 
-    label, h4 {
-        margin-top: 12px;
-        display: block;
-        color: #34495e;
-    }
+@keyframes fade{
+    from{opacity:0;transform:translateY(15px);}
+    to{opacity:1;transform:translateY(0);}
+}
 
-    input {
-        width: 100%;
-        padding: 10px;
-        margin-top: 5px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-        transition: border 0.3s;
-    }
+label{
+    font-weight:500;
+    margin-top:12px;
+    display:block;
+}
 
-    input:focus {
-        border-color: #3498db;
-        outline: none;
-        box-shadow: 0 0 5px rgba(52,152,219,0.3);
-    }
+input{
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
 
-    button.save-btn {
-        background: #2ecc71;
-        margin-top: 15px;
-        width: 100%;
-        font-size: 16px;
-    }
+.row{
+    display:flex;
+    gap:10px;
+    margin-top:8px;
+}
 
-    button.save-btn:hover {
-        background: #27ae60;
-    }
+.row input{
+    flex:1;
+}
 
-    /* =======================
-       Animations
-    ======================= */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+.add-btn{
+    margin-top:10px;
+    background:#3498db;
+    color:#fff;
+    border:none;
+    padding:8px;
+    border-radius:8px;
+    cursor:pointer;
+}
 
-    /* =======================
-       Ledger Table Styles
-    ======================= */
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        font-size: 14px;
-    }
+.save-btn{
+    width:100%;
+    margin-top:20px;
+    background:#2ecc71;
+    color:#fff;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+}
 
-    th, td {
-        border: 1px solid #ddd;
-        padding: 10px;
-        text-align: center;
-    }
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
 
-    th {
-        background: #3498db;
-        color: white;
-    }
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:center;
+}
 
-    tr:nth-child(even) {
-        background: #f9f9f9;
-    }
+th{
+    background:#34495e;
+    color:white;
+}
 
-    .toggle-mode {
-        margin-top: 15px;
-        text-align: right;
-        cursor: pointer;
-        color: #e67e22;
-        font-weight: bold;
-        transition: color 0.3s;
-    }
-
-    .toggle-mode:hover {
-        color: #d35400;
-    }
+.dark{
+    background:#1e272e;
+    color:#ecf0f1;
+}
 </style>
 </head>
+
 <body>
 
-<h1>📘 Ledger Software (Dual Mode)</h1>
+<h1>📘 Smart Ledger Software</h1>
 
 <div class="menu">
-    <button onclick="showAddEntry()">1. Add Compound Journal Entry</button>
-    <button onclick="showLedger()">2. View All Ledger Accounts</button>
-    <button onclick="alert('Menu 3 coming next')">3. View Ledger</button>
-    <button onclick="toggleMode()">4. Change Display Mode</button>
+    <button onclick="showEntry()">➕ Add Compound Journal Entry</button>
+    <button onclick="showLedger()">📂 View Ledger</button>
+    <button onclick="toggleMode()">🌙 Toggle Dark Mode</button>
 </div>
 
 <div id="content"></div>
 
 <script>
-/* =========================
-   GLOBAL STATE
-========================= */
-let journal = [];
 let ledger = {};
-let DARK_MODE = false;
-let JF_DEFAULT = "-";
+let dark=false;
 
-/* =========================
-   LEDGER FUNCTIONS
-========================= */
-function addToLedger(account, transaction) {
-    if (!ledger[account]) ledger[account] = { Dr: [], Cr: [] };
-    ledger[account][transaction.side].push(transaction);
-}
-
-function autoPostCompound(entry) {
-    let creditNames = entry.credits.map(c => c.acc).join(", ");
-    let debitNames  = entry.debits.map(d => d.acc).join(", ");
-
-    entry.debits.forEach(d => {
-        addToLedger(d.acc, {
-            side: "Dr",
-            date: entry.date,
-            particulars: "To " + creditNames,
-            jf: JF_DEFAULT,
-            amount: d.amt
-        });
-    });
-
-    entry.credits.forEach(c => {
-        addToLedger(c.acc, {
-            side: "Cr",
-            date: entry.date,
-            particulars: "By " + debitNames,
-            jf: JF_DEFAULT,
-            amount: c.amt
-        });
-    });
-}
-
-/* =========================
-   MENU 1 UI
-========================= */
-function showAddEntry() {
-    document.getElementById("content").innerHTML = `
+function showEntry(){
+    document.getElementById("content").innerHTML=`
     <div class="card">
-        <h3>➕ Add Compound Journal Entry</h3>
+        <h3>Compound Journal Entry</h3>
 
         <label>Date</label>
-        <input id="date" type="date">
+        <input type="date" id="date">
 
-        <h4>Debit Account</h4>
-        <input id="drAcc" placeholder="Account Name">
-        <input id="drAmt" type="number" placeholder="Amount">
+        <h4>Debit Accounts</h4>
+        <div id="debits"></div>
+        <button class="add-btn" onclick="addRow('debits')">+ Add Debit</button>
 
-        <h4>Credit Account</h4>
-        <input id="crAcc" placeholder="Account Name">
-        <input id="crAmt" type="number" placeholder="Amount">
+        <h4>Credit Accounts</h4>
+        <div id="credits"></div>
+        <button class="add-btn" onclick="addRow('credits')">+ Add Credit</button>
 
-        <label>Narration</label>
-        <input id="narration" placeholder="Optional narration">
-
-        <button class="save-btn" onclick="addCompoundEntry()">💾 Save Entry</button>
-    </div>
-    `;
+        <button class="save-btn" onclick="saveEntry()">💾 Save Entry</button>
+    </div>`;
+    addRow('debits');
+    addRow('credits');
 }
 
-function addCompoundEntry() {
-    let date = document.getElementById("date").value;
-    let drAcc = document.getElementById("drAcc").value;
-    let drAmt = parseFloat(document.getElementById("drAmt").value);
-    let crAcc = document.getElementById("crAcc").value;
-    let crAmt = parseFloat(document.getElementById("crAmt").value);
-    let narration = document.getElementById("narration").value;
-
-    if (!date || !drAcc || !crAcc || drAmt <= 0 || crAmt <= 0) {
-        alert("❌ Invalid input");
-        return;
-    }
-
-    if (drAmt !== crAmt) {
-        alert("❌ Debit and Credit must match");
-        return;
-    }
-
-    let entry = {
-        date: date,
-        debits: [{ acc: drAcc, amt: drAmt }],
-        credits: [{ acc: crAcc, amt: crAmt }],
-        narration: narration
-    };
-
-    journal.push(entry);
-    autoPostCompound(entry);
-
-    alert("✅ Entry saved & ledger updated");
-    console.log("Journal:", journal);
-    console.log("Ledger:", ledger);
+function addRow(type){
+    document.getElementById(type).innerHTML+=`
+    <div class="row">
+        <input placeholder="Account Name">
+        <input type="number" placeholder="Amount">
+    </div>`;
 }
 
-/* =========================
-   MENU 2 UI
-========================= */
-function showLedger() {
-    if (Object.keys(ledger).length === 0) {
-        document.getElementById("content").innerHTML = `<div class="card">📂 Ledger is empty.</div>`;
+function saveEntry(){
+    let date=document.getElementById("date").value;
+    let debits=[...document.querySelectorAll("#debits .row")];
+    let credits=[...document.querySelectorAll("#credits .row")];
+
+    let dr=[],cr=[],drTotal=0,crTotal=0;
+
+    debits.forEach(r=>{
+        let acc=r.children[0].value;
+        let amt=parseFloat(r.children[1].value);
+        if(acc && amt){ dr.push({acc,amt}); drTotal+=amt; }
+    });
+
+    credits.forEach(r=>{
+        let acc=r.children[0].value;
+        let amt=parseFloat(r.children[1].value);
+        if(acc && amt){ cr.push({acc,amt}); crTotal+=amt; }
+    });
+
+    if(drTotal!==crTotal || drTotal===0){
+        alert("Debit and Credit totals must match!");
         return;
     }
 
-    let html = `<div class="card"><h3>📂 Ledger Accounts</h3>`;
+    dr.forEach(d=>{
+        if(!ledger[d.acc]) ledger[d.acc]=[];
+        ledger[d.acc].push({date,particulars:"To "+cr.map(c=>c.acc).join(", "),dr:d.amt,cr:""});
+    });
 
-    for (let account in ledger) {
-        html += `<h4>${account}</h4>`;
-        html += `<table>
-                    <tr><th>Date</th><th>Particulars</th><th>J/F</th><th>Dr</th><th>Cr</th></tr>`;
-        let allTransactions = [...ledger[account].Dr.map(t => ({...t, side:'Dr'})), ...ledger[account].Cr.map(t => ({...t, side:'Cr'}))];
-        allTransactions.sort((a,b) => new Date(a.date) - new Date(b.date));
-        allTransactions.forEach(t => {
-            html += `<tr>
-                        <td>${t.date}</td>
-                        <td>${t.particulars}</td>
-                        <td>${t.jf}</td>
-                        <td>${t.side==='Dr'? t.amount : ''}</td>
-                        <td>${t.side==='Cr'? t.amount : ''}</td>
-                     </tr>`;
+    cr.forEach(c=>{
+        if(!ledger[c.acc]) ledger[c.acc]=[];
+        ledger[c.acc].push({date,particulars:"By "+dr.map(d=>d.acc).join(", "),dr:"",cr:c.amt});
+    });
+
+    alert("Entry Posted Successfully ✅");
+}
+
+function showLedger(){
+    let html=`<div class="card"><h3>Ledger</h3>`;
+    for(let acc in ledger){
+        html+=`<h4>${acc}</h4>
+        <table>
+        <tr><th>Date</th><th>Particulars</th><th>Dr</th><th>Cr</th></tr>`;
+        ledger[acc].forEach(t=>{
+            html+=`<tr>
+            <td>${t.date}</td>
+            <td>${t.particulars}</td>
+            <td>${t.dr}</td>
+            <td>${t.cr}</td>
+            </tr>`;
         });
-        html += `</table>`;
+        html+=`</table>`;
     }
-
-    html += `</div>`;
-    document.getElementById("content").innerHTML = html;
+    html+=`</div>`;
+    document.getElementById("content").innerHTML=html;
 }
 
-/* =========================
-   DARK MODE TOGGLE
-========================= */
-function toggleMode() {
-    DARK_MODE = !DARK_MODE;
-    if (DARK_MODE) {
-        document.body.style.background = "#2c3e50";
-        document.body.style.color = "#ecf0f1";
-    } else {
-        document.body.style.background = "linear-gradient(to right, #ece9e6, #ffffff)";
-        document.body.style.color = "#2c3e50";
-    }
+function toggleMode(){
+    dark=!dark;
+    document.body.classList.toggle("dark");
 }
 </script>
 
