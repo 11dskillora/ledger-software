@@ -111,6 +111,7 @@ pages.forEach(p=>p.classList.remove("active"));
 navBtns.forEach(b=>b.classList.remove("active"));
 pages[i].classList.add("active");
 navBtns[i].classList.add("active");
+if(i===1 || i===2) rebuild();
 }
 
 function addDebit(){
@@ -123,49 +124,4 @@ document.getElementById("debitContainer").insertBefore(r,document.querySelector(
 function addCredit(){
 const r=document.createElement("div");
 r.className="credit-group row";
-r.innerHTML='<input placeholder="Credit Account"><input placeholder="Amount"><input placeholder="Particulars">';
-document.getElementById("creditContainer").insertBefore(r,document.querySelector("#creditContainer .action"));
-}
-
-function saveEntry(){
-const date=document.getElementById("date").value;
-if(!date) return alert("Enter date");
-
-let d=[],c=[],td=0,tc=0;
-
-document.querySelectorAll(".debit-group").forEach(r=>{
-const a=r.children[0].value.trim();
-const m=+r.children[1].value;
-if(a&&m>0){d.push({a,m});td+=m;}
-});
-
-document.querySelectorAll(".credit-group").forEach(r=>{
-const a=r.children[0].value.trim();
-const m=+r.children[1].value;
-if(a&&m>0){c.push({a,m});tc+=m;}
-});
-
-if(!d.length||!c.length||td!==tc)
-return alert("Debit & Credit must be equal");
-
-journal.push({date,d,c});
-localStorage.setItem("journalData",JSON.stringify(journal));
-rebuild();
-}
-
-function rebuild(){
-ledger={};
-journalTable.innerHTML="<tr><th>Date</th><th>Account</th><th>J/F</th><th>Debit</th><th>Credit</th></tr>";
-journal.forEach((e,i)=>{
-e.d.forEach(x=>{
-journalTable.insertRow().innerHTML=`<td>${e.date}</td><td>${x.a}</td><td>${i+1}</td><td>${x.m}</td><td></td>`;
-});
-e.c.forEach(x=>{
-journalTable.insertRow().innerHTML=`<td>${e.date}</td><td>${x.a}</td><td>${i+1}</td><td></td><td>${x.m}</td>`;
-});
-});
-}
-</script>
-
-</body>
-</html>
+r.innerHTML='<input
