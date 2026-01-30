@@ -1,247 +1,157 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Smart Ledger Software</title>
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
-
-*{
-    box-sizing:border-box;
-    font-family:'Poppins',sans-serif;
-}
-
-body{
-    margin:0;
-    padding:20px;
-    min-height:100vh;
-    background:linear-gradient(135deg,#74ebd5,#acb6e5);
-    transition:0.5s;
-}
-
-h1{
-    text-align:center;
-    color:#2c3e50;
-    margin-bottom:25px;
-}
-
-.menu{
-    max-width:600px;
-    margin:auto;
-    display:grid;
-    gap:12px;
-}
-
-.menu button{
-    padding:14px;
-    font-size:16px;
-    border:none;
-    border-radius:10px;
-    background:#34495e;
-    color:#fff;
-    cursor:pointer;
-    transition:0.3s;
-}
-
-.menu button:hover{
-    transform:translateY(-2px);
-    background:#2c3e50;
-}
-
-.card{
-    max-width:600px;
-    margin:25px auto;
-    background:rgba(255,255,255,0.9);
-    backdrop-filter:blur(10px);
-    padding:25px;
-    border-radius:15px;
-    box-shadow:0 15px 30px rgba(0,0,0,0.2);
-    animation:fade 0.5s;
-}
-
-@keyframes fade{
-    from{opacity:0;transform:translateY(15px);}
-    to{opacity:1;transform:translateY(0);}
-}
-
-label{
-    font-weight:500;
-    margin-top:12px;
-    display:block;
-}
-
-input{
-    width:100%;
-    padding:10px;
-    margin-top:5px;
-    border-radius:8px;
-    border:1px solid #ccc;
-}
-
-.row{
-    display:flex;
-    gap:10px;
-    margin-top:8px;
-}
-
-.row input{
-    flex:1;
-}
-
-.add-btn{
-    margin-top:10px;
-    background:#3498db;
-    color:#fff;
-    border:none;
-    padding:8px;
-    border-radius:8px;
-    cursor:pointer;
-}
-
-.save-btn{
-    width:100%;
-    margin-top:20px;
-    background:#2ecc71;
-    color:#fff;
-    padding:12px;
-    border:none;
-    border-radius:10px;
-    font-size:16px;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:15px;
-}
-
-th,td{
-    border:1px solid #ddd;
-    padding:8px;
-    text-align:center;
-}
-
-th{
-    background:#34495e;
-    color:white;
-}
-
-.dark{
-    background:#1e272e;
-    color:#ecf0f1;
-}
-</style>
-</head>
-
-<body>
-
-<h1>📘 Smart Ledger Software</h1>
-
-<div class="menu">
-    <button onclick="showEntry()">➕ Add Compound Journal Entry</button>
-    <button onclick="showLedger()">📂 View Ledger</button>
-    <button onclick="toggleMode()">🌙 Toggle Dark Mode</button>
-</div>
-
-<div id="content"></div>
-
 <script>
+let journal = [];
 let ledger = {};
 let dark=false;
 
+/* ---------------- ADD ENTRY UI ---------------- */
 function showEntry(){
-    document.getElementById("content").innerHTML=`
-    <div class="card">
-        <h3>Compound Journal Entry</h3>
+document.getElementById("content").innerHTML=`
+<div class="card">
+<h3>Compound Journal Entry</h3>
 
-        <label>Date</label>
-        <input type="date" id="date">
+<label>Date</label>
+<input type="date" id="date">
 
-        <h4>Debit Accounts</h4>
-        <div id="debits"></div>
-        <button class="add-btn" onclick="addRow('debits')">+ Add Debit</button>
+<h4>Debit Accounts</h4>
+<div id="debits"></div>
+<button class="add-btn" onclick="addRow('debits')">+ Add Debit</button>
 
-        <h4>Credit Accounts</h4>
-        <div id="credits"></div>
-        <button class="add-btn" onclick="addRow('credits')">+ Add Credit</button>
+<h4>Credit Accounts</h4>
+<div id="credits"></div>
+<button class="add-btn" onclick="addRow('credits')">+ Add Credit</button>
 
-        <button class="save-btn" onclick="saveEntry()">💾 Save Entry</button>
-    </div>`;
-    addRow('debits');
-    addRow('credits');
+<label>Narration</label>
+<input id="narration" placeholder="Being ...">
+
+<button class="save-btn" onclick="saveEntry()">💾 Save Entry</button>
+</div>`;
+addRow('debits');
+addRow('credits');
 }
 
 function addRow(type){
-    document.getElementById(type).innerHTML+=`
-    <div class="row">
-        <input placeholder="Account Name">
-        <input type="number" placeholder="Amount">
-    </div>`;
+document.getElementById(type).innerHTML+=`
+<div class="row">
+<input placeholder="Account Name">
+<input type="number" placeholder="Amount">
+</div>`;
 }
 
+/* ---------------- SAVE ENTRY ---------------- */
 function saveEntry(){
-    let date=document.getElementById("date").value;
-    let debits=[...document.querySelectorAll("#debits .row")];
-    let credits=[...document.querySelectorAll("#credits .row")];
+let date=document.getElementById("date").value;
+let narration=document.getElementById("narration").value;
 
-    let dr=[],cr=[],drTotal=0,crTotal=0;
+let dr=[],cr=[],drTotal=0,crTotal=0;
 
-    debits.forEach(r=>{
-        let acc=r.children[0].value;
-        let amt=parseFloat(r.children[1].value);
-        if(acc && amt){ dr.push({acc,amt}); drTotal+=amt; }
-    });
+document.querySelectorAll("#debits .row").forEach(r=>{
+let acc=r.children[0].value;
+let amt=parseFloat(r.children[1].value);
+if(acc && amt){dr.push({acc,amt});drTotal+=amt;}
+});
 
-    credits.forEach(r=>{
-        let acc=r.children[0].value;
-        let amt=parseFloat(r.children[1].value);
-        if(acc && amt){ cr.push({acc,amt}); crTotal+=amt; }
-    });
+document.querySelectorAll("#credits .row").forEach(r=>{
+let acc=r.children[0].value;
+let amt=parseFloat(r.children[1].value);
+if(acc && amt){cr.push({acc,amt});crTotal+=amt;}
+});
 
-    if(drTotal!==crTotal || drTotal===0){
-        alert("Debit and Credit totals must match!");
-        return;
-    }
-
-    dr.forEach(d=>{
-        if(!ledger[d.acc]) ledger[d.acc]=[];
-        ledger[d.acc].push({date,particulars:"To "+cr.map(c=>c.acc).join(", "),dr:d.amt,cr:""});
-    });
-
-    cr.forEach(c=>{
-        if(!ledger[c.acc]) ledger[c.acc]=[];
-        ledger[c.acc].push({date,particulars:"By "+dr.map(d=>d.acc).join(", "),dr:"",cr:c.amt});
-    });
-
-    alert("Entry Posted Successfully ✅");
+if(drTotal!==crTotal || drTotal===0){
+alert("Debit & Credit totals must be equal");
+return;
 }
 
+/* STORE JOURNAL */
+journal.push({date,debits:dr,credits:cr,narration});
+
+/* POST TO LEDGER */
+dr.forEach(d=>{
+if(!ledger[d.acc]) ledger[d.acc]=[];
+ledger[d.acc].push({date,particulars:"To "+cr.map(c=>c.acc).join(", "),dr:d.amt,cr:""});
+});
+
+cr.forEach(c=>{
+if(!ledger[c.acc]) ledger[c.acc]=[];
+ledger[c.acc].push({date,particulars:"By "+dr.map(d=>d.acc).join(", "),dr:"",cr:c.amt});
+});
+
+alert("Compound Journal Entry Saved ✅");
+}
+
+/* ---------------- VIEW COMPOUND JOURNAL ---------------- */
+function showJournal(){
+if(journal.length===0){
+document.getElementById("content").innerHTML=
+`<div class="card">📘 No Journal Entries</div>`;
+return;
+}
+
+let html=`<div class="card"><h3>Compound Journal Book</h3>`;
+
+journal.forEach((j,i)=>{
+html+=`
+<table>
+<tr>
+<th>Date</th><th>Particulars</th><th>Dr (₹)</th><th>Cr (₹)</th>
+</tr>`;
+
+j.debits.forEach(d=>{
+html+=`
+<tr>
+<td>${j.date}</td>
+<td>${d.acc} A/c</td>
+<td>${d.amt}</td>
+<td></td>
+</tr>`;
+});
+
+j.credits.forEach(c=>{
+html+=`
+<tr>
+<td></td>
+<td style="padding-left:25px;">To ${c.acc} A/c</td>
+<td></td>
+<td>${c.amt}</td>
+</tr>`;
+});
+
+html+=`
+<tr>
+<td></td>
+<td colspan="3"><em>${j.narration}</em></td>
+</tr>
+</table><br>`;
+});
+
+html+=`</div>`;
+document.getElementById("content").innerHTML=html;
+}
+
+/* ---------------- LEDGER ---------------- */
 function showLedger(){
-    let html=`<div class="card"><h3>Ledger</h3>`;
-    for(let acc in ledger){
-        html+=`<h4>${acc}</h4>
-        <table>
-        <tr><th>Date</th><th>Particulars</th><th>Dr</th><th>Cr</th></tr>`;
-        ledger[acc].forEach(t=>{
-            html+=`<tr>
-            <td>${t.date}</td>
-            <td>${t.particulars}</td>
-            <td>${t.dr}</td>
-            <td>${t.cr}</td>
-            </tr>`;
-        });
-        html+=`</table>`;
-    }
-    html+=`</div>`;
-    document.getElementById("content").innerHTML=html;
+let html=`<div class="card"><h3>Ledger</h3>`;
+for(let acc in ledger){
+html+=`<h4>${acc}</h4>
+<table>
+<tr><th>Date</th><th>Particulars</th><th>Dr</th><th>Cr</th></tr>`;
+ledger[acc].forEach(t=>{
+html+=`
+<tr>
+<td>${t.date}</td>
+<td>${t.particulars}</td>
+<td>${t.dr}</td>
+<td>${t.cr}</td>
+</tr>`;
+});
+html+=`</table>`;
+}
+html+=`</div>`;
+document.getElementById("content").innerHTML=html;
 }
 
+/* ---------------- DARK MODE ---------------- */
 function toggleMode(){
-    dark=!dark;
-    document.body.classList.toggle("dark");
+dark=!dark;
+document.body.classList.toggle("dark");
 }
 </script>
-
-</body>
-</html>
