@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Compound Journal • Signature Project</title>
+<title>Compound Journal • Dynamic Entries with Ledger Totals</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 *{box-sizing:border-box;font-family:'Inter',-apple-system,BlinkMacSystemFont}
-
 body{
     margin:0;
     min-height:100vh;
@@ -18,149 +17,70 @@ body{
         linear-gradient(180deg,#0f1014,#1a1b20);
     color:#f5f5f7;
 }
-
-/* HEADER */
-header{
-    text-align:center;
-    padding:40px 20px 20px;
-}
-header h1{
-    font-size:40px;
-    background:linear-gradient(90deg,#fff,#b3d9ff);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-}
+header{text-align:center;padding:40px 20px 20px}
+header h1{font-size:40px;background:linear-gradient(90deg,#fff,#b3d9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 header p{color:#9aa0a6}
-
-/* NAV */
-nav{
-    display:flex;
-    justify-content:center;
-    gap:14px;
-    margin:20px 0 40px;
-}
-nav button{
-    padding:10px 18px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,0.15);
-    background:rgba(255,255,255,0.05);
-    color:#fff;
-    cursor:pointer;
-    transition:0.3s;
-}
-nav button.active,nav button:hover{
-    background:linear-gradient(135deg,#0a84ff,#5ac8fa);
-    box-shadow:0 10px 30px rgba(10,132,255,0.5);
-}
-
-/* PAGE TRANSITIONS */
-.page{
-    max-width:1100px;
-    margin:auto;
-    padding:0 20px 80px;
-    display:none;
-    animation:slideFade 0.7s cubic-bezier(.2,.8,.2,1);
-}
+nav{display:flex;justify-content:center;gap:14px;margin:20px 0 40px}
+nav button{padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;cursor:pointer;transition:0.3s}
+nav button.active,nav button:hover{background:linear-gradient(135deg,#0a84ff,#5ac8fa);box-shadow:0 10px 30px rgba(10,132,255,0.5)}
+.page{max-width:1100px;margin:auto;padding:0 20px 80px;display:none;animation:slideFade 0.7s cubic-bezier(.2,.8,.2,1)}
 .page.active{display:block}
-
-@keyframes slideFade{
-    from{opacity:0;transform:translateY(40px)}
-    to{opacity:1;transform:none}
-}
-
-/* CARD */
-.card{
-    background:linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02));
-    border-radius:26px;
-    padding:32px;
-    margin-bottom:30px;
-    backdrop-filter:blur(18px);
-    box-shadow:0 30px 80px rgba(0,0,0,0.6);
-}
+@keyframes slideFade{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+.card{background:linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02));border-radius:26px;padding:32px;margin-bottom:30px;backdrop-filter:blur(18px);box-shadow:0 30px 80px rgba(0,0,0,0.6)}
 .card h3{margin-bottom:18px}
-
-/* INPUT */
-input{
-    width:100%;
-    padding:14px 16px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,0.15);
-    background:rgba(0,0,0,0.35);
-    color:#fff;
-}
+input{padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.35);color:#fff;margin-bottom:10px;width:100%}
 input:focus{outline:none;border-color:#0a84ff}
-
 .row{display:flex;gap:16px;margin-top:14px}
-
-/* BUTTON */
-.action{
-    background:linear-gradient(135deg,#0a84ff,#5ac8fa);
-    border:none;
-    border-radius:999px;
-    padding:14px 28px;
-    color:white;
-    cursor:pointer;
-    font-weight:500;
-}
-
-/* TABLE */
-table{
-    width:100%;
-    border-collapse:separate;
-    border-spacing:0 10px;
-}
+.action{background:linear-gradient(135deg,#0a84ff,#5ac8fa);border:none;border-radius:999px;padding:14px 28px;color:white;cursor:pointer;font-weight:500;margin-top:10px}
+table{width:100%;border-collapse:separate;border-spacing:0 10px}
 th{color:#9aa0a6;text-align:left;font-size:13px}
-td{
-    background:rgba(255,255,255,0.06);
-    padding:14px;
-}
-
-/* LEDGER */
-.ledger-item{
-    display:flex;
-    justify-content:space-between;
-    background:rgba(255,255,255,0.06);
-    padding:14px 18px;
-    border-radius:14px;
-    margin-bottom:10px;
-}
+td{background:rgba(255,255,255,0.06);padding:14px}
+.ledger-item{display:flex;justify-content:space-between;background:rgba(255,255,255,0.06);padding:14px 18px;border-radius:14px;margin-bottom:10px}
+.ledger-total{display:flex;justify-content:space-between;font-weight:600;margin-bottom:18px;margin-top:8px;color:#ffd700}
 </style>
 </head>
-
 <body>
 
 <header>
-    <h1>Compound Journal</h1>
-    <p>Designed like software. Built like a project.</p>
+<h1>Compound Journal</h1>
+<p>Dynamic Debit & Credit Rows • Ledger Totals</p>
 </header>
 
 <nav>
-    <button class="active" onclick="showPage(0)">Entry</button>
-    <button onclick="showPage(1)">Journal</button>
-    <button onclick="showPage(2)">Ledger</button>
+<button class="active" onclick="showPage(0)">Entry</button>
+<button onclick="showPage(1)">Journal</button>
+<button onclick="showPage(2)">Ledger</button>
 </nav>
 
-<!-- PAGE 1 -->
+<!-- PAGE 1: ENTRY -->
 <div class="page active">
 <div class="card">
 <h3>Add Compound Entry</h3>
 <input id="date" type="date">
-<div class="row">
-<input id="debitAcc" placeholder="Debit Accounts">
-<input id="debitAmt" placeholder="Debit Amounts">
+
+<div id="debitContainer">
+<h4>Debit Side</h4>
+<div class="debit-group row">
+<input placeholder="Debit Account">
+<input placeholder="Amount">
 </div>
-<div class="row">
-<input id="creditAcc" placeholder="Credit Accounts">
-<input id="creditAmt" placeholder="Credit Amounts">
+<button class="action" onclick="addDebit()">+ Add Debit Side</button>
 </div>
-<div class="row">
-<input id="narration" placeholder="Narration">
+
+<div id="creditContainer">
+<h4>Credit Side</h4>
+<div class="credit-group row">
+<input placeholder="Credit Account">
+<input placeholder="Amount">
+</div>
+<button class="action" onclick="addCredit()">+ Add Credit Side</button>
+</div>
+
 <button class="action" onclick="saveEntry()">Save Entry</button>
 </div>
 </div>
-</div>
 
-<!-- PAGE 2 -->
+<!-- PAGE 2: JOURNAL -->
 <div class="page">
 <div class="card">
 <h3>Journal</h3>
@@ -170,7 +90,7 @@ td{
 </div>
 </div>
 
-<!-- PAGE 3 -->
+<!-- PAGE 3: LEDGER -->
 <div class="page">
 <div class="card">
 <h3>Ledger</h3>
@@ -181,7 +101,6 @@ td{
 <script>
 let pages=document.querySelectorAll(".page");
 let navBtns=document.querySelectorAll("nav button");
-
 function showPage(i){
     pages.forEach(p=>p.classList.remove("active"));
     navBtns.forEach(b=>b.classList.remove("active"));
@@ -189,30 +108,65 @@ function showPage(i){
     navBtns[i].classList.add("active");
 }
 
+/* Journal + Ledger Logic */
 let journal=[],ledger={};
-
 window.onload=()=>{
     let d=localStorage.getItem("journalData");
     if(d){journal=JSON.parse(d);rebuild();}
 };
 
+/* Add debit/credit row dynamically */
+function addDebit(){
+    const div=document.createElement("div");
+    div.className="debit-group row";
+    div.innerHTML='<input placeholder="Debit Account"><input placeholder="Amount">';
+    document.getElementById("debitContainer").insertBefore(div, document.querySelector("#debitContainer button"));
+}
+function addCredit(){
+    const div=document.createElement("div");
+    div.className="credit-group row";
+    div.innerHTML='<input placeholder="Credit Account"><input placeholder="Amount">';
+    document.getElementById("creditContainer").insertBefore(div, document.querySelector("#creditContainer button"));
+}
+
 function saveEntry(){
-    let date=document.getElementById("date").value;
-    let dA=debitAcc.value.split(","),dM=debitAmt.value.split(",");
-    let cA=creditAcc.value.split(","),cM=creditAmt.value.split(",");
+    const date=document.getElementById("date").value;
+    if(!date){alert("Enter a date"); return;}
+
+    const dGroups=document.querySelectorAll("#debitContainer .debit-group");
+    const cGroups=document.querySelectorAll("#creditContainer .credit-group");
+
+    let dA=[], dM=[], cA=[], cM=[];
+    dGroups.forEach(row=>{
+        const acc=row.children[0].value.trim();
+        const amt=row.children[1].value.trim();
+        if(acc && amt){dA.push(acc); dM.push(Number(amt));}
+    });
+    cGroups.forEach(row=>{
+        const acc=row.children[0].value.trim();
+        const amt=row.children[1].value.trim();
+        if(acc && amt){cA.push(acc); cM.push(Number(amt));}
+    });
+
+    if(dA.length===0 || cA.length===0){alert("Enter at least one debit and one credit"); return;}
 
     journal.push({date,dA,dM,cA,cM});
     localStorage.setItem("journalData",JSON.stringify(journal));
     rebuild();
-    document.querySelectorAll("input").forEach(i=>i.value="");
+
+    // Clear inputs
+    document.getElementById("date").value="";
+    dGroups.forEach(row=>row.remove());
+    cGroups.forEach(row=>row.remove());
+    addDebit(); addCredit();
 }
 
 function rebuild(){
     ledger={};
     journalTable.innerHTML="<tr><th>Date</th><th>Account</th><th>Debit</th><th>Credit</th></tr>";
     journal.forEach(e=>{
-        e.dA.forEach((a,i)=>{addRow(e.date,a,e.dM[i],0);update(a,e.dM[i],0)});
-        e.cA.forEach((a,i)=>{addRow(e.date,a,0,e.cM[i]);update(a,0,e.cM[i])});
+        e.dA.forEach((a,i)=>{addRow(e.date,a,e.dM[i],0); updateLedger(a,e.dM[i],0);});
+        e.cA.forEach((a,i)=>{addRow(e.date,a,0,e.cM[i]); updateLedger(a,0,e.cM[i]);});
     });
     renderLedger();
 }
@@ -220,15 +174,20 @@ function rebuild(){
 function addRow(d,a,de,cr){
     journalTable.insertRow().innerHTML=`<td>${d}</td><td>${a}</td><td>${de||""}</td><td>${cr||""}</td>`;
 }
-function update(a,de,cr){
+
+function updateLedger(a,de,cr){
     if(!ledger[a])ledger[a]={d:0,c:0};
-    ledger[a].d+=Number(de);ledger[a].c+=Number(cr);
+    ledger[a].d+=Number(de);
+    ledger[a].c+=Number(cr);
 }
+
 function renderLedger(){
-    ledgerDiv.innerHTML="";
+    const box=document.getElementById("ledgerDiv");
+    box.innerHTML="";
     for(let a in ledger){
-        ledgerDiv.innerHTML+=
-        `<div class="ledger-item"><strong>${a}</strong><span>Dr ₹${ledger[a].d} | Cr ₹${ledger[a].c}</span></div>`;
+        box.innerHTML+=`
+        <div class="ledger-item"><strong>${a}</strong><span>Dr ₹${ledger[a].d} | Cr ₹${ledger[a].c}</span></div>
+        <div class="ledger-total">Total <span>Dr ₹${ledger[a].d} | Cr ₹${ledger[a].c}</span></div>`;
     }
 }
 </script>
