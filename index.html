@@ -2,21 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Compound Journal • Notebook Style</title>
+<title>Compound Journal • Ledger with Particulars</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 *{box-sizing:border-box;font-family:'Inter',-apple-system,BlinkMacSystemFont}
-body{
-    margin:0;
-    min-height:100vh;
-    background:#1e1e20;
-    color:#f5f5f7;
-}
+body{margin:0;min-height:100vh;background:#1c1c1e;color:#f5f5f7;}
 
 /* HEADER */
 header{text-align:center;padding:40px 20px 20px}
-header h1{font-size:38px;background:linear-gradient(90deg,#fff,#b3d9ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header h1{font-size:38px;background:linear-gradient(90deg,#0a84ff,#5ac8fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 header p{color:#9aa0a6;margin-top:4px}
 
 /* NAV */
@@ -41,29 +36,30 @@ input:focus{outline:none;border-color:#0a84ff}
 .row{display:flex;gap:14px;margin-top:10px}
 .action{background:linear-gradient(135deg,#0a84ff,#5ac8fa);border:none;border-radius:999px;padding:12px 26px;color:white;cursor:pointer;font-weight:500;margin-top:10px}
 
-/* JOURNAL TABLE - Notebook Style */
+/* JOURNAL TABLE */
 table{width:100%;border-collapse:collapse;margin-top:15px;}
 th,td{border:1px solid #888;padding:10px;text-align:center;}
-th{background:#333;color:#fff;}
+th{background:#0a84ff;color:#fff;}
 td{background:#222;}
 tr:hover td{background:#2a2a2a;}
 .note{color:#aaa;font-size:13px;margin-top:5px}
 
-/* LEDGER - T-Account Style */
+/* LEDGER - T-Account Style with Particulars */
 .ledger-account{margin-bottom:30px;}
 .ledger-title{font-weight:600;font-size:18px;margin-bottom:8px;border-bottom:1px solid #888;padding-bottom:4px;}
-.t-account{display:flex;justify-content:space-between;}
-.t-column{width:48%;background:rgba(0,0,0,0.35);border-radius:8px;padding:10px}
+.t-account{display:flex;justify-content:space-between;gap:10px}
+.t-column{width:48%;background:rgba(0,0,0,0.35);border-radius:8px;padding:10px;overflow:auto;max-height:300px}
 .t-column h4{text-align:center;text-decoration:underline;margin-bottom:8px;font-size:15px}
-.t-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #555}
-.total-row{font-weight:600;border-top:2px solid #888;padding-top:6px;margin-top:4px}
+.t-row{display:flex;justify-content:space-between;padding:4px 6px;border-bottom:1px dashed #555;font-size:14px}
+.t-row span{flex:1;text-align:center}
+.total-row{font-weight:600;border-top:2px solid #888;padding-top:6px;margin-top:4px;text-align:right;font-size:15px}
 </style>
 </head>
 <body>
 
 <header>
 <h1>Compound Journal</h1>
-<p>Notebook Style Journal & Ledger</p>
+<p>Ledger with Particulars • Blue Apple-Style UI</p>
 </header>
 
 <nav>
@@ -83,6 +79,7 @@ tr:hover td{background:#2a2a2a;}
 <div class="debit-group row">
 <input placeholder="Debit Account">
 <input placeholder="Amount">
+<input placeholder="Particulars">
 </div>
 <button class="action" onclick="addDebit()">+ Add Debit Side</button>
 </div>
@@ -92,11 +89,13 @@ tr:hover td{background:#2a2a2a;}
 <div class="credit-group row">
 <input placeholder="Credit Account">
 <input placeholder="Amount">
+<input placeholder="Particulars">
 </div>
 <button class="action" onclick="addCredit()">+ Add Credit Side</button>
 </div>
 
 <button class="action" onclick="saveEntry()">Save Entry</button>
+<p class="note">Ensure total Debit = total Credit</p>
 </div>
 </div>
 
@@ -113,7 +112,7 @@ tr:hover td{background:#2a2a2a;}
 <!-- PAGE 3: LEDGER -->
 <div class="page">
 <div class="card">
-<h3>Ledger (T-Account Style)</h3>
+<h3>Ledger (T-Account Style with Particulars)</h3>
 <div id="ledgerDiv"></div>
 </div>
 </div>
@@ -139,16 +138,17 @@ window.onload=()=>{
 function addDebit(){
     const div=document.createElement("div");
     div.className="debit-group row";
-    div.innerHTML='<input placeholder="Debit Account"><input placeholder="Amount">';
+    div.innerHTML='<input placeholder="Debit Account"><input placeholder="Amount"><input placeholder="Particulars">';
     document.getElementById("debitContainer").insertBefore(div, document.querySelector("#debitContainer button"));
 }
 function addCredit(){
     const div=document.createElement("div");
     div.className="credit-group row";
-    div.innerHTML='<input placeholder="Credit Account"><input placeholder="Amount">';
+    div.innerHTML='<input placeholder="Credit Account"><input placeholder="Amount"><input placeholder="Particulars">';
     document.getElementById("creditContainer").insertBefore(div, document.querySelector("#creditContainer button"));
 }
 
+/* Save Entry */
 function saveEntry(){
     const date=document.getElementById("date").value;
     if(!date){alert("Enter a date"); return;}
@@ -156,78 +156,93 @@ function saveEntry(){
     const dGroups=document.querySelectorAll("#debitContainer .debit-group");
     const cGroups=document.querySelectorAll("#creditContainer .credit-group");
 
-    let dA=[], dM=[], cA=[], cM=[];
+    let dA=[], dM=[], dP=[], cA=[], cM=[], cP=[];
+    let totalD=0, totalC=0;
+
     dGroups.forEach(row=>{
         const acc=row.children[0].value.trim();
         const amt=row.children[1].value.trim();
-        if(acc && amt){dA.push(acc); dM.push(Number(amt));}
+        const par=row.children[2].value.trim();
+        if(acc && amt){
+            let val=Number(amt);
+            dA.push(acc); dM.push(val); dP.push(par || "");
+            totalD+=val;
+        }
     });
     cGroups.forEach(row=>{
         const acc=row.children[0].value.trim();
         const amt=row.children[1].value.trim();
-        if(acc && amt){cA.push(acc); cM.push(Number(amt));}
+        const par=row.children[2].value.trim();
+        if(acc && amt){
+            let val=Number(amt);
+            cA.push(acc); cM.push(val); cP.push(par || "");
+            totalC+=val;
+        }
     });
 
     if(dA.length===0 || cA.length===0){alert("Enter at least one debit and one credit"); return;}
+    if(totalD!==totalC){alert(`Debit (${totalD}) and Credit (${totalC}) must be equal!`); return;}
 
-    journal.push({date,dA,dM,cA,cM});
+    journal.push({date,dA,dM,dP,cA,cM,cP});
     localStorage.setItem("journalData",JSON.stringify(journal));
     rebuild();
 
-    // Clear inputs
     document.getElementById("date").value="";
     dGroups.forEach(row=>row.remove());
     cGroups.forEach(row=>row.remove());
     addDebit(); addCredit();
 }
 
+/* Rebuild Journal and Ledger */
 function rebuild(){
     ledger={};
     journalTable.innerHTML="<tr><th>Date</th><th>Particulars</th><th>J/F</th><th>Debit</th><th>Credit</th></tr>";
     journal.forEach((e,idx)=>{
         // Debits
         e.dA.forEach((a,i)=>{
-            addJournalRow(e.date,"To "+e.cA.join(", "),idx+1,a,e.dM[i],0);
-            updateLedger(a,e.dM[i],0);
+            addJournalRow(e.date,a,e.dP[i],"To "+e.cA.join(", "),idx+1,e.dM[i],0);
+            updateLedger(a,e.date,e.dP[i],e.dM[i],0);
         });
         // Credits
         e.cA.forEach((a,i)=>{
-            addJournalRow(e.date,"By "+e.dA.join(", "),idx+1,a,0,e.cM[i]);
-            updateLedger(a,0,e.cM[i]);
+            addJournalRow(e.date,a,e.cP[i],"By "+e.dA.join(", "),idx+1,0,e.cM[i]);
+            updateLedger(a,e.date,e.cP[i],0,e.cM[i]);
         });
     });
     renderLedger();
 }
 
-function addJournalRow(date,particulars,jf,acc,de,cr){
+/* Journal Row Helper */
+function addJournalRow(date,acc,par,particulars,jf,de,cr){
     journalTable.insertRow().innerHTML=`<td>${date}</td><td>${acc} (${particulars})</td><td>${jf}</td><td>${de||""}</td><td>${cr||""}</td>`;
 }
 
-function updateLedger(a,de,cr){
+/* Ledger T-Account Helper */
+function updateLedger(a,date,par,de,cr){
     if(!ledger[a])ledger[a]={d:[],c:[]};
-    ledger[a].d.push(de);
-    ledger[a].c.push(cr);
+    ledger[a].d.push({amt:de,par:par,date:date});
+    ledger[a].c.push({amt:cr,par:par,date:date});
 }
 
 function renderLedger(){
     const box=document.getElementById("ledgerDiv");
     box.innerHTML="";
     for(let a in ledger){
-        let dTotal=ledger[a].d.reduce((sum,v)=>sum+v,0);
-        let cTotal=ledger[a].c.reduce((sum,v)=>sum+v,0);
+        let dTotal=ledger[a].d.reduce((sum,v)=>sum+v.amt,0);
+        let cTotal=ledger[a].c.reduce((sum,v)=>sum+v.amt,0);
         box.innerHTML+=`
         <div class="ledger-account">
         <div class="ledger-title">${a}</div>
         <div class="t-account">
             <div class="t-column">
                 <h4>Debit</h4>
-                ${ledger[a].d.map((v,i)=>`<div class="t-row">${v}</div>`).join('')}
-                <div class="total-row">${dTotal}</div>
+                ${ledger[a].d.map(v=>`<div class="t-row"><span>${v.date}</span><span>${v.par}</span><span>${v.amt}</span></div>`).join('')}
+                <div class="total-row">Total: ${dTotal}</div>
             </div>
             <div class="t-column">
                 <h4>Credit</h4>
-                ${ledger[a].c.map((v,i)=>`<div class="t-row">${v}</div>`).join('')}
-                <div class="total-row">${cTotal}</div>
+                ${ledger[a].c.map(v=>`<div class="t-row"><span>${v.date}</span><span>${v.par}</span><span>${v.amt}</span></div>`).join('')}
+                <div class="total-row">Total: ${cTotal}</div>
             </div>
         </div>
         </div>`;
