@@ -328,17 +328,9 @@ select:focus {
   animation: fadeInUp 0.6s ease both;
 }
 
-.ledger-account:nth-child(2) {
-  animation-delay: 0.1s;
-}
-
-.ledger-account:nth-child(3) {
-  animation-delay: 0.2s;
-}
-
-.ledger-account:nth-child(4) {
-  animation-delay: 0.3s;
-}
+.ledger-account:nth-child(2) { animation-delay: 0.1s; }
+.ledger-account:nth-child(3) { animation-delay: 0.2s; }
+.ledger-account:nth-child(4) { animation-delay: 0.3s; }
 
 .account-header {
   display: flex;
@@ -378,130 +370,6 @@ select:focus {
   box-shadow: 3px 3px 0 var(--red-ink);
 }
 
-.ledger-entry {
-  display: grid;
-  grid-template-columns: 120px 60px 1fr 140px 140px 140px;
-  gap: 20px;
-  padding: 18px 20px;
-  margin-bottom: 2px;
-  background: rgba(255,255,255,0.3);
-  border-left: 4px solid transparent;
-  transition: all 0.3s ease;
-  align-items: center;
-}
-
-.ledger-entry:hover {
-  background: rgba(255,255,255,0.5);
-  border-left-color: var(--blue-ink);
-  transform: translateX(5px);
-}
-
-.ledger-entry.debit-entry {
-  border-left-color: rgba(139, 58, 58, 0.3);
-}
-
-.ledger-entry.credit-entry {
-  border-left-color: rgba(45, 79, 124, 0.3);
-}
-
-.entry-date {
-  font-family: 'Courier Prime', monospace;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ink-medium);
-}
-
-.entry-jf {
-  font-family: 'Courier Prime', monospace;
-  font-size: 13px;
-  color: var(--ink-light);
-  text-align: center;
-  background: rgba(0,0,0,0.05);
-  padding: 4px 8px;
-  border-radius: 3px;
-}
-
-.entry-particulars {
-  font-size: 17px;
-  color: var(--ink-dark);
-  font-style: italic;
-}
-
-.entry-amount {
-  font-family: 'Courier Prime', monospace;
-  font-size: 18px;
-  font-weight: 700;
-  text-align: right;
-  padding-right: 10px;
-}
-
-.entry-amount.debit {
-  color: var(--red-ink);
-}
-
-.entry-amount.credit {
-  color: var(--blue-ink);
-}
-
-.entry-balance {
-  font-family: 'Courier Prime', monospace;
-  font-size: 18px;
-  font-weight: 700;
-  text-align: right;
-  color: var(--ink-dark);
-  background: rgba(0,0,0,0.05);
-  padding: 8px 12px;
-  border-radius: 4px;
-}
-
-.entry-balance.negative {
-  color: var(--red-ink);
-  background: rgba(139, 58, 58, 0.08);
-}
-
-.ledger-labels {
-  display: grid;
-  grid-template-columns: 120px 60px 1fr 140px 140px 140px;
-  gap: 20px;
-  padding: 12px 20px;
-  margin-bottom: 10px;
-  background: rgba(0,0,0,0.05);
-  border-radius: 4px;
-}
-
-.ledger-label {
-  font-family: 'Courier Prime', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--ink-medium);
-}
-
-.ledger-label.align-right {
-  text-align: right;
-  padding-right: 10px;
-}
-
-.ledger-label.align-center {
-  text-align: center;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 .empty-state {
   text-align: center;
   padding: 80px 40px;
@@ -527,18 +395,101 @@ select:focus {
   color: var(--ink-light);
 }
 
+/* ===== NEW LEDGER TABLE FORMAT (T-FORMAT) ===== */
+.ledger-tformat {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.ledger-side {
+  background: rgba(255,255,255,0.25);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ledger-side-title {
+  font-family: 'Courier Prime', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 12px 14px;
+  background: rgba(0,0,0,0.05);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.ledger-side-title.dr { color: var(--red-ink); }
+.ledger-side-title.cr { color: var(--blue-ink); }
+
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ledger-table thead th {
+  font-family: 'Courier Prime', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px 8px;
+  text-align: center;
+  background: rgba(0,0,0,0.06);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.ledger-table tbody td {
+  padding: 10px 8px;
+  font-size: 15px;
+  border-bottom: 1px solid var(--line-color);
+  text-align: center;
+}
+
+.ledger-table tbody tr:hover td {
+  background: rgba(255,255,255,0.35);
+}
+
+.ledger-table .amt {
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  text-align: right;
+}
+
 @media (max-width: 768px) {
   header h1 { font-size: 42px; }
   .notebook { padding: 30px 20px; }
   .notebook::before { left: 20px; }
   .input-group { grid-template-columns: 1fr; }
   .entry-row { grid-template-columns: 1fr; }
-  .ledger-entry { grid-template-columns: 1fr; gap: 10px; }
-  .ledger-labels { display: none; }
-  .account-name { font-size: 28px; }
-  .account-balance { font-size: 14px; padding: 6px 12px; }
   nav { flex-direction: column; gap: 10px; }
   nav button { width: 100%; }
+
+  .account-name { font-size: 28px; }
+  .account-balance { font-size: 14px; padding: 6px 12px; }
+
+  .ledger-tformat {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
 </head>
@@ -633,25 +584,30 @@ select:focus {
 </div>
 
 <script>
-// Global variables and functions
 var journal = [];
 var ledger = {};
 
-// Helper function to escape HTML
 function escapeHtml(text) {
   var div = document.createElement('div');
   div.textContent = String(text == null ? '' : text);
   return div.innerHTML;
 }
 
-// Convert money to integer paise/cents for exact comparison
 function toMoneyInt(value) {
   var n = Number(value);
   if (!isFinite(n)) return 0;
   return Math.round(n * 100);
 }
 
-// Show page function
+function normalizeAccountName(name) {
+  var n = String(name || '').trim();
+  if (!n) return '';
+  n = n.replace(/\s+/g, ' ');
+  if (!/a\/c$/i.test(n)) n = n + ' A/c';
+  n = n.replace(/A\/c\s*A\/c$/i, 'A/c');
+  return n;
+}
+
 function showPage(pageIndex) {
   var pages = document.querySelectorAll('.page');
   var navBtns = document.querySelectorAll('nav button');
@@ -665,7 +621,6 @@ function showPage(pageIndex) {
   navBtns[pageIndex].classList.add('active');
 }
 
-// Add debit row
 function addDebit() {
   var row = document.createElement('div');
   row.className = 'entry-row debit-row';
@@ -674,9 +629,12 @@ function addDebit() {
     '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Debit Amount">' +
     '<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Debit Particulars">';
   document.getElementById('debitContainer').appendChild(row);
+
+  var p = row.querySelector('.particulars-input');
+  p.readOnly = true;
+  p.value = '';
 }
 
-// Add credit row
 function addCredit() {
   var row = document.createElement('div');
   row.className = 'entry-row credit-row';
@@ -685,10 +643,52 @@ function addCredit() {
     '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Credit Amount">' +
     '<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Credit Particulars">';
   document.getElementById('creditContainer').appendChild(row);
+
+  var p = row.querySelector('.particulars-input');
+  p.readOnly = true;
+  p.value = '';
 }
 
-// Save entry
+function autoFillParticularsInForm() {
+  var debitRows = document.querySelectorAll('.debit-row');
+  var creditRows = document.querySelectorAll('.credit-row');
+
+  var debitAccounts = [];
+  var creditAccounts = [];
+
+  for (var i = 0; i < debitRows.length; i++) {
+    var acc = normalizeAccountName(debitRows[i].querySelector('.account-input').value);
+    if (acc) debitAccounts.push(acc);
+  }
+
+  for (var j = 0; j < creditRows.length; j++) {
+    var cacc = normalizeAccountName(creditRows[j].querySelector('.account-input').value);
+    if (cacc) creditAccounts.push(cacc);
+  }
+
+  var debitParticularText = debitAccounts.length ? ('By ' + debitAccounts.join(', ')) : '';
+  var creditParticularText = creditAccounts.length ? ('To ' + creditAccounts.join(', ')) : '';
+
+  for (var k = 0; k < debitRows.length; k++) {
+    var p1 = debitRows[k].querySelector('.particulars-input');
+    if (p1) {
+      p1.readOnly = true;
+      p1.value = creditParticularText;
+    }
+  }
+
+  for (var m = 0; m < creditRows.length; m++) {
+    var p2 = creditRows[m].querySelector('.particulars-input');
+    if (p2) {
+      p2.readOnly = true;
+      p2.value = debitParticularText;
+    }
+  }
+}
+
 function saveEntry() {
+  autoFillParticularsInForm();
+
   var date = document.getElementById('date').value;
   if (!date) {
     alert('Please enter a transaction date');
@@ -703,7 +703,7 @@ function saveEntry() {
   var debitRows = document.querySelectorAll('.debit-row');
   for (var i = 0; i < debitRows.length; i++) {
     var row = debitRows[i];
-    var account = row.querySelector('.account-input').value.trim();
+    var account = normalizeAccountName(row.querySelector('.account-input').value);
     var amountValue = row.querySelector('.amount-input').value;
     var amount = parseFloat(amountValue);
     var particulars = row.querySelector('.particulars-input').value.trim();
@@ -717,7 +717,7 @@ function saveEntry() {
   var creditRows = document.querySelectorAll('.credit-row');
   for (var j = 0; j < creditRows.length; j++) {
     var creditRow = creditRows[j];
-    var creditAccount = creditRow.querySelector('.account-input').value.trim();
+    var creditAccount = normalizeAccountName(creditRow.querySelector('.account-input').value);
     var creditAmountValue = creditRow.querySelector('.amount-input').value;
     var creditAmount = parseFloat(creditAmountValue);
     var creditParticulars = creditRow.querySelector('.particulars-input').value.trim();
@@ -734,9 +734,7 @@ function saveEntry() {
   }
 
   if (totalDebitInt !== totalCreditInt) {
-    alert(
-      'Debit (' + (totalDebitInt / 100).toFixed(2) + ') and Credit (' + (totalCreditInt / 100).toFixed(2) + ') must be equal'
-    );
+    alert('Debit (' + (totalDebitInt / 100).toFixed(2) + ') and Credit (' + (totalCreditInt / 100).toFixed(2) + ') must be equal');
     return;
   }
 
@@ -755,7 +753,6 @@ function saveEntry() {
   showPage(1);
 }
 
-// Clear form
 function clearForm() {
   document.getElementById('date').value = '';
 
@@ -766,6 +763,8 @@ function clearForm() {
     } else {
       var debitInputs = debitRows[i].querySelectorAll('input');
       for (var j = 0; j < debitInputs.length; j++) debitInputs[j].value = '';
+      var p = debitRows[i].querySelector('.particulars-input');
+      if (p) { p.readOnly = true; p.value = ''; }
     }
   }
 
@@ -776,11 +775,12 @@ function clearForm() {
     } else {
       var creditInputs = creditRows[k].querySelectorAll('input');
       for (var m = 0; m < creditInputs.length; m++) creditInputs[m].value = '';
+      var p2 = creditRows[k].querySelector('.particulars-input');
+      if (p2) { p2.readOnly = true; p2.value = ''; }
     }
   }
 }
 
-// Rebuild journal and ledger
 function rebuild() {
   ledger = {};
   var journalTable = document.getElementById('journalTable');
@@ -844,7 +844,6 @@ function rebuild() {
   buildLedger();
 }
 
-// Build ledger
 function buildLedger() {
   var ledgerBook = document.getElementById('ledgerBook');
   var ledgerEmpty = document.getElementById('ledgerEmpty');
@@ -872,9 +871,8 @@ function buildLedger() {
     var accountDiv = document.createElement('div');
     accountDiv.className = 'ledger-account';
 
-    var entries = ledger[accountName];
+    var entries = ledger[accountName].slice();
 
-    // Sort entries by date, then JF, then type (debit before credit for same)
     entries.sort(function(a, b) {
       if (a.date < b.date) return -1;
       if (a.date > b.date) return 1;
@@ -885,62 +883,85 @@ function buildLedger() {
 
     var balance = 0;
     for (var j = 0; j < entries.length; j++) {
-      var e = entries[j];
-      balance += (e.type === 'debit' ? e.amount : -e.amount);
+      balance += (entries[j].type === 'debit' ? entries[j].amount : -entries[j].amount);
+    }
+    var balanceDisplay = balance >= 0 ? ('Dr ' + balance.toFixed(2)) : ('Cr ' + Math.abs(balance).toFixed(2));
+
+    var drRows = '';
+    var crRows = '';
+
+    for (var k = 0; k < entries.length; k++) {
+      var e = entries[k];
+      var p = e.particulars ? escapeHtml(e.particulars) : '—';
+
+      if (e.type === 'debit') {
+        drRows +=
+          '<tr>' +
+          '<td>' + escapeHtml(e.date) + '</td>' +
+          '<td>' + p + '</td>' +
+          '<td>' + e.jf + '</td>' +
+          '<td class="amt debit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
+          '</tr>';
+      } else {
+        crRows +=
+          '<tr>' +
+          '<td>' + escapeHtml(e.date) + '</td>' +
+          '<td>' + p + '</td>' +
+          '<td>' + e.jf + '</td>' +
+          '<td class="amt credit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
+          '</tr>';
+      }
     }
 
-    var balanceDisplay = balance >= 0 ? ('Dr ' + balance.toFixed(2)) : ('Cr ' + Math.abs(balance).toFixed(2));
+    if (!drRows) {
+      drRows = '<tr><td colspan="4">—</td></tr>';
+    }
+    if (!crRows) {
+      crRows = '<tr><td colspan="4">—</td></tr>';
+    }
 
     accountDiv.innerHTML =
       '<div class="account-header">' +
       '<div class="account-name">' + escapeHtml(accountName) + '</div>' +
       '<div class="account-balance">' + escapeHtml(balanceDisplay) + '</div>' +
       '</div>' +
-      '<div class="ledger-labels">' +
-      '<div class="ledger-label">Date</div>' +
-      '<div class="ledger-label align-center">J/F</div>' +
-      '<div class="ledger-label">Particulars</div>' +
-      '<div class="ledger-label align-right">Debit</div>' +
-      '<div class="ledger-label align-right">Credit</div>' +
-      '<div class="ledger-label align-right">Balance</div>' +
+
+      '<div class="ledger-tformat">' +
+
+      '<div class="ledger-side">' +
+      '<div class="ledger-side-title dr">Dr.</div>' +
+      '<table class="ledger-table">' +
+      '<thead><tr><th>Date</th><th>Particulars</th><th>J.F</th><th>Amount</th></tr></thead>' +
+      '<tbody>' + drRows + '</tbody>' +
+      '</table>' +
+      '</div>' +
+
+      '<div class="ledger-side">' +
+      '<div class="ledger-side-title cr">Cr.</div>' +
+      '<table class="ledger-table">' +
+      '<thead><tr><th>Date</th><th>Particulars</th><th>J.F</th><th>Amount</th></tr></thead>' +
+      '<tbody>' + crRows + '</tbody>' +
+      '</table>' +
+      '</div>' +
+
       '</div>';
-
-    var runningBalance = 0;
-
-    for (var k = 0; k < entries.length; k++) {
-      var ledgerEntry = entries[k];
-
-      runningBalance += (ledgerEntry.type === 'debit' ? ledgerEntry.amount : -ledgerEntry.amount);
-
-      var entryDiv = document.createElement('div');
-      entryDiv.className = 'ledger-entry ' + ledgerEntry.type + '-entry';
-
-      var debitAmount = ledgerEntry.type === 'debit' ? ledgerEntry.amount.toFixed(2) : '—';
-      var creditAmount = ledgerEntry.type === 'credit' ? ledgerEntry.amount.toFixed(2) : '—';
-
-      var balanceClass = runningBalance < 0 ? 'negative' : '';
-      var balanceValue = Math.abs(runningBalance).toFixed(2);
-      var balanceSide = runningBalance >= 0 ? 'Dr ' : 'Cr ';
-
-      var particularsDisplay = ledgerEntry.particulars ? escapeHtml(ledgerEntry.particulars) : '—';
-
-      entryDiv.innerHTML =
-        '<div class="entry-date">' + escapeHtml(ledgerEntry.date) + '</div>' +
-        '<div class="entry-jf">' + ledgerEntry.jf + '</div>' +
-        '<div class="entry-particulars">' + particularsDisplay + '</div>' +
-        '<div class="entry-amount debit">' + escapeHtml(debitAmount) + '</div>' +
-        '<div class="entry-amount credit">' + escapeHtml(creditAmount) + '</div>' +
-        '<div class="entry-balance ' + balanceClass + '">' + escapeHtml(balanceSide + balanceValue) + '</div>';
-
-      accountDiv.appendChild(entryDiv);
-    }
 
     ledgerBook.appendChild(accountDiv);
   }
 }
 
-// Load data on page load
+document.addEventListener('input', function(e) {
+  if (e.target && (e.target.classList.contains('account-input') || e.target.classList.contains('amount-input'))) {
+    autoFillParticularsInForm();
+  }
+});
+
 window.addEventListener('DOMContentLoaded', function() {
+  var pInputs = document.querySelectorAll('.particulars-input');
+  for (var i = 0; i < pInputs.length; i++) {
+    pInputs[i].readOnly = true;
+  }
+
   try {
     var data = localStorage.getItem('journalData');
     if (data) {
@@ -949,7 +970,6 @@ window.addEventListener('DOMContentLoaded', function() {
         journal = parsed;
         rebuild();
       } else {
-        // corrupted storage
         journal = [];
         localStorage.removeItem('journalData');
       }
