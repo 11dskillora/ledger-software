@@ -7,211 +7,68 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-*{
-    box-sizing:border-box;
-    font-family:'Inter',-apple-system,BlinkMacSystemFont;
-}
-
+*{box-sizing:border-box;font-family:'Inter',-apple-system,BlinkMacSystemFont}
 body{
-    margin:0;
-    min-height:100vh;
-    color:#f5f7fa;
-    background:
-      radial-gradient(circle at 20% 20%, #0a84ff33, transparent 40%),
-      radial-gradient(circle at 80% 10%, #5ac8fa33, transparent 45%),
-      radial-gradient(circle at 50% 90%, #6e5cff33, transparent 50%),
-      linear-gradient(180deg,#0b0f1a,#05070d);
-    animation:bgMove 18s ease-in-out infinite alternate;
+margin:0;min-height:100vh;color:#f5f7fa;
+background:
+radial-gradient(circle at 20% 20%, #0a84ff33, transparent 40%),
+radial-gradient(circle at 80% 10%, #5ac8fa33, transparent 45%),
+radial-gradient(circle at 50% 90%, #6e5cff33, transparent 50%),
+linear-gradient(180deg,#0b0f1a,#05070d);
+animation:bgMove 18s ease-in-out infinite alternate;
 }
+@keyframes bgMove{0%{background-position:0% 0%}100%{background-position:100% 100%}}
 
-@keyframes bgMove{
-    0%{background-position:0% 0%}
-    100%{background-position:100% 100%}
-}
-
-/* HEADER */
-header{
-    text-align:center;
-    padding:60px 20px 30px;
-}
+header{text-align:center;padding:60px 20px 30px}
 header h1{
-    font-size:46px;
-    font-weight:800;
-    letter-spacing:-1px;
-    background:linear-gradient(90deg,#0a84ff,#5ac8fa,#6e5cff);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-}
-header p{
-    color:#9aa4b2;
-    margin-top:10px;
-    font-size:15px;
-}
+font-size:46px;font-weight:800;
+background:linear-gradient(90deg,#0a84ff,#5ac8fa,#6e5cff);
+-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header p{color:#9aa4b2;margin-top:10px;font-size:15px}
 
-/* NAV */
-nav{
-    display:flex;
-    justify-content:center;
-    gap:18px;
-    margin:20px 0 50px;
-}
+nav{display:flex;justify-content:center;gap:18px;margin:20px 0 50px}
 nav button{
-    padding:12px 26px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,0.15);
-    background:rgba(255,255,255,0.06);
-    color:#fff;
-    cursor:pointer;
-    font-weight:500;
-    transition:0.35s;
-    backdrop-filter:blur(12px);
-}
-nav button:hover{
-    transform:translateY(-2px);
-    box-shadow:0 15px 40px rgba(10,132,255,0.45);
-}
+padding:12px 26px;border-radius:999px;
+border:1px solid rgba(255,255,255,.15);
+background:rgba(255,255,255,.06);
+color:#fff;cursor:pointer;font-weight:500;
+transition:.35s;backdrop-filter:blur(12px)}
 nav button.active{
-    background:linear-gradient(135deg,#0a84ff,#5ac8fa);
-    box-shadow:0 20px 50px rgba(10,132,255,0.6);
-}
+background:linear-gradient(135deg,#0a84ff,#5ac8fa);
+box-shadow:0 20px 50px rgba(10,132,255,.6)}
 
-/* PAGE */
-.page{
-    max-width:1150px;
-    margin:auto;
-    padding:0 24px 90px;
-    display:none;
-    animation:fadeUp .8s cubic-bezier(.2,.8,.2,1);
-}
+.page{max-width:1150px;margin:auto;padding:0 24px 90px;display:none}
 .page.active{display:block}
 
-@keyframes fadeUp{
-    from{opacity:0;transform:translateY(50px)}
-    to{opacity:1;transform:none}
-}
-
-/* CARD */
 .card{
-    background:linear-gradient(
-        180deg,
-        rgba(255,255,255,0.12),
-        rgba(255,255,255,0.04)
-    );
-    border-radius:30px;
-    padding:36px;
-    margin-bottom:40px;
-    backdrop-filter:blur(24px);
-    box-shadow:
-        0 40px 80px rgba(0,0,0,0.6),
-        inset 0 1px 0 rgba(255,255,255,0.15);
-}
-.card h3{
-    font-size:22px;
-    margin-bottom:22px;
-}
-
-/* INPUT */
+background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));
+border-radius:30px;padding:36px;margin-bottom:40px;
+backdrop-filter:blur(24px);
+box-shadow:0 40px 80px rgba(0,0,0,.6)}
 input{
-    padding:14px 16px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,0.18);
-    background:rgba(0,0,0,0.35);
-    color:#fff;
-    width:100%;
-}
-input:focus{
-    outline:none;
-    border-color:#0a84ff;
-    box-shadow:0 0 0 3px rgba(10,132,255,0.35);
-}
+padding:14px 16px;border-radius:14px;
+border:1px solid rgba(255,255,255,.18);
+background:rgba(0,0,0,.35);color:#fff;width:100%}
+.row{display:flex;gap:14px;margin-top:12px}
 
-/* ROW */
-.row{
-    display:flex;
-    gap:14px;
-    margin-top:12px;
-}
-
-/* BUTTON */
 .action{
-    margin-top:14px;
-    padding:13px 32px;
-    border-radius:999px;
-    border:none;
-    font-weight:600;
-    color:#fff;
-    background:linear-gradient(135deg,#0a84ff,#5ac8fa);
-    cursor:pointer;
-}
-.action:hover{
-    transform:translateY(-2px);
-    box-shadow:0 18px 45px rgba(10,132,255,0.65);
-}
+margin-top:14px;padding:13px 32px;
+border-radius:999px;border:none;font-weight:600;
+color:#fff;background:linear-gradient(135deg,#0a84ff,#5ac8fa);
+cursor:pointer}
 
-/* TABLE */
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:15px;
-    border-radius:16px;
-    overflow:hidden;
-}
-th,td{
-    padding:14px;
-    text-align:center;
-}
-th{
-    background:linear-gradient(135deg,#0a84ff,#5ac8fa);
-}
-td{
-    background:rgba(255,255,255,0.05);
-}
-tr:hover td{
-    background:rgba(255,255,255,0.1);
-}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{padding:14px;text-align:center}
+th{background:linear-gradient(135deg,#0a84ff,#5ac8fa)}
+td{background:rgba(255,255,255,.05)}
 
-/* LEDGER */
-.ledger-account{
-    margin-bottom:40px;
-}
-.ledger-title{
-    font-size:20px;
-    font-weight:700;
-    margin-bottom:10px;
-    border-bottom:1px solid rgba(255,255,255,0.3);
-    padding-bottom:6px;
-}
-.t-account{
-    display:flex;
-    gap:16px;
-}
-.t-column{
-    width:50%;
-    background:rgba(0,0,0,0.35);
-    border-radius:18px;
-    padding:14px;
-    max-height:320px;
-    overflow:auto;
-}
-.t-column h4{
-    text-align:center;
-    margin-bottom:10px;
-    text-decoration:underline;
-}
-.t-row{
-    display:flex;
-    justify-content:space-between;
-    padding:6px 8px;
-    border-bottom:1px dashed rgba(255,255,255,0.25);
-    font-size:14px;
-}
+.ledger-account{margin-bottom:40px}
+.ledger-title{font-size:20px;font-weight:700;margin-bottom:10px}
+.t-account{display:flex;gap:16px}
+.t-column{width:50%;background:rgba(0,0,0,.35);border-radius:18px;padding:14px}
+.t-row{display:flex;justify-content:space-between;padding:6px;border-bottom:1px dashed rgba(255,255,255,.25)}
 .t-row span{flex:1;text-align:center}
-.total-row{
-    font-weight:700;
-    text-align:right;
-    margin-top:8px;
-    font-size:15px;
-}
+.total-row{font-weight:700;text-align:right;margin-top:8px}
 </style>
 </head>
 
@@ -228,31 +85,29 @@ tr:hover td{
 <button onclick="showPage(2)">Ledger</button>
 </nav>
 
-<!-- ===== PAGES (STRUCTURE UNCHANGED) ===== -->
-
 <div class="page active">
 <div class="card">
 <h3>Add Compound Entry</h3>
 <input id="date" type="date">
 
-<div id="debitContainer">
 <h4>Debit Side</h4>
+<div id="debitContainer">
 <div class="debit-group row">
 <input placeholder="Debit Account">
 <input placeholder="Amount">
 <input placeholder="Particulars">
 </div>
-<button class="action" onclick="addDebit()">+ Add Debit Side</button>
+<button class="action" onclick="addDebit()">+ Add Debit</button>
 </div>
 
+<h4 style="margin-top:20px">Credit Side</h4>
 <div id="creditContainer">
-<h4>Credit Side</h4>
 <div class="credit-group row">
 <input placeholder="Credit Account">
 <input placeholder="Amount">
 <input placeholder="Particulars">
 </div>
-<button class="action" onclick="addCredit()">+ Add Credit Side</button>
+<button class="action" onclick="addCredit()">+ Add Credit</button>
 </div>
 
 <button class="action" onclick="saveEntry()">Save Entry</button>
@@ -275,122 +130,116 @@ tr:hover td{
 </div>
 </div>
 
-<!-- ===== YOUR ORIGINAL JS (UNCHANGED) ===== -->
 <script>
-/* SAME SCRIPT AS YOUR WORKING VERSION — UNTOUCHED */
 const pages=document.querySelectorAll(".page");
 const navBtns=document.querySelectorAll("nav button");
 const journalTable=document.getElementById("journalTable");
 const ledgerDiv=document.getElementById("ledgerDiv");
-const debitContainer=document.getElementById("debitContainer");
-const creditContainer=document.getElementById("creditContainer");
-
-function showPage(i){
-    pages.forEach(p=>p.classList.remove("active"));
-    navBtns.forEach(b=>b.classList.remove("active"));
-    pages[i].classList.add("active");
-    navBtns[i].classList.add("active");
-}
-
 let journal=[],ledger={};
 
 window.onload=()=>{
-    const d=localStorage.getItem("journalData");
-    if(d){journal=JSON.parse(d);rebuild();}
+const d=localStorage.getItem("journalData");
+if(d){journal=JSON.parse(d);rebuild();}
 };
 
+function showPage(i){
+pages.forEach(p=>p.classList.remove("active"));
+navBtns.forEach(b=>b.classList.remove("active"));
+pages[i].classList.add("active");
+navBtns[i].classList.add("active");
+}
+
 function addDebit(){
-    const div=document.createElement("div");
-    div.className="debit-group row";
-    div.innerHTML='<input placeholder="Debit Account"><input placeholder="Amount"><input placeholder="Particulars">';
-    debitContainer.insertBefore(div,debitContainer.lastElementChild);
+const d=document.createElement("div");
+d.className="debit-group row";
+d.innerHTML='<input placeholder="Debit Account"><input placeholder="Amount"><input placeholder="Particulars">';
+const c=document.getElementById("debitContainer");
+c.insertBefore(d,c.lastElementChild);
 }
 
 function addCredit(){
-    const div=document.createElement("div");
-    div.className="credit-group row";
-    div.innerHTML='<input placeholder="Credit Account"><input placeholder="Amount"><input placeholder="Particulars">';
-    creditContainer.insertBefore(div,creditContainer.lastElementChild);
+const d=document.createElement("div");
+d.className="credit-group row";
+d.innerHTML='<input placeholder="Credit Account"><input placeholder="Amount"><input placeholder="Particulars">';
+const c=document.getElementById("creditContainer");
+c.insertBefore(d,c.lastElementChild);
 }
 
 function saveEntry(){
-    const date=document.getElementById("date").value;
-    if(!date){alert("Enter a date");return;}
+const date=document.getElementById("date").value;
+if(!date)return alert("Enter date");
 
-    let d=[],c=[],td=0,tc=0;
+let d=[],c=[],td=0,tc=0;
 
-    document.querySelectorAll(".debit-group").forEach(r=>{
-        const a=r.children[0].value.trim();
-        const m=Number(r.children[1].value);
-        const p=r.children[2].value.trim();
-        if(a && m>0){d.push({a,m,p});td+=m;}
-    });
+document.querySelectorAll(".debit-group").forEach(r=>{
+const a=r.children[0].value.trim();
+const m=+r.children[1].value;
+const p=r.children[2].value.trim();
+if(a&&m>0){d.push({a,m,p});td+=m;}
+});
 
-    document.querySelectorAll(".credit-group").forEach(r=>{
-        const a=r.children[0].value.trim();
-        const m=Number(r.children[1].value);
-        const p=r.children[2].value.trim();
-        if(a && m>0){c.push({a,m,p});tc+=m;}
-    });
+document.querySelectorAll(".credit-group").forEach(r=>{
+const a=r.children[0].value.trim();
+const m=+r.children[1].value;
+const p=r.children[2].value.trim();
+if(a&&m>0){c.push({a,m,p});tc+=m;}
+});
 
-    if(!d.length||!c.length||td!==tc){
-        alert("Debit and Credit must exist and be equal");
-        return;
-    }
+if(!d.length||!c.length||td!==tc)
+return alert("Debit & Credit must be equal");
 
-    journal.push({date,d,c});
-    localStorage.setItem("journalData",JSON.stringify(journal));
-    rebuild();
+journal.push({date,d,c});
+localStorage.setItem("journalData",JSON.stringify(journal));
+rebuild();
 
-    document.getElementById("date").value="";
-    document.querySelectorAll(".debit-group,.credit-group").forEach((e,i)=>{if(i>0)e.remove();});
+document.getElementById("date").value="";
+document.querySelectorAll(".debit-group").forEach((e,i)=>{if(i>0)e.remove();});
+document.querySelectorAll(".credit-group").forEach((e,i)=>{if(i>0)e.remove();});
+document.querySelectorAll(".debit-group input,.credit-group input").forEach(i=>i.value="");
 }
 
 function rebuild(){
-    ledger={};
-    journalTable.innerHTML="<tr><th>Date</th><th>Particulars</th><th>J/F</th><th>Debit</th><th>Credit</th></tr>";
-
-    journal.forEach((e,i)=>{
-        e.d.forEach(x=>{
-            journalTable.insertRow().innerHTML=`<td>${e.date}</td><td>${x.a}</td><td>${i+1}</td><td>${x.m}</td><td></td>`;
-            updateLedger(x.a,e.date,x.p,x.m,0);
-        });
-        e.c.forEach(x=>{
-            journalTable.insertRow().innerHTML=`<td>${e.date}</td><td>${x.a}</td><td>${i+1}</td><td></td><td>${x.m}</td>`;
-            updateLedger(x.a,e.date,x.p,0,x.m);
-        });
-    });
-    renderLedger();
+ledger={};
+journalTable.innerHTML="<tr><th>Date</th><th>Particulars</th><th>J/F</th><th>Debit</th><th>Credit</th></tr>";
+journal.forEach((e,i)=>{
+e.d.forEach(x=>{
+journalTable.insertRow().innerHTML=`<td>${e.date}</td><td>${x.a}</td><td>${i+1}</td><td>${x.m}</td><td></td>`;
+updateLedger(x.a,e.date,x.p,x.m,0);
+});
+e.c.forEach(x=>{
+journalTable.insertRow().innerHTML=`<td>${e.date}</td><td>${x.a}</td><td>${i+1}</td><td></td><td>${x.m}</td>`;
+updateLedger(x.a,e.date,x.p,0,x.m);
+});
+});
+renderLedger();
 }
 
-function updateLedger(a,date,p,d,c){
-    if(!ledger[a]) ledger[a]={d:[],c:[]};
-    if(d>0) ledger[a].d.push({date,p,amt:d});
-    if(c>0) ledger[a].c.push({date,p,amt:c});
+function updateLedger(a,d,p,dr,cr){
+if(!ledger[a])ledger[a]={d:[],c:[]};
+if(dr)ledger[a].d.push({d,p,amt:dr});
+if(cr)ledger[a].c.push({d,p,amt:cr});
 }
 
 function renderLedger(){
-    ledgerDiv.innerHTML="";
-    for(const a in ledger){
-        const dT=ledger[a].d.reduce((s,v)=>s+v.amt,0);
-        const cT=ledger[a].c.reduce((s,v)=>s+v.amt,0);
-        ledgerDiv.innerHTML+=`
-        <div class="ledger-account">
-            <div class="ledger-title">${a}</div>
-            <div class="t-account">
-                <div class="t-column">
-                    <h4>Debit</h4>
-                    ${ledger[a].d.map(v=>`<div class="t-row"><span>${v.date}</span><span>${v.p}</span><span>${v.amt}</span></div>`).join("")}
-                    <div class="total-row">Total: ${dT}</div>
-                </div>
-                <div class="t-column">
-                    <h4>Credit</h4>
-                    ${ledger[a].c.map(v=>`<div class="t-row"><span>${v.date}</span><span>${v.p}</span><span>${v.amt}</span></div>`).join("")}
-                    <div class="total-row">Total: ${cT}</div>
-                </div>
-            </div>
-        </div>`;
-    }
+ledgerDiv.innerHTML="";
+for(const a in ledger){
+const dt=ledger[a].d.reduce((s,v)=>s+v.amt,0);
+const ct=ledger[a].c.reduce((s,v)=>s+v.amt,0);
+ledgerDiv.innerHTML+=`
+<div class="ledger-account">
+<div class="ledger-title">${a}</div>
+<div class="t-account">
+<div class="t-column">
+${ledger[a].d.map(v=>`<div class="t-row"><span>${v.d}</span><span>${v.p}</span><span>${v.amt}</span></div>`).join("")}
+<div class="total-row">Total: ${dt}</div>
+</div>
+<div class="t-column">
+${ledger[a].c.map(v=>`<div class="t-row"><span>${v.d}</span><span>${v.p}</span><span>${v.amt}</span></div>`).join("")}
+<div class="total-row">Total: ${ct}</div>
+</div>
+</div>
+</div>`;
+}
 }
 </script>
 
