@@ -2,306 +2,225 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Compound Journal & Ledger</title>
+<title>Compound Journal – Apple Style</title>
 
-<!-- FONT -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<!-- ICONS -->
-<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+<!-- Apple-like font -->
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --bg:#1A1B26;
-  --card:#24283B;
-  --accent:#7DD3FC;
-  --green:#10B981;
-  --text:#E5E7EB;
-  --muted:#9CA3AF;
-  --glass:rgba(255,255,255,0.06);
+*{
+    box-sizing:border-box;
+    font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont;
 }
 
-*{box-sizing:border-box;font-family:Inter}
 body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  display:flex;
-  min-height:100vh;
+    margin:0;
+    padding:30px;
+    background:#f5f5f7;
+    color:#1d1d1f;
 }
 
-/* SIDEBAR */
-aside{
-  width:260px;
-  background:linear-gradient(180deg,#1f2335,#1a1b26);
-  padding:30px 20px;
-  border-right:1px solid rgba(255,255,255,.08);
-}
-.logo{
-  font-size:22px;
-  font-weight:700;
-  color:var(--accent);
-  margin-bottom:40px;
-}
-nav button{
-  width:100%;
-  background:none;
-  border:none;
-  color:var(--muted);
-  padding:14px 16px;
-  border-radius:14px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  font-size:15px;
-  cursor:pointer;
-  transition:.3s;
-}
-nav button i{font-size:18px}
-nav button.active,
-nav button:hover{
-  background:var(--glass);
-  color:white;
+/* ---------- HEADER ---------- */
+header{
+    text-align:center;
+    margin-bottom:40px;
 }
 
-/* MAIN */
-main{
-  flex:1;
-  padding:40px;
+header h1{
+    font-size:36px;
+    font-weight:600;
 }
 
-/* PAGE */
-.page{display:none;animation:fade .5s ease}
-.page.active{display:block}
-@keyframes fade{from{opacity:0;transform:translateY(10px)}}
+header p{
+    color:#6e6e73;
+}
 
-/* CARDS */
+/* ---------- CARD ---------- */
 .card{
-  background:var(--card);
-  border-radius:22px;
-  padding:26px;
-  margin-bottom:30px;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.05),
-    0 20px 40px rgba(0,0,0,.4);
+    max-width:950px;
+    margin:30px auto;
+    background:white;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.08);
 }
 
-/* DASHBOARD */
-.stats{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:20px;
+/* ---------- BUTTON ---------- */
+button{
+    padding:12px 22px;
+    border:none;
+    border-radius:999px;
+    background:#0071e3;
+    color:white;
+    font-size:15px;
+    cursor:pointer;
+    transition:0.25s;
 }
-.stat{
-  padding:22px;
-  border-radius:18px;
-  background:linear-gradient(145deg,#2a2f4f,#1e2235);
-}
-.stat h4{font-size:13px;color:var(--muted)}
-.stat p{font-size:26px;font-weight:600;margin-top:8px}
 
-/* INPUT */
+button:hover{
+    background:#0077ed;
+    transform:scale(1.03);
+}
+
+/* ---------- INPUT ---------- */
 input{
-  width:100%;
-  padding:12px 14px;
-  border-radius:12px;
-  background:#1e2235;
-  border:1px solid rgba(255,255,255,.1);
-  color:white;
+    padding:12px;
+    width:100%;
+    border-radius:12px;
+    border:1px solid #d2d2d7;
+    outline:none;
+    margin-top:6px;
 }
+
 input:focus{
-  outline:none;
-  border-color:var(--accent);
+    border-color:#0071e3;
 }
 
-/* BUTTON */
-.action{
-  background:linear-gradient(135deg,var(--accent),#38bdf8);
-  border:none;
-  padding:12px 22px;
-  border-radius:999px;
-  color:#000;
-  font-weight:600;
-  cursor:pointer;
-  transition:.3s;
+/* ---------- FLEX ---------- */
+.row{
+    display:flex;
+    gap:15px;
+    margin-top:12px;
 }
-.action:hover{transform:translateY(-1px)}
 
-/* TABLE */
+/* ---------- TABLE ---------- */
 table{
-  width:100%;
-  border-collapse:collapse;
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
 }
-th,td{
-  padding:12px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
+
 th{
-  color:var(--accent);
-  text-align:left;
-  font-size:13px;
-}
-td{font-size:14px}
-
-/* LEDGER */
-.ledger-account{margin-bottom:40px}
-.ledger-title{
-  font-weight:600;
-  margin-bottom:12px;
-}
-.t-account{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:20px;
-}
-.t-column{
-  background:#1e2235;
-  border-radius:16px;
-  padding:16px;
-}
-.t-column h4{
-  text-align:center;
-  margin-bottom:10px;
-  color:var(--accent);
-}
-.t-row{
-  display:grid;
-  grid-template-columns:1fr 2fr 1fr;
-  padding:6px 0;
-  font-size:13px;
-}
-.total-row{
-  border-top:1px solid rgba(255,255,255,.15);
-  margin-top:10px;
-  padding-top:8px;
-  text-align:right;
-  font-weight:600;
+    background:#f5f5f7;
+    font-weight:500;
 }
 
-/* TOAST */
-.toast{
-  position:fixed;
-  bottom:30px;
-  right:30px;
-  background:#111827;
-  padding:14px 20px;
-  border-radius:14px;
-  box-shadow:0 20px 40px rgba(0,0,0,.5);
-  opacity:0;
-  transform:translateY(10px);
-  transition:.4s;
+th,td{
+    padding:12px;
+    text-align:center;
+    border-bottom:1px solid #e5e5ea;
 }
-.toast.show{
-  opacity:1;
-  transform:none;
-}
-.toast.success{border-left:4px solid var(--green)}
-.toast.error{border-left:4px solid #ef4444}
 
-/* RESPONSIVE */
-@media(max-width:1100px){
-  .stats{grid-template-columns:repeat(2,1fr)}
+h3{
+    margin-top:0;
+    font-weight:500;
+}
+
+/* ---------- SMALL ---------- */
+.note{
+    color:#6e6e73;
+    font-size:14px;
+}
+
+@media(max-width:650px){
+    .row{
+        flex-direction:column;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<aside>
-  <div class="logo">LedgerPro</div>
-  <nav>
-    <button class="active" onclick="showPage(0)"><i class='bx bx-home'></i>Dashboard</button>
-    <button onclick="showPage(1)"><i class='bx bx-book'></i>Journal</button>
-    <button onclick="showPage(2)"><i class='bx bx-spreadsheet'></i>Ledger</button>
-    <button disabled><i class='bx bx-bar-chart'></i>Reports</button>
-    <button disabled><i class='bx bx-cog'></i>Settings</button>
-  </nav>
-</aside>
+<header>
+    <h1>Compound Journal</h1>
+    <p>Clean • Simple • Apple-style Accounting UI</p>
+</header>
 
-<main>
+<div class="card">
+    <h3>Add Compound Entry</h3>
 
-<!-- DASHBOARD -->
-<div class="page active">
-  <div class="stats">
-    <div class="stat"><h4>Total Transactions</h4><p id="txCount">0</p></div>
-    <div class="stat"><h4>Total Debit</h4><p id="deSum">—</p></div>
-    <div class="stat"><h4>Total Credit</h4><p id="crSum">—</p></div>
-    <div class="stat"><h4>Status</h4><p style="color:var(--green)">Balanced</p></div>
-  </div>
+    <input id="date" type="date">
+
+    <div class="row">
+        <input id="debitAcc" placeholder="Debit Accounts (comma separated)">
+        <input id="debitAmt" placeholder="Debit Amounts (comma separated)">
+    </div>
+
+    <div class="row">
+        <input id="creditAcc" placeholder="Credit Accounts (comma separated)">
+        <input id="creditAmt" placeholder="Credit Amounts (comma separated)">
+    </div>
+
+    <div class="row">
+        <input id="narration" placeholder="Narration">
+        <button onclick="saveEntry()">Save Entry</button>
+    </div>
+
+    <p class="note">Example: Cash, Purchases | 5000, 3000</p>
 </div>
 
-<!-- JOURNAL -->
-<div class="page">
-  <div class="card">
+<div class="card">
     <h3>Journal</h3>
     <table id="journalTable">
-      <tr>
-        <th>Date</th><th>Particulars</th><th>J/F</th><th>Debit</th><th>Credit</th>
-      </tr>
+        <tr>
+            <th>Date</th>
+            <th>Account</th>
+            <th>Debit (₹)</th>
+            <th>Credit (₹)</th>
+        </tr>
     </table>
-  </div>
 </div>
 
-<!-- LEDGER -->
-<div class="page">
-  <div class="card">
+<div class="card">
     <h3>Ledger</h3>
-    <div id="ledgerDiv"></div>
-  </div>
+    <div id="ledger"></div>
 </div>
-
-</main>
-
-<div id="toast" class="toast"></div>
 
 <script>
-/* 🔒 ORIGINAL LOGIC — UNCHANGED */
-let pages=document.querySelectorAll(".page");
-let navBtns=document.querySelectorAll("nav button");
-function showPage(i){
-  pages.forEach(p=>p.classList.remove("active"));
-  navBtns.forEach(b=>b.classList.remove("active"));
-  pages[i].classList.add("active");
-  navBtns[i].classList.add("active");
+let journal = [];
+let ledger = {};
+
+function saveEntry(){
+    const date = document.getElementById("date").value;
+    const dAcc = document.getElementById("debitAcc").value.split(",");
+    const dAmt = document.getElementById("debitAmt").value.split(",");
+    const cAcc = document.getElementById("creditAcc").value.split(",");
+    const cAmt = document.getElementById("creditAmt").value.split(",");
+    const narration = document.getElementById("narration").value;
+
+    if(!date || dAcc.length!==dAmt.length || cAcc.length!==cAmt.length){
+        alert("Check inputs properly");
+        return;
+    }
+
+    dAcc.forEach((acc,i)=>{
+        addRow(date,acc.trim(),dAmt[i],0);
+        updateLedger(acc.trim(),dAmt[i],0);
+    });
+
+    cAcc.forEach((acc,i)=>{
+        addRow(date,acc.trim(),0,cAmt[i]);
+        updateLedger(acc.trim(),0,cAmt[i]);
+    });
+
+    journal.push({date,dAcc,dAmt,cAcc,cAmt,narration});
+    renderLedger();
+
+    document.querySelectorAll("input").forEach(i=>i.value="");
 }
 
-let journal=[],ledger={};
-window.onload=()=>{
-  let d=localStorage.getItem("journalData");
-  if(d){journal=JSON.parse(d);rebuild();}
-};
-
-function toast(msg,type="success"){
-  const t=document.getElementById("toast");
-  t.textContent=msg;
-  t.className=`toast ${type} show`;
-  setTimeout(()=>t.classList.remove("show"),3000);
+function addRow(date,acc,debit,credit){
+    const table = document.getElementById("journalTable");
+    const row = table.insertRow();
+    row.innerHTML = `<td>${date}</td><td>${acc}</td><td>${debit||""}</td><td>${credit||""}</td>`;
 }
 
-/* Existing rebuild(), updateLedger(), renderLedger(), etc.
-   🧠 EXACT SAME LOGIC AS YOUR VERSION
-   Only visual hooks added below 👇 */
+function updateLedger(acc,debit,credit){
+    if(!ledger[acc]){
+        ledger[acc]={debit:0,credit:0};
+    }
+    ledger[acc].debit += Number(debit);
+    ledger[acc].credit += Number(credit);
+}
 
-function rebuild(){
-  ledger={};
-  journalTable.innerHTML="<tr><th>Date</th><th>Particulars</th><th>J/F</th><th>Debit</th><th>Credit</th></tr>";
-  let td=0,tc=0;
-  journal.forEach((e,idx)=>{
-    e.dA.forEach((a,i)=>{
-      addJournalRow(e.date,a,e.dP[i],"To "+e.cA.join(", "),idx+1,e.dM[i],0);
-      updateLedger(a,e.date,e.dP[i],e.dM[i],0);
-      td+=e.dM[i];
-    });
-    e.cA.forEach((a,i)=>{
-      addJournalRow(e.date,a,e.cP[i],"By "+e.dA.join(", "),idx+1,0,e.cM[i]);
-      updateLedger(a,e.date,e.cP[i],0,e.cM[i]);
-      tc+=e.cM[i];
-    });
-  });
-  document.getElementById("txCount").textContent=journal.length;
-  document.getElementById("deSum").textContent=td;
-  document.getElementById("crSum").textContent=tc;
-  renderLedger();
+function renderLedger(){
+    const box = document.getElementById("ledger");
+    box.innerHTML="";
+    for(let acc in ledger){
+        box.innerHTML += `
+        <p><strong>${acc}</strong> → Debit: ₹${ledger[acc].debit} | Credit: ₹${ledger[acc].credit}</p>`;
+    }
 }
 </script>
 
