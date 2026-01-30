@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ledger Software (Dual Mode)</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+    }
+    .menu button {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .card {
+        background: #fff;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    input {
+        width: 100%;
+        padding: 8px;
+        margin: 5px 0;
+    }
+</style>
+</head>
+<body>
+
+<h1>📘 Ledger Software (Dual Mode)</h1>
+
+<div class="menu">
+    <button onclick="showAddEntry()">1. Add Compound Journal Entry</button>
+    <button onclick="alert('Menu 2 coming next')">2. View All Ledger Accounts</button>
+    <button onclick="alert('Menu 3 coming next')">3. View Ledger</button>
+    <button onclick="alert('Menu 4 coming next')">4. Change Display Mode</button>
+</div>
+
+<div id="content"></div>
+
+<script>
+/* =========================
+   GLOBAL STATE
+========================= */
+let journal = [];
+let ledger = {};
+let JF_DEFAULT = "-";
+
+/* =========================
+   LEDGER FUNCTIONS
+========================= */
+function addToLedger(account, transaction) {
+    if (!ledger[account]) {
+        ledger[account] = { Dr: [], Cr: [] };
+    }
+    ledger[account][transaction.side].push(transaction);
+}
+
+function autoPostCompound(entry) {
+    let creditNames = entry.credits.map(c => c.acc).join(", ");
+    let debitNames  = entry.debits.map(d => d.acc).join(", ");
+
+    entry.debits.forEach(d => {
+        addToLedger(d.acc, {
+            side: "Dr",
+            date: entry.date,
+            particulars: "To " + creditNames,
+            jf: JF_DEFAULT,
+            amount: d.amt
+        });
+    });
+
+    entry.credits.forEach(c => {
+        addToLedger(c.acc, {
+            side: "Cr",
+            date: entry.date,
+            particulars: "By " + debitNames,
+            jf: JF_DEFAULT,
+            amount: c.amt
+        });
+    });
+}
+
+/* =========================
+   MENU 1 UI
+========================= */
+function showAddEntry() {
+    document.getElementById("content").innerHTML = `
+    <div class="card">
+        <h3>➕ Add Compound Journal Entry</h3>
+
+        <label>Date</label>
+        <input id="date" placeholder="DD-MM-YYYY">
+
+        <h4>Debit Account</h4>
+        <input id="drAcc" placeholder="Account Name">
+        <input id="drAmt" placeholder="Amount">
+
+        <h4>Credit Account</h4>
+        <input id="crAcc" placeholder="Account Name">
+        <input id="crAmt" placeholder="Amount">
+
+        <label>Narration</label>
+        <input id="narration" placeholder="Optional narration">
+
+        <button onclick="addCompoundEntry()">Save Entry</button>
+    </div>
+    `;
+}
+
+function addCompoundEntry() {
+    let date = document.getElementById("date").value;
+    let drAcc = document.getElementById("drAcc").value;
+    let drAmt = parseFloat(document.getElementById("drAmt").value);
+    let crAcc = document.getElementById("crAcc").value;
+    let crAmt = parseFloat(document.getElementById("crAmt").value);
+    let narration = document.getElementById("narration").value;
+
+    if (!date || !drAcc || !crAcc || drAmt <= 0 || crAmt <= 0) {
+        alert("❌ Invalid input");
+        return;
+    }
+
+    if (drAmt !== crAmt) {
+        alert("❌ Debit and Credit must match");
+        return;
+    }
+
+    let entry = {
+        date: date,
+        debits: [{ acc: drAcc, amt: drAmt }],
+        credits: [{ acc: crAcc, amt: crAmt }],
+        narration: narration
+    };
+
+    journal.push(entry);
+    autoPostCompound(entry);
+
+    alert("✅ Entry saved & ledger updated");
+    console.log("Journal:", journal);
+    console.log("Ledger:", ledger);
+}
+</script>
+
+</body>
+</html>
