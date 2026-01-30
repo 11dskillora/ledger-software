@@ -2,296 +2,225 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ledger — Apple Style</title>
+<title>Compound Journal – Apple Style</title>
+
+<!-- Apple-like font -->
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
 *{
     box-sizing:border-box;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",
-                Roboto,Helvetica,Arial,sans-serif;
+    font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont;
 }
 
 body{
     margin:0;
-    padding:40px 20px;
+    padding:30px;
     background:#f5f5f7;
     color:#1d1d1f;
 }
 
-h1{
+/* ---------- HEADER ---------- */
+header{
     text-align:center;
-    font-size:34px;
+    margin-bottom:40px;
+}
+
+header h1{
+    font-size:36px;
     font-weight:600;
-    margin-bottom:8px;
 }
 
-.subtitle{
-    text-align:center;
+header p{
     color:#6e6e73;
-    margin-bottom:40px;
 }
 
-/* NAV */
-.menu{
-    display:flex;
-    justify-content:center;
-    gap:14px;
-    margin-bottom:40px;
-    flex-wrap:wrap;
+/* ---------- CARD ---------- */
+.card{
+    max-width:950px;
+    margin:30px auto;
+    background:white;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.08);
 }
 
-.menu button{
+/* ---------- BUTTON ---------- */
+button{
+    padding:12px 22px;
+    border:none;
+    border-radius:999px;
     background:#0071e3;
     color:white;
-    border:none;
-    padding:12px 22px;
-    border-radius:999px;
-    font-size:14px;
-    font-weight:500;
+    font-size:15px;
     cursor:pointer;
     transition:0.25s;
 }
 
-.menu button:hover{
+button:hover{
     background:#0077ed;
-    transform:scale(1.04);
+    transform:scale(1.03);
 }
 
-/* CARD */
-.card{
-    max-width:900px;
-    margin:0 auto 30px;
-    background:white;
-    border-radius:22px;
-    padding:32px;
-    box-shadow:0 20px 40px rgba(0,0,0,0.08);
-    animation:fadeUp 0.5s ease;
-}
-
-@keyframes fadeUp{
-    from{opacity:0;transform:translateY(25px)}
-    to{opacity:1;transform:translateY(0)}
-}
-
-h3{
-    margin-top:0;
-    margin-bottom:20px;
-}
-
-/* FORM */
-label{
-    font-size:13px;
-    color:#6e6e73;
-    display:block;
-    margin-top:18px;
-}
-
+/* ---------- INPUT ---------- */
 input{
-    width:100%;
     padding:12px;
-    margin-top:6px;
+    width:100%;
     border-radius:12px;
     border:1px solid #d2d2d7;
-    font-size:14px;
+    outline:none;
+    margin-top:6px;
 }
 
 input:focus{
-    outline:none;
     border-color:#0071e3;
 }
 
-/* ROW */
+/* ---------- FLEX ---------- */
 .row{
     display:flex;
-    gap:14px;
-    margin-top:10px;
-}
-
-.add-btn{
+    gap:15px;
     margin-top:12px;
-    background:#e8e8ed;
-    border:none;
-    padding:10px 18px;
-    border-radius:999px;
-    font-size:13px;
-    cursor:pointer;
 }
 
-.add-btn:hover{
-    background:#dcdce1;
-}
-
-.save-btn{
-    margin-top:30px;
-    width:100%;
-    padding:14px;
-    background:#0071e3;
-    color:white;
-    border:none;
-    border-radius:14px;
-    font-size:15px;
-    cursor:pointer;
-}
-
-.save-btn:hover{
-    background:#0077ed;
-}
-
-/* TABLE */
+/* ---------- TABLE ---------- */
 table{
     width:100%;
     border-collapse:collapse;
     margin-top:20px;
 }
 
-th,td{
-    padding:14px;
-    font-size:14px;
-    border-bottom:1px solid #e8e8ed;
-    text-align:left;
-}
-
 th{
-    color:#6e6e73;
+    background:#f5f5f7;
     font-weight:500;
 }
 
-@media(max-width:700px){
-    .row{flex-direction:column;}
+th,td{
+    padding:12px;
+    text-align:center;
+    border-bottom:1px solid #e5e5ea;
+}
+
+h3{
+    margin-top:0;
+    font-weight:500;
+}
+
+/* ---------- SMALL ---------- */
+.note{
+    color:#6e6e73;
+    font-size:14px;
+}
+
+@media(max-width:650px){
+    .row{
+        flex-direction:column;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<h1>Ledger</h1>
-<div class="subtitle">Simple. Clean. Apple-style accounting UI</div>
+<header>
+    <h1>Compound Journal</h1>
+    <p>Clean • Simple • Apple-style Accounting UI</p>
+</header>
 
-<div class="menu">
-    <button onclick="addEntryUI()">Add Journal Entry</button>
-    <button onclick="viewJournal()">Compound Journal</button>
-    <button onclick="viewLedger()">Ledger</button>
+<div class="card">
+    <h3>Add Compound Entry</h3>
+
+    <input id="date" type="date">
+
+    <div class="row">
+        <input id="debitAcc" placeholder="Debit Accounts (comma separated)">
+        <input id="debitAmt" placeholder="Debit Amounts (comma separated)">
+    </div>
+
+    <div class="row">
+        <input id="creditAcc" placeholder="Credit Accounts (comma separated)">
+        <input id="creditAmt" placeholder="Credit Amounts (comma separated)">
+    </div>
+
+    <div class="row">
+        <input id="narration" placeholder="Narration">
+        <button onclick="saveEntry()">Save Entry</button>
+    </div>
+
+    <p class="note">Example: Cash, Purchases | 5000, 3000</p>
 </div>
 
-<div id="content"></div>
+<div class="card">
+    <h3>Journal</h3>
+    <table id="journalTable">
+        <tr>
+            <th>Date</th>
+            <th>Account</th>
+            <th>Debit (₹)</th>
+            <th>Credit (₹)</th>
+        </tr>
+    </table>
+</div>
+
+<div class="card">
+    <h3>Ledger</h3>
+    <div id="ledger"></div>
+</div>
 
 <script>
 let journal = [];
 let ledger = {};
 
-/* ADD ENTRY UI */
-function addEntryUI(){
-document.getElementById("content").innerHTML = `
-<div class="card">
-<h3>Compound Journal Entry</h3>
-
-<label>Date</label>
-<input type="date" id="date">
-
-<label>Debit Accounts</label>
-<div id="debits"></div>
-<button class="add-btn" onclick="addRow('debits')">+ Add Debit</button>
-
-<label>Credit Accounts</label>
-<div id="credits"></div>
-<button class="add-btn" onclick="addRow('credits')">+ Add Credit</button>
-
-<label>Narration</label>
-<input id="narr" placeholder="Being ...">
-
-<button class="save-btn" onclick="saveEntry()">Save Entry</button>
-</div>`;
-addRow("debits");
-addRow("credits");
-}
-
-function addRow(id){
-document.getElementById(id).insertAdjacentHTML("beforeend",`
-<div class="row">
-<input placeholder="Account Name">
-<input type="number" placeholder="Amount">
-</div>`);
-}
-
-/* SAVE ENTRY */
 function saveEntry(){
-let date = document.getElementById("date").value;
-let narr = document.getElementById("narr").value;
+    const date = document.getElementById("date").value;
+    const dAcc = document.getElementById("debitAcc").value.split(",");
+    const dAmt = document.getElementById("debitAmt").value.split(",");
+    const cAcc = document.getElementById("creditAcc").value.split(",");
+    const cAmt = document.getElementById("creditAmt").value.split(",");
+    const narration = document.getElementById("narration").value;
 
-let dr=[], cr=[], drT=0, crT=0;
+    if(!date || dAcc.length!==dAmt.length || cAcc.length!==cAmt.length){
+        alert("Check inputs properly");
+        return;
+    }
 
-document.querySelectorAll("#debits .row").forEach(r=>{
-let a=r.children[0].value;
-let m=+r.children[1].value;
-if(a && m){dr.push({a,m});drT+=m;}
-});
+    dAcc.forEach((acc,i)=>{
+        addRow(date,acc.trim(),dAmt[i],0);
+        updateLedger(acc.trim(),dAmt[i],0);
+    });
 
-document.querySelectorAll("#credits .row").forEach(r=>{
-let a=r.children[0].value;
-let m=+r.children[1].value;
-if(a && m){cr.push({a,m});crT+=m;}
-});
+    cAcc.forEach((acc,i)=>{
+        addRow(date,acc.trim(),0,cAmt[i]);
+        updateLedger(acc.trim(),0,cAmt[i]);
+    });
 
-if(drT!==crT || drT===0){
-alert("Debit and Credit totals must match");
-return;
+    journal.push({date,dAcc,dAmt,cAcc,cAmt,narration});
+    renderLedger();
+
+    document.querySelectorAll("input").forEach(i=>i.value="");
 }
 
-journal.push({date,narr,dr,cr});
-
-dr.forEach(d=>{
-ledger[d.a] = ledger[d.a] || [];
-ledger[d.a].push({date,p:"To "+cr.map(x=>x.a).join(", "),dr:d.m,cr:""});
-});
-
-cr.forEach(c=>{
-ledger[c.a] = ledger[c.a] || [];
-ledger[c.a].push({date,p:"By "+dr.map(x=>x.a).join(", "),dr:"",cr:c.m});
-});
-
-alert("Entry saved successfully");
+function addRow(date,acc,debit,credit){
+    const table = document.getElementById("journalTable");
+    const row = table.insertRow();
+    row.innerHTML = `<td>${date}</td><td>${acc}</td><td>${debit||""}</td><td>${credit||""}</td>`;
 }
 
-/* VIEW JOURNAL */
-function viewJournal(){
-if(journal.length===0){
-content.innerHTML="<div class='card'>No journal entries yet.</div>";
-return;
+function updateLedger(acc,debit,credit){
+    if(!ledger[acc]){
+        ledger[acc]={debit:0,credit:0};
+    }
+    ledger[acc].debit += Number(debit);
+    ledger[acc].credit += Number(credit);
 }
 
-let h="<div class='card'><h3>Compound Journal</h3>";
-
-journal.forEach(j=>{
-h+=`
-<table>
-<tr><th>Date</th><th>Particulars</th><th>Debit</th><th>Credit</th></tr>`;
-j.dr.forEach(d=>{
-h+=`<tr><td>${j.date}</td><td>${d.a}</td><td>${d.m}</td><td></td></tr>`;
-});
-j.cr.forEach(c=>{
-h+=`<tr><td></td><td>To ${c.a}</td><td></td><td>${c.m}</td></tr>`;
-});
-h+=`<tr><td></td><td colspan="3"><em>${j.narr}</em></td></tr></table><br>`;
-});
-
-h+="</div>";
-content.innerHTML=h;
-}
-
-/* VIEW LEDGER */
-function viewLedger(){
-let h="<div class='card'><h3>Ledger</h3>";
-for(let a in ledger){
-h+=`<h4>${a}</h4>
-<table>
-<tr><th>Date</th><th>Particulars</th><th>Debit</th><th>Credit</th></tr>`;
-ledger[a].forEach(t=>{
-h+=`<tr><td>${t.date}</td><td>${t.p}</td><td>${t.dr}</td><td>${t.cr}</td></tr>`;
-});
-h+="</table>";
-}
-h+="</div>";
-content.innerHTML=h;
+function renderLedger(){
+    const box = document.getElementById("ledger");
+    box.innerHTML="";
+    for(let acc in ledger){
+        box.innerHTML += `
+        <p><strong>${acc}</strong> → Debit: ₹${ledger[acc].debit} | Credit: ₹${ledger[acc].credit}</p>`;
+    }
 }
 </script>
 
