@@ -1,99 +1,202 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Compound Journal & Ledger</title>
+<title>Smart Ledger Software</title>
 
 <style>
-body{
-    font-family:Arial;
-    background:#eef2f3;
-    padding:20px;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+*{
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
 }
-h1{text-align:center}
+
+body{
+    margin:0;
+    padding:25px;
+    min-height:100vh;
+    background:linear-gradient(135deg,#74ebd5,#ACB6E5);
+    animation:bgMove 10s infinite alternate;
+}
+
+@keyframes bgMove{
+    from{background-position:0%}
+    to{background-position:100%}
+}
+
+h1{
+    text-align:center;
+    margin-bottom:25px;
+    color:#2c3e50;
+    text-shadow:1px 1px 4px rgba(0,0,0,0.2);
+}
+
+/* ---------- MENU ---------- */
+.menu{
+    text-align:center;
+    margin-bottom:20px;
+}
+
 button{
-    padding:10px;
-    margin:5px;
+    padding:12px 18px;
+    margin:6px;
     border:none;
-    background:#34495e;
+    border-radius:12px;
+    background:linear-gradient(135deg,#34495e,#2c3e50);
     color:white;
     cursor:pointer;
+    font-size:14px;
+    transition:0.3s;
+    box-shadow:0 6px 15px rgba(0,0,0,0.2);
 }
+
+button:hover{
+    transform:translateY(-2px) scale(1.03);
+    box-shadow:0 10px 20px rgba(0,0,0,0.3);
+}
+
+/* ---------- CARD ---------- */
 .card{
-    background:white;
-    padding:15px;
-    margin-top:15px;
-    border-radius:8px;
+    max-width:900px;
+    margin:25px auto;
+    background:rgba(255,255,255,0.88);
+    backdrop-filter:blur(12px);
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 20px 35px rgba(0,0,0,0.25);
+    animation:fadeUp 0.6s ease;
 }
+
+@keyframes fadeUp{
+    from{opacity:0;transform:translateY(20px)}
+    to{opacity:1;transform:translateY(0)}
+}
+
+/* ---------- INPUTS ---------- */
+input{
+    padding:10px;
+    width:100%;
+    border-radius:10px;
+    border:1px solid #ccc;
+    outline:none;
+    transition:0.3s;
+}
+
+input:focus{
+    border-color:#3498db;
+    box-shadow:0 0 8px rgba(52,152,219,0.4);
+}
+
+/* ---------- ROWS ---------- */
 .row{
     display:flex;
-    gap:10px;
-    margin-top:5px;
+    gap:12px;
+    margin-top:8px;
 }
-input{
-    padding:6px;
-    width:100%;
-}
+
+/* ---------- TABLE ---------- */
 table{
     width:100%;
     border-collapse:collapse;
-    margin-top:10px;
+    margin-top:15px;
+    overflow:hidden;
+    border-radius:12px;
 }
+
 th,td{
-    border:1px solid #999;
-    padding:6px;
+    padding:10px;
     text-align:center;
 }
-th{background:#34495e;color:white;}
+
+th{
+    background:linear-gradient(135deg,#34495e,#2c3e50);
+    color:white;
+}
+
+tr:nth-child(even){
+    background:#f4f6f7;
+}
+
+tr:hover{
+    background:#eaf2f8;
+}
+
+/* ---------- HEADINGS ---------- */
+h3{
+    margin-bottom:15px;
+    color:#2c3e50;
+    border-left:6px solid #3498db;
+    padding-left:10px;
+}
+
+h4{
+    margin-top:20px;
+    color:#2c3e50;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media(max-width:600px){
+    .row{
+        flex-direction:column;
+    }
+}
 </style>
 </head>
 
 <body>
 
-<h1>📘 Compound Journal & Ledger</h1>
+<h1>📘 Smart Ledger Software</h1>
 
-<button onclick="addEntryUI()">Add Compound Journal Entry</button>
-<button onclick="viewJournal()">View Compound Journal</button>
-<button onclick="viewLedger()">View Ledger</button>
+<div class="menu">
+    <button onclick="addEntryUI()">➕ Add Journal Entry</button>
+    <button onclick="viewJournal()">📘 Compound Journal</button>
+    <button onclick="viewLedger()">📂 Ledger</button>
+</div>
 
 <div id="content"></div>
 
 <script>
+/* ================= DATA ================= */
 let journal = [];
 let ledger = {};
 
-/* ---------------- ADD ENTRY ---------------- */
+/* ================= ADD ENTRY UI ================= */
 function addEntryUI(){
 document.getElementById("content").innerHTML=`
 <div class="card">
-Date <input type="date" id="date">
+<h3>Compound Journal Entry</h3>
 
-<h3>Debit Accounts</h3>
+<label>Date</label>
+<input type="date" id="date">
+
+<h4>Debit Accounts</h4>
 <div id="debits"></div>
-<button onclick="addRow('debits')">+ Debit</button>
+<button onclick="addRow('debits')">+ Add Debit</button>
 
-<h3>Credit Accounts</h3>
+<h4>Credit Accounts</h4>
 <div id="credits"></div>
-<button onclick="addRow('credits')">+ Credit</button>
+<button onclick="addRow('credits')">+ Add Credit</button>
 
-Narration <input id="narr">
+<label>Narration</label>
+<input id="narr" placeholder="Being ...">
 
 <br><br>
-<button onclick="saveEntry()">Save Entry</button>
+<button onclick="saveEntry()">💾 Save Entry</button>
 </div>`;
 addRow("debits");
 addRow("credits");
 }
 
 function addRow(id){
-document.getElementById(id).innerHTML+=`
+document.getElementById(id).insertAdjacentHTML("beforeend",`
 <div class="row">
 <input placeholder="Account Name">
 <input type="number" placeholder="Amount">
-</div>`;
+</div>`);
 }
 
-/* ---------------- SAVE ENTRY ---------------- */
+/* ================= SAVE ENTRY ================= */
 function saveEntry(){
 let date=document.getElementById("date").value;
 let narr=document.getElementById("narr").value;
@@ -113,11 +216,11 @@ if(a && m){cr.push({a,m});crT+=m;}
 });
 
 if(drT!==crT || drT===0){
-alert("Debit & Credit must match");
+alert("❌ Debit & Credit totals must match");
 return;
 }
 
-/* STORE JOURNAL ENTRY */
+/* STORE JOURNAL */
 journal.push({date,dr,cr,narr});
 
 /* POST TO LEDGER */
@@ -125,19 +228,20 @@ dr.forEach(d=>{
 if(!ledger[d.a]) ledger[d.a]=[];
 ledger[d.a].push({date,p:"To "+cr.map(x=>x.a).join(", "),dr:d.m,cr:""});
 });
+
 cr.forEach(c=>{
 if(!ledger[c.a]) ledger[c.a]=[];
 ledger[c.a].push({date,p:"By "+dr.map(x=>x.a).join(", "),dr:"",cr:c.m});
 });
 
-alert("Compound Journal Entry Saved ✅");
+alert("✅ Compound Journal Entry Saved");
 }
 
-/* ---------------- VIEW JOURNAL ---------------- */
+/* ================= VIEW JOURNAL ================= */
 function viewJournal(){
 if(journal.length===0){
 document.getElementById("content").innerHTML=
-"<div class='card'>No Journal Entries</div>";
+"<div class='card'>📘 No Journal Entries Found</div>";
 return;
 }
 
@@ -147,49 +251,62 @@ journal.forEach(j=>{
 h+=`
 <table>
 <tr><th>Date</th><th>Particulars</th><th>Dr (₹)</th><th>Cr (₹)</th></tr>`;
+
 j.dr.forEach(d=>{
-h+=`<tr>
+h+=`
+<tr>
 <td>${j.date}</td>
 <td>${d.a} A/c</td>
 <td>${d.m}</td>
 <td></td>
 </tr>`;
 });
+
 j.cr.forEach(c=>{
-h+=`<tr>
+h+=`
+<tr>
 <td></td>
-<td>To ${c.a} A/c</td>
+<td style="padding-left:25px;">To ${c.a} A/c</td>
 <td></td>
 <td>${c.m}</td>
 </tr>`;
 });
-h+=`<tr>
+
+h+=`
+<tr>
 <td></td>
 <td colspan="3"><i>${j.narr}</i></td>
-</tr></table><br>`;
+</tr>
+</table><br>`;
 });
 
 h+="</div>";
 document.getElementById("content").innerHTML=h;
 }
 
-/* ---------------- VIEW LEDGER ---------------- */
+/* ================= VIEW LEDGER ================= */
 function viewLedger(){
-let h="<div class='card'><h3>Ledger</h3>";
+let h="<div class='card'><h3>Ledger Accounts</h3>";
+
 for(let a in ledger){
-h+=`<h4>${a}</h4>
+h+=`
+<h4>${a}</h4>
 <table>
 <tr><th>Date</th><th>Particulars</th><th>Dr</th><th>Cr</th></tr>`;
+
 ledger[a].forEach(t=>{
-h+=`<tr>
+h+=`
+<tr>
 <td>${t.date}</td>
 <td>${t.p}</td>
 <td>${t.dr}</td>
 <td>${t.cr}</td>
 </tr>`;
 });
+
 h+="</table>";
 }
+
 h+="</div>";
 document.getElementById("content").innerHTML=h;
 }
