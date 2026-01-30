@@ -274,6 +274,12 @@ select:focus {
   border-color: var(--blue-ink);
 }
 
+.btn-danger {
+  background: var(--red-ink);
+  color: var(--paper);
+  border-color: var(--red-ink);
+}
+
 .journal-table {
   width: 100%;
   border-collapse: collapse;
@@ -327,10 +333,6 @@ select:focus {
   page-break-inside: avoid;
   animation: fadeInUp 0.6s ease both;
 }
-
-.ledger-account:nth-child(2) { animation-delay: 0.1s; }
-.ledger-account:nth-child(3) { animation-delay: 0.2s; }
-.ledger-account:nth-child(4) { animation-delay: 0.3s; }
 
 .account-header {
   display: flex;
@@ -395,7 +397,6 @@ select:focus {
   color: var(--ink-light);
 }
 
-/* ===== NEW LEDGER TABLE FORMAT (T-FORMAT) ===== */
 .ledger-tformat {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -459,6 +460,13 @@ select:focus {
   text-align: right;
 }
 
+.action-cell button{
+  padding: 8px 12px;
+  font-size: 11px;
+  margin: 0;
+  box-shadow: none;
+}
+
 @media (max-width: 768px) {
   header h1 { font-size: 42px; }
   .notebook { padding: 30px 20px; }
@@ -471,31 +479,16 @@ select:focus {
   .account-name { font-size: 28px; }
   .account-balance { font-size: 14px; padding: 6px 12px; }
 
-  .ledger-tformat {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
+  .ledger-tformat { grid-template-columns: 1fr; gap: 20px; }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
 <header>
@@ -557,10 +550,18 @@ select:focus {
 <th>J/F</th>
 <th>Debit</th>
 <th>Credit</th>
+<th>Action</th>
 </tr>
 </thead>
 <tbody></tbody>
 </table>
+
+<!-- NEW BUTTONS (Journal Page) -->
+<div style="position:relative; z-index:1; margin-top:18px;">
+  <button type="button" class="btn" onclick="undoDelete()">Undo Delete</button>
+  <button type="button" class="btn btn-danger" onclick="clearAllData()">Clear All Data</button>
+</div>
+
 <div id="journalEmpty" class="empty-state">
 <div class="empty-state-icon">📖</div>
 <h3>No Journal Entries Yet</h3>
@@ -572,6 +573,13 @@ select:focus {
 <div class="page" id="ledgerPage">
 <div class="notebook">
 <h3 class="section-title-large">Ledger Accounts</h3>
+
+<!-- NEW BUTTONS (Ledger Page) -->
+<div style="position:relative; z-index:1; margin-bottom:18px;">
+  <button type="button" class="btn" onclick="undoDelete()">Undo Delete</button>
+  <button type="button" class="btn btn-danger" onclick="clearAllData()">Clear All Data</button>
+</div>
+
 <div class="ledger-book" id="ledgerBook"></div>
 <div id="ledgerEmpty" class="empty-state">
 <div class="empty-state-icon">📚</div>
@@ -586,6 +594,9 @@ select:focus {
 <script>
 var journal = [];
 var ledger = {};
+
+// NEW: undo stack
+var undoStack = [];
 
 function escapeHtml(text) {
   var div = document.createElement('div');
@@ -608,10 +619,14 @@ function normalizeAccountName(name) {
   return n;
 }
 
+function persist() {
+  try { localStorage.setItem('journalData', JSON.stringify(journal)); } catch (e) {}
+  try { localStorage.setItem('undoStackData', JSON.stringify(undoStack)); } catch (e2) {}
+}
+
 function showPage(pageIndex) {
   var pages = document.querySelectorAll('.page');
   var navBtns = document.querySelectorAll('nav button');
-
   if (pageIndex < 0 || pageIndex >= pages.length) return;
 
   for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
@@ -629,7 +644,6 @@ function addDebit() {
     '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Debit Amount">' +
     '<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Debit Particulars">';
   document.getElementById('debitContainer').appendChild(row);
-
   var p = row.querySelector('.particulars-input');
   p.readOnly = true;
   p.value = '';
@@ -643,7 +657,6 @@ function addCredit() {
     '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Credit Amount">' +
     '<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Credit Particulars">';
   document.getElementById('creditContainer').appendChild(row);
-
   var p = row.querySelector('.particulars-input');
   p.readOnly = true;
   p.value = '';
@@ -660,7 +673,6 @@ function autoFillParticularsInForm() {
     var acc = normalizeAccountName(debitRows[i].querySelector('.account-input').value);
     if (acc) debitAccounts.push(acc);
   }
-
   for (var j = 0; j < creditRows.length; j++) {
     var cacc = normalizeAccountName(creditRows[j].querySelector('.account-input').value);
     if (cacc) creditAccounts.push(cacc);
@@ -671,17 +683,36 @@ function autoFillParticularsInForm() {
 
   for (var k = 0; k < debitRows.length; k++) {
     var p1 = debitRows[k].querySelector('.particulars-input');
-    if (p1) {
-      p1.readOnly = true;
-      p1.value = creditParticularText;
+    if (p1) { p1.readOnly = true; p1.value = creditParticularText; }
+  }
+  for (var m = 0; m < creditRows.length; m++) {
+    var p2 = creditRows[m].querySelector('.particulars-input');
+    if (p2) { p2.readOnly = true; p2.value = debitParticularText; }
+  }
+}
+
+function clearForm() {
+  document.getElementById('date').value = '';
+
+  var debitRows = document.querySelectorAll('.debit-row');
+  for (var i = 0; i < debitRows.length; i++) {
+    if (i > 0) debitRows[i].remove();
+    else {
+      var inputs = debitRows[i].querySelectorAll('input');
+      for (var j = 0; j < inputs.length; j++) inputs[j].value = '';
+      var p = debitRows[i].querySelector('.particulars-input');
+      if (p) { p.readOnly = true; p.value = ''; }
     }
   }
 
-  for (var m = 0; m < creditRows.length; m++) {
-    var p2 = creditRows[m].querySelector('.particulars-input');
-    if (p2) {
-      p2.readOnly = true;
-      p2.value = debitParticularText;
+  var creditRows = document.querySelectorAll('.credit-row');
+  for (var k = 0; k < creditRows.length; k++) {
+    if (k > 0) creditRows[k].remove();
+    else {
+      var inputs2 = creditRows[k].querySelectorAll('input');
+      for (var m = 0; m < inputs2.length; m++) inputs2[m].value = '';
+      var p2 = creditRows[k].querySelector('.particulars-input');
+      if (p2) { p2.readOnly = true; p2.value = ''; }
     }
   }
 }
@@ -690,10 +721,7 @@ function saveEntry() {
   autoFillParticularsInForm();
 
   var date = document.getElementById('date').value;
-  if (!date) {
-    alert('Please enter a transaction date');
-    return;
-  }
+  if (!date) { alert('Please enter a transaction date'); return; }
 
   var debits = [];
   var credits = [];
@@ -704,10 +732,8 @@ function saveEntry() {
   for (var i = 0; i < debitRows.length; i++) {
     var row = debitRows[i];
     var account = normalizeAccountName(row.querySelector('.account-input').value);
-    var amountValue = row.querySelector('.amount-input').value;
-    var amount = parseFloat(amountValue);
+    var amount = parseFloat(row.querySelector('.amount-input').value);
     var particulars = row.querySelector('.particulars-input').value.trim();
-
     if (account && !isNaN(amount) && amount > 0) {
       debits.push({ account: account, amount: amount, particulars: particulars });
       totalDebitInt += toMoneyInt(amount);
@@ -716,15 +742,13 @@ function saveEntry() {
 
   var creditRows = document.querySelectorAll('.credit-row');
   for (var j = 0; j < creditRows.length; j++) {
-    var creditRow = creditRows[j];
-    var creditAccount = normalizeAccountName(creditRow.querySelector('.account-input').value);
-    var creditAmountValue = creditRow.querySelector('.amount-input').value;
-    var creditAmount = parseFloat(creditAmountValue);
-    var creditParticulars = creditRow.querySelector('.particulars-input').value.trim();
-
-    if (creditAccount && !isNaN(creditAmount) && creditAmount > 0) {
-      credits.push({ account: creditAccount, amount: creditAmount, particulars: creditParticulars });
-      totalCreditInt += toMoneyInt(creditAmount);
+    var crow = creditRows[j];
+    var account2 = normalizeAccountName(crow.querySelector('.account-input').value);
+    var amount2 = parseFloat(crow.querySelector('.amount-input').value);
+    var particulars2 = crow.querySelector('.particulars-input').value.trim();
+    if (account2 && !isNaN(amount2) && amount2 > 0) {
+      credits.push({ account: account2, amount: amount2, particulars: particulars2 });
+      totalCreditInt += toMoneyInt(amount2);
     }
   }
 
@@ -732,53 +756,64 @@ function saveEntry() {
     alert('Please add at least one debit and one credit entry');
     return;
   }
-
   if (totalDebitInt !== totalCreditInt) {
-    alert('Debit (' + (totalDebitInt / 100).toFixed(2) + ') and Credit (' + (totalCreditInt / 100).toFixed(2) + ') must be equal');
+    alert('Debit (' + (totalDebitInt/100).toFixed(2) + ') and Credit (' + (totalCreditInt/100).toFixed(2) + ') must be equal');
     return;
   }
 
   journal.push({ date: date, debits: debits, credits: credits });
-
-  try {
-    localStorage.setItem('journalData', JSON.stringify(journal));
-  } catch (error) {
-    console.error('Error saving to localStorage:', error);
-    alert('Warning: Could not save data to browser storage.');
-  }
-
+  persist();
   rebuild();
   clearForm();
   alert('Entry saved successfully!');
   showPage(1);
 }
 
-function clearForm() {
-  document.getElementById('date').value = '';
+function deleteJournalEntry(entryIndex) {
+  if (entryIndex < 0 || entryIndex >= journal.length) return;
+  var ok = confirm('Delete this journal entry? This will update ledger automatically.');
+  if (!ok) return;
 
-  var debitRows = document.querySelectorAll('.debit-row');
-  for (var i = 0; i < debitRows.length; i++) {
-    if (i > 0) {
-      debitRows[i].remove();
-    } else {
-      var debitInputs = debitRows[i].querySelectorAll('input');
-      for (var j = 0; j < debitInputs.length; j++) debitInputs[j].value = '';
-      var p = debitRows[i].querySelector('.particulars-input');
-      if (p) { p.readOnly = true; p.value = ''; }
-    }
+  // NEW: store deleted entry for undo
+  var deleted = journal.splice(entryIndex, 1)[0];
+  if (deleted) {
+    undoStack.push(deleted);
+    if (undoStack.length > 20) undoStack.shift(); // keep last 20 only
   }
 
-  var creditRows = document.querySelectorAll('.credit-row');
-  for (var k = 0; k < creditRows.length; k++) {
-    if (k > 0) {
-      creditRows[k].remove();
-    } else {
-      var creditInputs = creditRows[k].querySelectorAll('input');
-      for (var m = 0; m < creditInputs.length; m++) creditInputs[m].value = '';
-      var p2 = creditRows[k].querySelector('.particulars-input');
-      if (p2) { p2.readOnly = true; p2.value = ''; }
-    }
+  persist();
+  rebuild();
+}
+
+// NEW: Undo delete
+function undoDelete() {
+  if (!undoStack.length) {
+    alert('Nothing to undo.');
+    return;
   }
+  var last = undoStack.pop();
+  if (last) journal.push(last);
+  persist();
+  rebuild();
+  alert('Last deleted entry restored.');
+}
+
+// NEW: Clear all data
+function clearAllData() {
+  var ok = confirm('Clear ALL data? (Exhibition Reset)');
+  if (!ok) return;
+
+  journal = [];
+  ledger = {};
+  undoStack = [];
+
+  try { localStorage.removeItem('journalData'); } catch (e) {}
+  try { localStorage.removeItem('undoStackData'); } catch (e2) {}
+
+  rebuild();
+  clearForm();
+  alert('All data cleared.');
+  showPage(0);
 }
 
 function rebuild() {
@@ -801,42 +836,46 @@ function rebuild() {
     var entry = journal[i];
 
     for (var j = 0; j < entry.debits.length; j++) {
-      var debit = entry.debits[j];
+      var d = entry.debits[j];
       var row = tbody.insertRow();
       row.innerHTML =
         '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>' + escapeHtml(debit.account) + '</td>' +
+        '<td>' + escapeHtml(d.account) + '</td>' +
         '<td>' + (i + 1) + '</td>' +
-        '<td class="debit-amount">' + Number(debit.amount).toFixed(2) + '</td>' +
-        '<td></td>';
+        '<td class="debit-amount">' + Number(d.amount).toFixed(2) + '</td>' +
+        '<td></td>' +
+        '<td class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></td>';
 
-      if (!ledger[debit.account]) ledger[debit.account] = [];
-      ledger[debit.account].push({
+      if (!ledger[d.account]) ledger[d.account] = [];
+      ledger[d.account].push({
         date: entry.date,
         type: 'debit',
-        amount: Number(debit.amount),
-        particulars: debit.particulars,
-        jf: i + 1
+        amount: Number(d.amount),
+        particulars: d.particulars,
+        jf: i + 1,
+        entryIndex: i
       });
     }
 
     for (var k = 0; k < entry.credits.length; k++) {
-      var credit = entry.credits[k];
-      var creditRow = tbody.insertRow();
-      creditRow.innerHTML =
+      var c = entry.credits[k];
+      var row2 = tbody.insertRow();
+      row2.innerHTML =
         '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>' + escapeHtml(credit.account) + '</td>' +
+        '<td>' + escapeHtml(c.account) + '</td>' +
         '<td>' + (i + 1) + '</td>' +
         '<td></td>' +
-        '<td class="credit-amount">' + Number(credit.amount).toFixed(2) + '</td>';
+        '<td class="credit-amount">' + Number(c.amount).toFixed(2) + '</td>' +
+        '<td class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></td>';
 
-      if (!ledger[credit.account]) ledger[credit.account] = [];
-      ledger[credit.account].push({
+      if (!ledger[c.account]) ledger[c.account] = [];
+      ledger[c.account].push({
         date: entry.date,
         type: 'credit',
-        amount: Number(credit.amount),
-        particulars: credit.particulars,
-        jf: i + 1
+        amount: Number(c.amount),
+        particulars: c.particulars,
+        jf: i + 1,
+        entryIndex: i
       });
     }
   }
@@ -850,27 +889,18 @@ function buildLedger() {
 
   ledgerBook.innerHTML = '';
 
-  var accountNames = [];
-  for (var key in ledger) {
-    if (Object.prototype.hasOwnProperty.call(ledger, key)) {
-      accountNames.push(key);
-    }
-  }
+  var accounts = [];
+  for (var k in ledger) if (Object.prototype.hasOwnProperty.call(ledger, k)) accounts.push(k);
 
-  if (accountNames.length === 0) {
+  if (accounts.length === 0) {
     ledgerEmpty.style.display = 'block';
     return;
-  } else {
-    ledgerEmpty.style.display = 'none';
-  }
+  } else ledgerEmpty.style.display = 'none';
 
-  accountNames.sort();
+  accounts.sort();
 
-  for (var i = 0; i < accountNames.length; i++) {
-    var accountName = accountNames[i];
-    var accountDiv = document.createElement('div');
-    accountDiv.className = 'ledger-account';
-
+  for (var i = 0; i < accounts.length; i++) {
+    var accountName = accounts[i];
     var entries = ledger[accountName].slice();
 
     entries.sort(function(a, b) {
@@ -882,17 +912,16 @@ function buildLedger() {
     });
 
     var balance = 0;
-    for (var j = 0; j < entries.length; j++) {
-      balance += (entries[j].type === 'debit' ? entries[j].amount : -entries[j].amount);
-    }
+    for (var j = 0; j < entries.length; j++) balance += (entries[j].type === 'debit' ? entries[j].amount : -entries[j].amount);
     var balanceDisplay = balance >= 0 ? ('Dr ' + balance.toFixed(2)) : ('Cr ' + Math.abs(balance).toFixed(2));
 
     var drRows = '';
     var crRows = '';
 
-    for (var k = 0; k < entries.length; k++) {
-      var e = entries[k];
+    for (var r = 0; r < entries.length; r++) {
+      var e = entries[r];
       var p = e.particulars ? escapeHtml(e.particulars) : '—';
+      var delBtn = '<button class="btn btn-danger" onclick="deleteJournalEntry(' + e.entryIndex + ')">Delete</button>';
 
       if (e.type === 'debit') {
         drRows +=
@@ -901,6 +930,7 @@ function buildLedger() {
           '<td>' + p + '</td>' +
           '<td>' + e.jf + '</td>' +
           '<td class="amt debit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
+          '<td class="action-cell">' + delBtn + '</td>' +
           '</tr>';
       } else {
         crRows +=
@@ -909,16 +939,16 @@ function buildLedger() {
           '<td>' + p + '</td>' +
           '<td>' + e.jf + '</td>' +
           '<td class="amt credit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
+          '<td class="action-cell">' + delBtn + '</td>' +
           '</tr>';
       }
     }
 
-    if (!drRows) {
-      drRows = '<tr><td colspan="4">—</td></tr>';
-    }
-    if (!crRows) {
-      crRows = '<tr><td colspan="4">—</td></tr>';
-    }
+    if (!drRows) drRows = '<tr><td colspan="5">—</td></tr>';
+    if (!crRows) crRows = '<tr><td colspan="5">—</td></tr>';
+
+    var accountDiv = document.createElement('div');
+    accountDiv.className = 'ledger-account';
 
     accountDiv.innerHTML =
       '<div class="account-header">' +
@@ -931,7 +961,7 @@ function buildLedger() {
       '<div class="ledger-side">' +
       '<div class="ledger-side-title dr">Dr.</div>' +
       '<table class="ledger-table">' +
-      '<thead><tr><th>Date</th><th>Particulars</th><th>J.F</th><th>Amount</th></tr></thead>' +
+      '<thead><tr><th>Date</th><th>Particulars</th><th>J.F</th><th>Amount</th><th>Action</th></tr></thead>' +
       '<tbody>' + drRows + '</tbody>' +
       '</table>' +
       '</div>' +
@@ -939,7 +969,7 @@ function buildLedger() {
       '<div class="ledger-side">' +
       '<div class="ledger-side-title cr">Cr.</div>' +
       '<table class="ledger-table">' +
-      '<thead><tr><th>Date</th><th>Particulars</th><th>J.F</th><th>Amount</th></tr></thead>' +
+      '<thead><tr><th>Date</th><th>Particulars</th><th>J.F</th><th>Amount</th><th>Action</th></tr></thead>' +
       '<tbody>' + crRows + '</tbody>' +
       '</table>' +
       '</div>' +
@@ -958,27 +988,26 @@ document.addEventListener('input', function(e) {
 
 window.addEventListener('DOMContentLoaded', function() {
   var pInputs = document.querySelectorAll('.particulars-input');
-  for (var i = 0; i < pInputs.length; i++) {
-    pInputs[i].readOnly = true;
-  }
+  for (var i = 0; i < pInputs.length; i++) pInputs[i].readOnly = true;
 
   try {
     var data = localStorage.getItem('journalData');
     if (data) {
       var parsed = JSON.parse(data);
-      if (Array.isArray(parsed)) {
-        journal = parsed;
-        rebuild();
-      } else {
-        journal = [];
-        localStorage.removeItem('journalData');
-      }
+      if (Array.isArray(parsed)) journal = parsed;
+      else journal = [];
     }
-  } catch (error) {
-    console.error('Error loading journal data:', error);
-    journal = [];
-    try { localStorage.removeItem('journalData'); } catch (e) {}
-  }
+  } catch (e) { journal = []; }
+
+  try {
+    var u = localStorage.getItem('undoStackData');
+    if (u) {
+      var parsedU = JSON.parse(u);
+      if (Array.isArray(parsedU)) undoStack = parsedU;
+    }
+  } catch (e2) { undoStack = []; }
+
+  rebuild();
 });
 </script>
 
