@@ -4,9 +4,11 @@
    Stabilized + Bugfixed + Exhibition Ready
    - No UI change
    - No meaning change
-   - Better validation, undo, storage safety
-   - Narration supported (FULLY ADDED)
+   - Narration supported (FULLY)
    - Enter/Return auto navigation added
+   - White Screen issue removed (crash-proof)
+   - NEW: Search Entry / Search Account
+   - NEW: Edit entry after saving (auto updates ledger)
    ========================================================== */
 
 (function () {
@@ -18,6 +20,10 @@
   var journal = [];
   var ledger = {};
   var undoStack = [];
+
+  // Edit state
+  var editModeIndex = null; // index of entry being edited
+  var editSnapshot = null;  // backup of entry before edit
 
   // Storage keys
   var LS_JOURNAL = "journalData";
@@ -56,6 +62,10 @@
     return n;
   }
 
+  function deepClone(obj) {
+    return safeJSONParse(JSON.stringify(obj), null);
+  }
+
   function safeJSONParse(str, fallback) {
     try {
       var obj = JSON.parse(str);
@@ -79,19 +89,120 @@
     undoStack = u;
   }
 
+  function safeAlert(msg) {
+    try { alert(msg); } catch (e) { console.log(msg); }
+  }
+
+  function strIncludes(hay, needle) {
+    hay = String(hay || "").toLowerCase();
+    needle = String(needle || "").toLowerCase();
+    return hay.indexOf(needle) !== -1;
+  }
+
+  // ------------------------------
+  // SAFE DOM ENSURE (Narration input)
+  // ------------------------------
+  function ensureNarrationInputExists() {
+    var narration = document.getElementById("narrationInput");
+    if (narration) return;
+
+    // DO NOT CHANGE UI: only create if missing, minimal styling
+    var dateInput = document.getElementById("dateInput");
+    if (!dateInput) return;
+
+    var wrapper = document.createElement("div");
+    wrapper.style.marginTop = "8px";
+
+    wrapper.innerHTML =
+      '<input id="narrationInput" type="text" placeholder="Narration" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;">';
+
+    dateInput.parentNode.insertBefore(wrapper, dateInput.nextSibling);
+  }
+
+  // ------------------------------
+  // SAFE DOM ENSURE (Search UI)
+  // ------------------------------
+  function ensureSearchUIExists() {
+    var journalOut = document.getElementById("journalOutput");
+    if (!journalOut) return;
+
+    if (document.getElementById("searchBoxWrap")) return;
+
+    var wrap = document.createElement("div");
+    wrap.id = "searchBoxWrap";
+    wrap.style.margin = "10px 0";
+    wrap.style.padding = "10px";
+    wrap.style.borderRadius = "10px";
+    wrap.style.border = "1px solid rgba(0,0,0,0.15)";
+    wrap.style.background = "rgba(255,255,255,0.85)";
+
+    wrap.innerHTML =
+      "<div style='font-weight:700;margin-bottom:6px'>Search</div>" +
+      "<input id='searchInput' type='text' placeholder='Search entry / account / narration / date / amount...' style='width:100%;padding:10px;border-radius:8px;border:1px solid #ccc'>" +
+      "<div style='display:flex;gap:8px;flex-wrap:wrap;margin-top:8px'>" +
+        "<button id='searchClearBtn' type='button' style='padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer'>Clear</button>" +
+        "<button id='searchGoLedgerBtn' type='button' style='padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer'>Search in Ledger</button>" +
+      "</div>" +
+      "<div id='searchHint' style='margin-top:8px;font-size:12px;opacity:0.8'></div>";
+
+    // Insert before journalOutput (no UI redesign)
+    journalOut.parentNode.insertBefore(wrap, journalOut);
+
+    var input = document.getElementById("searchInput");
+    var clearBtn = document.getElementById("searchClearBtn");
+    var goLedgerBtn = document.getElementById("searchGoLedgerBtn");
+
+    if (input) {
+      input.addEventListener("input", function(){
+        renderAll();
+      });
+      input.addEventListener("keydown", function(e){
+        if (e.key === "Enter") {
+          e.preventDefault();
+          renderAll();
+        }
+      });
+    }
+
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function(){
+        var si = document.getElementById("searchInput");
+        if (si) si.value = "";
+        renderAll();
+      });
+    }
+
+    if (goLedgerBtn) {
+      goLedgerBtn.addEventListener("click", function(){
+        var si2 = document.getElementById("searchInput");
+        var q = si2 ? si2.value.trim() : "";
+        if (!q) {
+          safeAlert("Type something in search box first.");
+          return;
+        }
+        showPage(1); // go to ledger page (if exists)
+        setTimeout(function(){
+          highlightLedgerAccount(q);
+        }, 120);
+      });
+    }
+  }
+
   // ------------------------------
   // PAGE NAV
   // ------------------------------
   function showPage(pageIndex) {
     var pages = $all(".page");
     var navBtns = $all("nav button");
+
+    if (!pages.length) return;
     if (pageIndex < 0 || pageIndex >= pages.length) return;
 
     pages.forEach(function (p) { p.classList.remove("active"); });
-    navBtns.forEach(function (b) { b.classList.remove("active"); });
+    if (navBtns.length) navBtns.forEach(function (b) { b.classList.remove("active"); });
 
     pages[pageIndex].classList.add("active");
-    navBtns[pageIndex].classList.add("active");
+    if (navBtns.length && navBtns[pageIndex]) navBtns[pageIndex].classList.add("active");
   }
   window.showPage = showPage;
 
@@ -149,6 +260,10 @@
   }
 
   function autoFillParticularsInForm() {
+    var debitContainer = document.getElementById("debitContainer");
+    var creditContainer = document.getElementById("creditContainer");
+    if (!debitContainer || !creditContainer) return;
+
     var debits = getRowsData(".debit-row");
     var credits = getRowsData(".credit-row");
 
@@ -224,16 +339,24 @@
       if (e.key !== 'Enter') return;
 
       var t = e.target;
-      if (!t || !t.classList) return;
+      if (!t) return;
 
-      // ALSO INCLUDE narration input for enter navigation
+      // narration enter => jump to first debit account
       if (t.id === "narrationInput") {
         e.preventDefault();
-        // go to first debit account input
         var firstDebit = document.querySelector("#debitContainer .debit-row .account-input");
         if (firstDebit) firstDebit.focus();
         return;
       }
+
+      // search enter => render search results
+      if (t.id === "searchInput") {
+        e.preventDefault();
+        renderAll();
+        return;
+      }
+
+      if (!t.classList) return;
 
       if (!(t.classList.contains('account-input') || t.classList.contains('amount-input') || t.classList.contains('particulars-input'))) {
         return;
@@ -281,7 +404,6 @@
       if (c.amt <= 0) errors.push("Credit row " + (idx + 1) + ": Amount must be > 0.");
     });
 
-    // Narration validation (kept minimal to not change meaning/UI)
     if (narration != null) {
       var n = String(narration).trim();
       if (n.length > 300) errors.push("Narration is too long (max 300 characters).");
@@ -314,8 +436,7 @@
         particulars: "To " + entry.credits.map(function(c){ return c.acc; }).join(", "),
         debit: d.amt,
         credit: 0,
-        jf: jf,
-        narration: entry.narration || "-"   // narration attached
+        jf: jf
       });
     });
 
@@ -326,8 +447,7 @@
         particulars: "By " + entry.debits.map(function(d){ return d.acc; }).join(", "),
         debit: 0,
         credit: c.amt,
-        jf: jf,
-        narration: entry.narration || "-"   // narration attached
+        jf: jf
       });
     });
   }
@@ -352,13 +472,13 @@
 
     var v = validateEntry(debits, credits, narration);
     if (!v.ok) {
-      alert("Fix these errors:\n\n" + v.errors.map(function(e){ return "• " + e; }).join("\n"));
+      safeAlert("Fix these errors:\n\n" + v.errors.map(function(e){ return "• " + e; }).join("\n"));
       return;
     }
 
     var entry = {
       date: date || new Date().toISOString().slice(0, 10),
-      narration: narration ? narration : "-",   // narration stored
+      narration: narration ? narration : "-",
       debits: debits.map(function(d){ return { acc: d.acc, amt: d.amt }; }),
       credits: credits.map(function(c){ return { acc: c.acc, amt: c.amt }; }),
       jf: "-"
@@ -377,11 +497,119 @@
   window.addEntry = addEntry;
 
   // ------------------------------
+  // EDIT ENTRY (NEW)
+  // ------------------------------
+  function startEditEntry(index) {
+    if (index == null || index < 0 || index >= journal.length) return;
+
+    // prevent editing multiple at once
+    editModeIndex = index;
+    editSnapshot = deepClone(journal[index]);
+
+    renderAll();
+
+    // focus first field inside editor
+    setTimeout(function(){
+      var box = document.querySelector("[data-edit-index='" + index + "']");
+      if (!box) return;
+      var first = box.querySelector("input");
+      if (first) first.focus();
+    }, 50);
+  }
+
+  function cancelEditEntry() {
+    if (editModeIndex == null) return;
+
+    // restore old snapshot
+    if (editSnapshot && journal[editModeIndex]) {
+      journal[editModeIndex] = deepClone(editSnapshot);
+    }
+
+    editModeIndex = null;
+    editSnapshot = null;
+
+    rebuildLedgerFromJournal();
+    persist();
+    renderAll();
+  }
+
+  function saveEditEntry(index) {
+    if (index == null || index < 0 || index >= journal.length) return;
+
+    var box = document.querySelector("[data-edit-index='" + index + "']");
+    if (!box) return;
+
+    // read inputs
+    var date = (box.querySelector(".edit-date") || {}).value || "";
+    var narration = (box.querySelector(".edit-narration") || {}).value || "";
+
+    date = String(date).trim();
+    narration = String(narration).trim();
+
+    // parse debit/credit lines
+    function readLines(kind) {
+      var lines = [];
+      var rows = box.querySelectorAll(".edit-" + kind + "-row");
+      Array.prototype.forEach.call(rows, function(r){
+        var acc = normalizeAccountName((r.querySelector(".edit-acc") || {}).value || "");
+        var amt = toPaise((r.querySelector(".edit-amt") || {}).value || 0);
+        if (acc || amt) lines.push({ acc: acc, amt: amt });
+      });
+      return lines;
+    }
+
+    var debits = readLines("debit");
+    var credits = readLines("credit");
+
+    var v = validateEntry(
+      debits.map(function(d){ return {acc:d.acc, amt:d.amt}; }),
+      credits.map(function(c){ return {acc:c.acc, amt:c.amt}; }),
+      narration
+    );
+
+    if (!v.ok) {
+      safeAlert("Fix these errors:\n\n" + v.errors.map(function(e){ return "• " + e; }).join("\n"));
+      return;
+    }
+
+    // push undo for edit
+    undoStack.push({
+      type: "edit",
+      index: index,
+      before: deepClone(editSnapshot || journal[index]),
+      after: null
+    });
+
+    // apply edit
+    journal[index] = {
+      date: date || new Date().toISOString().slice(0, 10),
+      narration: narration || "-",
+      debits: debits,
+      credits: credits,
+      jf: "-"
+    };
+
+    // update undo after
+    undoStack[undoStack.length - 1].after = deepClone(journal[index]);
+
+    editModeIndex = null;
+    editSnapshot = null;
+
+    rebuildLedgerFromJournal();
+    persist();
+    renderAll();
+  }
+
+  window.startEditEntry = startEditEntry;
+  window.saveEditEntry = saveEditEntry;
+  window.cancelEditEntry = cancelEditEntry;
+
+  // ------------------------------
   // UNDO
   // ------------------------------
   function undoLast() {
     if (!undoStack.length) {
-      alert("Nothing to undo.");
+      safeAlert("Nothing to undo.");
       return;
     }
 
@@ -393,6 +621,12 @@
       } else {
         var idx = journal.lastIndexOf(last.entry);
         if (idx >= 0) journal.splice(idx, 1);
+      }
+    }
+
+    if (last.type === "edit") {
+      if (last.before && typeof last.index === "number") {
+        journal[last.index] = deepClone(last.before);
       }
     }
 
@@ -417,7 +651,6 @@
     addDebit();
     addCredit();
 
-    // narration reset
     var narrationEl = $("#narrationInput");
     if (narrationEl) narrationEl.value = "";
 
@@ -427,32 +660,178 @@
   window.resetEntryForm = resetEntryForm;
 
   // ------------------------------
+  // SEARCH FUNCTIONS (NEW)
+  // ------------------------------
+  function getSearchQuery() {
+    var si = document.getElementById("searchInput");
+    return si ? String(si.value || "").trim() : "";
+  }
+
+  function entryMatchesSearch(entry, query) {
+    if (!query) return true;
+
+    var q = query.toLowerCase();
+
+    // search date, narration
+    if (strIncludes(entry.date, q)) return true;
+    if (strIncludes(entry.narration, q)) return true;
+
+    // search amounts and accounts
+    var allLines = []
+      .concat(entry.debits || [])
+      .concat(entry.credits || []);
+
+    for (var i = 0; i < allLines.length; i++) {
+      var ln = allLines[i];
+      if (strIncludes(ln.acc, q)) return true;
+      if (strIncludes(paiseToStr(ln.amt), q)) return true;
+    }
+
+    return false;
+  }
+
+  function highlightLedgerAccount(query) {
+    if (!query) return;
+
+    var q = query.toLowerCase();
+    var cards = document.querySelectorAll(".ledger-card");
+    if (!cards.length) return;
+
+    var found = null;
+
+    Array.prototype.forEach.call(cards, function(card){
+      card.style.outline = "";
+      card.style.boxShadow = "";
+      var h = card.querySelector("h3");
+      if (!h) return;
+      var name = String(h.textContent || "").toLowerCase();
+      if (!found && name.indexOf(q) !== -1) {
+        found = card;
+      }
+    });
+
+    if (found) {
+      found.scrollIntoView({ behavior: "smooth", block: "start" });
+      found.style.outline = "2px solid #000";
+      found.style.boxShadow = "0 0 0 4px rgba(0,0,0,0.1)";
+    } else {
+      safeAlert("No matching account found in ledger.");
+    }
+  }
+
+  // ------------------------------
   // RENDERING
   // ------------------------------
   function renderJournal() {
     var out = document.getElementById("journalOutput");
     if (!out) return;
 
+    var query = getSearchQuery();
+    var hint = document.getElementById("searchHint");
+
     if (!journal.length) {
       out.innerHTML = "<p style='opacity:0.8'>No entries yet.</p>";
+      if (hint) hint.textContent = "";
       return;
     }
 
+    var visibleCount = 0;
     var html = "";
+
     journal.forEach(function (e, idx) {
-      var debitLines = e.debits.map(function(d){ return "<div>" + escapeHtml(d.acc) + " Dr. " + paiseToStr(d.amt) + "</div>"; }).join("");
-      var creditLines = e.credits.map(function(c){ return "<div>To " + escapeHtml(c.acc) + " " + paiseToStr(c.amt) + "</div>"; }).join("");
+      var match = entryMatchesSearch(e, query);
+      if (!match) return;
+
+      visibleCount++;
+
+      // EDIT MODE CARD
+      if (editModeIndex === idx) {
+        var debitEdit = (e.debits || []).map(function(d){
+          return (
+            "<div class='edit-debit-row' style='display:flex;gap:8px;margin-top:6px'>" +
+              "<input class='edit-acc' type='text' value='" + escapeHtml(d.acc) + "' style='flex:2;padding:8px;border-radius:8px;border:1px solid #ccc'>" +
+              "<input class='edit-amt' type='number' step='0.01' min='0' value='" + escapeHtml(paiseToStr(d.amt)) + "' style='flex:1;padding:8px;border-radius:8px;border:1px solid #ccc'>" +
+            "</div>"
+          );
+        }).join("");
+
+        var creditEdit = (e.credits || []).map(function(c){
+          return (
+            "<div class='edit-credit-row' style='display:flex;gap:8px;margin-top:6px'>" +
+              "<input class='edit-acc' type='text' value='" + escapeHtml(c.acc) + "' style='flex:2;padding:8px;border-radius:8px;border:1px solid #ccc'>" +
+              "<input class='edit-amt' type='number' step='0.01' min='0' value='" + escapeHtml(paiseToStr(c.amt)) + "' style='flex:1;padding:8px;border-radius:8px;border:1px solid #ccc'>" +
+            "</div>"
+          );
+        }).join("");
+
+        html +=
+          "<div class='entry-card' data-edit-index='" + idx + "' style='border:2px solid rgba(0,0,0,0.2)'>" +
+            "<div style='display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap'>" +
+              "<div><b>Entry " + (idx + 1) + " (Editing)</b></div>" +
+              "<div style='display:flex;gap:8px;flex-wrap:wrap'>" +
+                "<button type='button' onclick='saveEditEntry(" + idx + ")' style='padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer'>Save</button>" +
+                "<button type='button' onclick='cancelEditEntry()' style='padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer'>Cancel</button>" +
+              "</div>" +
+            "</div>" +
+
+            "<div style='margin-top:10px'>" +
+              "<div style='font-weight:700;margin-bottom:6px'>Date</div>" +
+              "<input class='edit-date' type='date' value='" + escapeHtml(e.date) + "' style='width:100%;padding:10px;border-radius:8px;border:1px solid #ccc'>" +
+            "</div>" +
+
+            "<div style='margin-top:10px'>" +
+              "<div style='font-weight:700;margin-bottom:6px'>Narration</div>" +
+              "<input class='edit-narration' type='text' value='" + escapeHtml(e.narration || "-") + "' style='width:100%;padding:10px;border-radius:8px;border:1px solid #ccc'>" +
+            "</div>" +
+
+            "<div style='margin-top:10px'>" +
+              "<div style='font-weight:700'>Debits</div>" +
+              debitEdit +
+            "</div>" +
+
+            "<div style='margin-top:10px'>" +
+              "<div style='font-weight:700'>Credits</div>" +
+              creditEdit +
+            "</div>" +
+          "</div>";
+
+        return;
+      }
+
+      // NORMAL CARD
+      var debitLines = (e.debits || []).map(function(d){
+        return "<div>" + escapeHtml(d.acc) + " Dr. " + paiseToStr(d.amt) + "</div>";
+      }).join("");
+
+      var creditLines = (e.credits || []).map(function(c){
+        return "<div>To " + escapeHtml(c.acc) + " " + paiseToStr(c.amt) + "</div>";
+      }).join("");
 
       html +=
         "<div class='entry-card'>" +
-          "<div><b>Entry " + (idx + 1) + "</b> | " + escapeHtml(e.date) + "</div>" +
+          "<div style='display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap'>" +
+            "<div><b>Entry " + (idx + 1) + "</b> | " + escapeHtml(e.date) + "</div>" +
+            "<div style='display:flex;gap:8px;flex-wrap:wrap'>" +
+              "<button type='button' onclick='startEditEntry(" + idx + ")' style='padding:6px 10px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer'>Edit</button>" +
+            "</div>" +
+          "</div>" +
           "<div style='margin-top:6px'>" + debitLines + "</div>" +
           "<div style='margin-top:6px'>" + creditLines + "</div>" +
           "<div style='margin-top:6px'><i>Narration:</i> " + escapeHtml(e.narration || "-") + "</div>" +
         "</div>";
     });
 
-    out.innerHTML = html;
+    if (!visibleCount) {
+      out.innerHTML = "<p style='opacity:0.8'>No matching entries found.</p>";
+    } else {
+      out.innerHTML = html;
+    }
+
+    if (hint) {
+      hint.textContent = query
+        ? ("Showing " + visibleCount + " matching entry(s) for: " + query)
+        : ("Showing all entries: " + journal.length);
+    }
   }
 
   function renderLedger() {
@@ -474,7 +853,6 @@
         debitTotal += r.debit || 0;
         creditTotal += r.credit || 0;
 
-        // narration kept but NOT shown in ledger UI to avoid UI change
         return (
           "<tr>" +
             "<td>" + escapeHtml(r.date) + "</td>" +
@@ -521,6 +899,10 @@
     restore();
     rebuildLedgerFromJournal();
 
+    ensureNarrationInputExists();
+    ensureSearchUIExists();
+
+    // Ensure at least 1 row exists
     if (!document.querySelector(".debit-row")) addDebit();
     if (!document.querySelector(".credit-row")) addCredit();
 
@@ -533,10 +915,22 @@
     console.error("Runtime error:", e.message, e.error);
   });
 
+  // Safe init (retry for slow DOM in exhibition laptops)
+  function safeInitWithRetry(retries) {
+    try {
+      init();
+    } catch (err) {
+      console.error("Init failed:", err);
+      if (retries > 0) {
+        setTimeout(function(){ safeInitWithRetry(retries - 1); }, 150);
+      }
+    }
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", function(){ safeInitWithRetry(5); });
   } else {
-    init();
+    safeInitWithRetry(5);
   }
 
 })();
