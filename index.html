@@ -8,6 +8,7 @@
    - Added: Import journal file
    - Added: Search account / search entry
    - Added: Edit entry after saving (ledger safe rebuild)
+   - FIXED: White screen issue (removed injected Edit button)
    ========================================================== */
 
 (function () {
@@ -414,11 +415,9 @@
 
     var e = journal[index];
 
-    // Fill top fields
     safeSetValue("dateInput", e.date || "");
     safeSetValue("narrationInput", e.narration || "");
 
-    // Fill rows
     clearContainer("debitContainer");
     clearContainer("creditContainer");
 
@@ -430,7 +429,6 @@
       createRow("creditContainer", "credit", c.acc, c.amt);
     });
 
-    // If empty somehow, ensure at least 1 row each
     if (!$(".debit-row")) addDebit();
     if (!$(".credit-row")) addCredit();
 
@@ -438,14 +436,12 @@
     editIndex = index;
 
     autoFillParticularsInForm();
-    showPage(0); // go to journal entry page (safe)
+    showPage(0);
   }
   window.editEntry = editEntry;
 
   /* ----------------------------------------------------------
      SEARCH (account / entry)
-     - account search filters ledger cards
-     - entry search filters journal entries
   ---------------------------------------------------------- */
   function searchAccount(query) {
     query = String(query || "").trim().toLowerCase();
@@ -539,9 +535,6 @@
           "<div style='margin-top:6px'>" + debitLines + "</div>" +
           "<div style='margin-top:6px'>" + creditLines + "</div>" +
           "<div style='margin-top:6px'><i>Narration:</i> " + escapeHtml(e.narration) + "</div>" +
-          "<div style='margin-top:8px'>" +
-            "<button onclick='editEntry(" + idx + ")'>Edit</button>" +
-          "</div>" +
         "</div>";
     });
 
@@ -588,7 +581,6 @@
         return;
       }
 
-      // accept either {journal:[...]} or direct array
       var incoming = Array.isArray(parsed) ? parsed : parsed.journal;
 
       if (!Array.isArray(incoming)) {
@@ -596,7 +588,6 @@
         return;
       }
 
-      // basic validation
       var cleaned = incoming.filter(function (e) {
         return e && typeof e === "object" && Array.isArray(e.debits) && Array.isArray(e.credits);
       });
@@ -617,6 +608,7 @@
 
   /* ----------------------------------------------------------
      RENDERING (UI unchanged)
+     FIXED: removed injected Edit buttons
   ---------------------------------------------------------- */
   function renderJournal() {
     var out = getEl("journalOutput");
@@ -638,9 +630,6 @@
           "<div style='margin-top:6px'>" + debitLines + "</div>" +
           "<div style='margin-top:6px'>" + creditLines + "</div>" +
           "<div style='margin-top:6px'><i>Narration:</i> " + escapeHtml(e.narration) + "</div>" +
-          "<div style='margin-top:8px'>" +
-            "<button onclick='editEntry(" + idx + ")'>Edit</button>" +
-          "</div>" +
         "</div>";
     });
 
@@ -706,10 +695,8 @@
 
   /* ----------------------------------------------------------
      AUTO BIND IMPORT INPUT IF EXISTS
-     (No UI change: if you already have input id, it works)
   ---------------------------------------------------------- */
   function bindImportInput() {
-    // If your HTML already has: <input type="file" id="importFileInput">
     var inp = getEl("importFileInput");
     if (!inp) return;
 
@@ -726,7 +713,6 @@
     restore();
     rebuildLedgerFromJournal();
 
-    // ensure at least one row
     if (!document.querySelector(".debit-row")) addDebit();
     if (!document.querySelector(".credit-row")) addCredit();
 
