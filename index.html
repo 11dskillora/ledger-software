@@ -529,6 +529,12 @@ select:focus {
 <label for="date">Transaction Date</label>
 <input id="date" type="date" aria-label="Transaction Date">
 </div>
+
+<!-- ✅ NARRATION ADDED (same UI style, no redesign) -->
+<div class="input-group">
+<label for="narration">Narration</label>
+<input id="narration" type="text" aria-label="Narration" placeholder="Narration (Optional)">
+</div>
 </div>
 
 <div class="form-section">
@@ -663,6 +669,7 @@ function addDebit() {
   var p = row.querySelector('.particulars-input');
   p.readOnly = true;
   p.value = '';
+  autoFillParticularsInForm();
 }
 
 function addCredit() {
@@ -676,6 +683,7 @@ function addCredit() {
   var p = row.querySelector('.particulars-input');
   p.readOnly = true;
   p.value = '';
+  autoFillParticularsInForm();
 }
 
 function autoFillParticularsInForm() {
@@ -709,6 +717,7 @@ function autoFillParticularsInForm() {
 
 function clearForm() {
   document.getElementById('date').value = '';
+  document.getElementById('narration').value = '';
 
   var debitRows = document.querySelectorAll('.debit-row');
   for (var i = 0; i < debitRows.length; i++) {
@@ -738,6 +747,9 @@ function saveEntry() {
 
   var date = document.getElementById('date').value;
   if (!date) { alert('Please enter a transaction date'); return; }
+
+  // ✅ narration
+  var narration = document.getElementById('narration').value.trim();
 
   var debits = [];
   var credits = [];
@@ -777,7 +789,9 @@ function saveEntry() {
     return;
   }
 
-  journal.push({ date: date, debits: debits, credits: credits });
+  // ✅ narration saved
+  journal.push({ date: date, narration: narration, debits: debits, credits: credits });
+
   persist();
   rebuild();
   clearForm();
@@ -822,7 +836,7 @@ function clearAllData() {
 
   try { localStorage.removeItem('journalData'); } catch(e){}
   try { localStorage.removeItem('undoStack'); } catch(e){}
-  
+
   rebuild();
   clearForm();
   alert('All data cleared.');
@@ -847,13 +861,14 @@ function rebuild() {
 
   for (var i = 0; i < journal.length; i++) {
     var entry = journal[i];
+    var narrationText = (entry.narration || '').trim();
 
     for (var j = 0; j < entry.debits.length; j++) {
       var d = entry.debits[j];
       var row = tbody.insertRow();
       row.innerHTML =
         '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>' + escapeHtml(d.account) + '</td>' +
+        '<td>' + escapeHtml(d.account) + (narrationText ? '<div style="font-size:12px; opacity:0.8;">' + escapeHtml(narrationText) + '</div>' : '') + '</td>' +
         '<td>' + (i + 1) + '</td>' +
         '<td class="debit-amount">' + Number(d.amount).toFixed(2) + '</td>' +
         '<td></td>' +
@@ -865,6 +880,7 @@ function rebuild() {
         type: 'debit',
         amount: Number(d.amount),
         particulars: d.particulars,
+        narration: narrationText,
         jf: i + 1,
         entryIndex: i
       });
@@ -875,7 +891,7 @@ function rebuild() {
       var row2 = tbody.insertRow();
       row2.innerHTML =
         '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>' + escapeHtml(c.account) + '</td>' +
+        '<td>' + escapeHtml(c.account) + (narrationText ? '<div style="font-size:12px; opacity:0.8;">' + escapeHtml(narrationText) + '</div>' : '') + '</td>' +
         '<td>' + (i + 1) + '</td>' +
         '<td></td>' +
         '<td class="credit-amount">' + Number(c.amount).toFixed(2) + '</td>' +
@@ -887,6 +903,7 @@ function rebuild() {
         type: 'credit',
         amount: Number(c.amount),
         particulars: c.particulars,
+        narration: narrationText,
         jf: i + 1,
         entryIndex: i
       });
@@ -933,7 +950,12 @@ function buildLedger() {
 
     for (var r = 0; r < entries.length; r++) {
       var e = entries[r];
+
+      // narration appended to particulars but doesn't change structure
       var p = e.particulars ? escapeHtml(e.particulars) : '—';
+      if (e.narration) {
+        p += '<div style="font-size:12px; opacity:0.75;">' + escapeHtml(e.narration) + '</div>';
+      }
 
       var delBtn = '<button class="btn btn-danger" onclick="deleteJournalEntry(' + e.entryIndex + ')">Delete</button>';
 
