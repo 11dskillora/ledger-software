@@ -1,1128 +1,543 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CLOUD COUNT • Ledger</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600;700&family=Courier+Prime:wght@400;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-
-<style>
-:root {
-  --paper: #faf8f3;
-  --ink-dark: #2d2520;
-  --ink-medium: #5a4a3a;
-  --ink-light: #8b7a6a;
-  --red-ink: #8b3a3a;
-  --blue-ink: #2d4f7c;
-  --line-color: rgba(189, 170, 145, 0.3);
-  --shadow: rgba(0, 0, 0, 0.08);
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: 'Crimson Pro', serif;
-  background: linear-gradient(135deg, #d4c5b0 0%, #b8a58f 100%);
-  min-height: 100vh;
-  padding: 40px 20px;
-  color: var(--ink-dark);
-  position: relative;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 2;
-}
-
-header {
-  text-align: center;
-  margin-bottom: 50px;
-  animation: fadeInDown 0.8s ease;
-}
-
-header h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: 58px;
-  font-weight: 900;
-  color: var(--ink-dark);
-  letter-spacing: -1px;
-  margin-bottom: 8px;
-  text-shadow: 2px 2px 0 rgba(255,255,255,0.3);
-}
-
-header p {
-  font-family: 'Courier Prime', monospace;
-  font-size: 14px;
-  color: var(--ink-medium);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-}
-
-nav {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 30px;
-  animation: fadeIn 1s ease 0.2s both;
-  flex-wrap: wrap;
-}
-
-nav button {
-  font-family: 'Courier Prime', monospace;
-  padding: 14px 32px;
-  border: 2px solid var(--ink-dark);
-  background: var(--paper);
-  color: var(--ink-dark);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
-  position: relative;
-}
-
-nav button:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 rgba(0,0,0,0.15);
-}
-
-nav button.active {
-  background: var(--ink-dark);
-  color: var(--paper);
-  box-shadow: 4px 4px 0 var(--red-ink);
-}
-
-.page {
-  display: none;
-  animation: fadeIn 0.5s ease;
-}
-
-.page.active {
-  display: block;
-}
-
-.notebook {
-  background: var(--paper);
-  border-radius: 4px;
-  padding: 60px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(0,0,0,0.05);
-  position: relative;
-  margin-bottom: 40px;
-}
-
-.notebook::before {
-  content: '';
-  position: absolute;
-  left: 80px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--red-ink);
-  opacity: 0.3;
-}
-
-.notebook::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: repeating-linear-gradient(transparent, transparent 31px, var(--line-color) 31px, var(--line-color) 32px);
-  pointer-events: none;
-}
-
-.form-section {
-  position: relative;
-  z-index: 1;
-  margin-bottom: 40px;
-}
-
-.form-section h3 {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: var(--ink-dark);
-  border-bottom: 3px double var(--ink-dark);
-  padding-bottom: 10px;
-}
-
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 36px;
-  margin-bottom: 30px;
-  position: relative;
-  z-index: 1;
-}
-
-.section-title-large {
-  font-family: 'Playfair Display', serif;
-  font-size: 36px;
-  margin-bottom: 40px;
-  position: relative;
-  z-index: 1;
-}
-
-.input-group {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  gap: 20px;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.input-group label {
-  font-family: 'Courier Prime', monospace;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ink-medium);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-input,
-select {
-  font-family: 'Crimson Pro', serif;
-  font-size: 18px;
-  padding: 12px 16px;
-  border: none;
-  border-bottom: 2px solid var(--ink-light);
-  background: transparent;
-  color: var(--ink-dark);
-  transition: all 0.3s ease;
-}
-
-input:focus,
-select:focus {
-  outline: none;
-  border-bottom-color: var(--blue-ink);
-  background: rgba(45, 79, 124, 0.03);
-}
-
-.entry-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 2fr;
-  gap: 20px;
-  margin-bottom: 15px;
-  padding: 15px;
-  background: rgba(255,255,255,0.4);
-  border-left: 3px solid var(--blue-ink);
-  transition: all 0.3s ease;
-}
-
-.entry-row:hover {
-  background: rgba(255,255,255,0.6);
-  transform: translateX(5px);
-}
-
-.btn {
-  font-family: 'Courier Prime', monospace;
-  padding: 12px 28px;
-  border: 2px solid var(--ink-dark);
-  background: var(--paper);
-  color: var(--ink-dark);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
-  margin-top: 10px;
-  margin-right: 10px;
-}
-
-.btn:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0 rgba(0,0,0,0.15);
-}
-
-.btn-primary {
-  background: var(--ink-dark);
-  color: var(--paper);
-  box-shadow: 3px 3px 0 var(--red-ink);
-}
-
-.btn-primary:hover {
-  box-shadow: 5px 5px 0 var(--red-ink);
-}
-
-.btn-add {
-  background: var(--blue-ink);
-  color: var(--paper);
-  border-color: var(--blue-ink);
-}
-
-.btn-danger {
-  background: var(--red-ink);
-  color: var(--paper);
-  border-color: var(--red-ink);
-}
-
-.btn-warning {
-  background: #8b6b3a;
-  color: var(--paper);
-  border-color: #8b6b3a;
-}
-
-.journal-table {
-  width: 100%;
-  border-collapse: collapse;
-  position: relative;
-  z-index: 1;
-  margin-top: 30px;
-}
-
-.journal-table thead th {
-  font-family: 'Courier Prime', monospace;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding: 15px 10px;
-  text-align: center;
-  background: var(--ink-dark);
-  color: var(--paper);
-  border: 1px solid var(--ink-dark);
-}
-
-.journal-table tbody td {
-  padding: 12px 10px;
-  text-align: center;
-  font-size: 16px;
-  border-bottom: 1px solid var(--line-color);
-  background: rgba(255,255,255,0.3);
-}
-
-.journal-table tbody tr:hover td {
-  background: rgba(255,255,255,0.5);
-}
-
-.debit-amount {
-  color: var(--red-ink);
-  font-weight: 600;
-}
-
-.credit-amount {
-  color: var(--blue-ink);
-  font-weight: 600;
-}
-
-.ledger-book {
-  position: relative;
-  z-index: 1;
-}
-
-.ledger-account {
-  margin-bottom: 60px;
-  page-break-inside: avoid;
-  animation: fadeInUp 0.6s ease both;
-}
-
-.account-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 4px double var(--ink-dark);
-}
-
-.account-name {
-  font-family: 'Playfair Display', serif;
-  font-size: 36px;
-  font-weight: 700;
-  color: var(--ink-dark);
-  position: relative;
-}
-
-.account-name::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: 60%;
-  height: 3px;
-  background: var(--red-ink);
-}
-
-.account-balance {
-  font-family: 'Courier Prime', monospace;
-  font-size: 18px;
-  font-weight: 700;
-  padding: 8px 20px;
-  background: var(--ink-dark);
-  color: var(--paper);
-  border: 2px solid var(--ink-dark);
-  box-shadow: 3px 3px 0 var(--red-ink);
-}
-
-.empty-state {
-  text-align: center;
-  padding: 80px 40px;
-  position: relative;
-  z-index: 1;
-}
-
-.empty-state-icon {
-  font-size: 80px;
-  margin-bottom: 20px;
-  opacity: 0.3;
-}
-
-.empty-state h3 {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
-  color: var(--ink-medium);
-  margin-bottom: 10px;
-}
-
-.empty-state p {
-  font-size: 18px;
-  color: var(--ink-light);
-}
-
-.ledger-tformat {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  position: relative;
-  z-index: 1;
-}
-
-.ledger-side {
-  background: rgba(255,255,255,0.25);
-  border: 1px solid rgba(0,0,0,0.08);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.ledger-side-title {
-  font-family: 'Courier Prime', monospace;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  padding: 12px 14px;
-  background: rgba(0,0,0,0.05);
-  border-bottom: 1px solid rgba(0,0,0,0.08);
-}
-
-.ledger-side-title.dr { color: var(--red-ink); }
-.ledger-side-title.cr { color: var(--blue-ink); }
-
-.ledger-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.ledger-table thead th {
-  font-family: 'Courier Prime', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding: 10px 8px;
-  text-align: center;
-  background: rgba(0,0,0,0.06);
-  border-bottom: 1px solid rgba(0,0,0,0.08);
-}
-
-.ledger-table tbody td {
-  padding: 10px 8px;
-  font-size: 15px;
-  border-bottom: 1px solid var(--line-color);
-  text-align: center;
-}
-
-.ledger-table tbody tr:hover td {
-  background: rgba(255,255,255,0.35);
-}
-
-.ledger-table .amt {
-  font-family: 'Courier Prime', monospace;
-  font-weight: 700;
-  text-align: right;
-}
-
-.action-cell button{
-  padding: 8px 12px;
-  font-size: 11px;
-  margin: 0;
-  box-shadow: none;
-}
-
-.utility-bar{
-  display:flex;
-  justify-content:center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 30px;
-}
-
-@media (max-width: 768px) {
-  header h1 { font-size: 42px; }
-  .notebook { padding: 30px 20px; }
-  .notebook::before { left: 20px; }
-  .input-group { grid-template-columns: 1fr; }
-  .entry-row { grid-template-columns: 1fr; }
-  nav { flex-direction: column; gap: 10px; }
-  nav button { width: 100%; }
-
-  .account-name { font-size: 28px; }
-  .account-balance { font-size: 14px; padding: 6px 12px; }
-
-  .ledger-tformat { grid-template-columns: 1fr; gap: 20px; }
-}
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px);} to { opacity: 1; transform: translateY(0);} }
-@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
-</style>
-</head>
-
-<body>
-<div class="container">
-
-<header>
-<h1>CLOUD COUNT</h1>
-<p>Double-Entry Bookkeeping</p>
-</header>
-
-<nav>
-<button type="button" class="active" onclick="showPage(0)">Entry</button>
-<button type="button" onclick="showPage(1)">Journal</button>
-<button type="button" onclick="showPage(2)">Ledger</button>
-</nav>
-
-<div class="utility-bar">
-  <button type="button" class="btn btn-warning" onclick="undoDelete()">Undo Delete</button>
-  <button type="button" class="btn btn-danger" onclick="clearAllData()">Clear All Data</button>
-</div>
-
-<div class="page active" id="entryPage">
-<div class="notebook">
-<div class="form-section">
-<div class="input-group">
-<label for="date">Transaction Date</label>
-<input id="date" type="date" aria-label="Transaction Date">
-</div>
-</div>
-
-<div class="form-section">
-<h3>Debit Entries</h3>
-<div id="debitContainer">
-<div class="entry-row debit-row">
-<input placeholder="Account Name" class="account-input" type="text" aria-label="Debit Account Name">
-<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Debit Amount">
-<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Debit Particulars">
-</div>
-</div>
-<button type="button" class="btn btn-add" onclick="addDebit()">+ Add Debit</button>
-</div>
-
-<div class="form-section">
-<h3>Credit Entries</h3>
-<div id="creditContainer">
-<div class="entry-row credit-row">
-<input placeholder="Account Name" class="account-input" type="text" aria-label="Credit Account Name">
-<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Credit Amount">
-<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Credit Particulars">
-</div>
-</div>
-<button type="button" class="btn btn-add" onclick="addCredit()">+ Add Credit</button>
-</div>
-
-<button type="button" class="btn btn-primary" onclick="saveEntry()" id="saveEntryBtn">Save Entry to Journal</button>
-</div>
-</div>
-
-<div class="page" id="journalPage">
-<div class="notebook">
-<h3 class="section-title">Journal Entries</h3>
-<table class="journal-table" id="journalTable">
-<thead>
-<tr>
-<th>Date</th>
-<th>Account</th>
-<th>J/F</th>
-<th>Debit</th>
-<th>Credit</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-
-<div style="position:relative; z-index:1; margin-top:18px;">
-  <button type="button" class="btn" onclick="undoDelete()">Undo Delete</button>
-  <button type="button" class="btn btn-danger" onclick="clearAllData()">Clear All Data</button>
-</div>
-
-<div id="journalEmpty" class="empty-state">
-<div class="empty-state-icon">📖</div>
-<h3>No Journal Entries Yet</h3>
-<p>Start by creating your first transaction entry</p>
-</div>
-</div>
-</div>
-
-<div class="page" id="ledgerPage">
-<div class="notebook">
-<h3 class="section-title-large">Ledger Accounts</h3>
-
-<div style="position:relative; z-index:1; margin-bottom:18px;">
-  <button type="button" class="btn" onclick="undoDelete()">Undo Delete</button>
-  <button type="button" class="btn btn-danger" onclick="clearAllData()">Clear All Data</button>
-</div>
-
-<div class="ledger-book" id="ledgerBook"></div>
-<div id="ledgerEmpty" class="empty-state">
-<div class="empty-state-icon">📚</div>
-<h3>No Ledger Entries Yet</h3>
-<p>Your account ledgers will appear here after creating journal entries</p>
-</div>
-</div>
-</div>
-
-</div>
-
 <script>
-var journal = [];
-var ledger = {};
-var undoStack = [];
+/* ==========================================================
+   COMPOUND JOURNAL → AUTO LEDGER (DUAL MODE DISPLAY)
+   Stabilized + Bugfixed + Exhibition Ready
+   - No UI change
+   - No meaning change
+   - Better validation, undo, storage safety
+   - Narration supported (FULLY ADDED)
+   - Enter/Return auto navigation added
+   ========================================================== */
 
-function escapeHtml(text) {
-  var div = document.createElement('div');
-  div.textContent = String(text == null ? '' : text);
-  return div.innerHTML;
-}
+(function () {
+  "use strict";
 
-function toMoneyInt(value) {
-  var n = Number(value);
-  if (!isFinite(n)) return 0;
-  return Math.round(n * 100);
-}
+  // ------------------------------
+  // GLOBAL STATE (same meaning)
+  // ------------------------------
+  var journal = [];
+  var ledger = {};
+  var undoStack = [];
 
-function normalizeAccountName(name) {
-  var n = String(name || '').trim();
-  if (!n) return '';
-  n = n.replace(/\s+/g, ' ');
-  if (!/a\/c$/i.test(n)) n = n + ' A/c';
-  n = n.replace(/A\/c\s*A\/c$/i, 'A/c');
-  return n;
-}
+  // Storage keys
+  var LS_JOURNAL = "journalData";
+  var LS_UNDO = "undoStack";
 
-function persist() {
-  try { localStorage.setItem('journalData', JSON.stringify(journal)); } catch (e) {}
-  try { localStorage.setItem('undoStack', JSON.stringify(undoStack)); } catch (e2) {}
-}
+  // ------------------------------
+  // HELPERS
+  // ------------------------------
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
-function showPage(pageIndex) {
-  var pages = document.querySelectorAll('.page');
-  var navBtns = document.querySelectorAll('nav button');
-  if (pageIndex < 0 || pageIndex >= pages.length) return;
-
-  for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
-  for (var j = 0; j < navBtns.length; j++) navBtns[j].classList.remove('active');
-
-  pages[pageIndex].classList.add('active');
-  navBtns[pageIndex].classList.add('active');
-}
-
-function addDebit() {
-  var row = document.createElement('div');
-  row.className = 'entry-row debit-row';
-  row.innerHTML =
-    '<input placeholder="Account Name" class="account-input" type="text" aria-label="Debit Account Name">' +
-    '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Debit Amount">' +
-    '<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Debit Particulars">';
-  document.getElementById('debitContainer').appendChild(row);
-  var p = row.querySelector('.particulars-input');
-  p.readOnly = true;
-  p.value = '';
-}
-
-function addCredit() {
-  var row = document.createElement('div');
-  row.className = 'entry-row credit-row';
-  row.innerHTML =
-    '<input placeholder="Account Name" class="account-input" type="text" aria-label="Credit Account Name">' +
-    '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Credit Amount">' +
-    '<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Credit Particulars">';
-  document.getElementById('creditContainer').appendChild(row);
-  var p = row.querySelector('.particulars-input');
-  p.readOnly = true;
-  p.value = '';
-}
-
-function autoFillParticularsInForm() {
-  var debitRows = document.querySelectorAll('.debit-row');
-  var creditRows = document.querySelectorAll('.credit-row');
-
-  var debitAccounts = [];
-  var creditAccounts = [];
-
-  for (var i = 0; i < debitRows.length; i++) {
-    var acc = normalizeAccountName(debitRows[i].querySelector('.account-input').value);
-    if (acc) debitAccounts.push(acc);
-  }
-  for (var j = 0; j < creditRows.length; j++) {
-    var cacc = normalizeAccountName(creditRows[j].querySelector('.account-input').value);
-    if (cacc) creditAccounts.push(cacc);
+  function escapeHtml(text) {
+    var div = document.createElement("div");
+    div.textContent = String(text == null ? "" : text);
+    return div.innerHTML;
   }
 
-  var debitParticularText = debitAccounts.length ? ('By ' + debitAccounts.join(', ')) : '';
-  var creditParticularText = creditAccounts.length ? ('To ' + creditAccounts.join(', ')) : '';
-
-  for (var k = 0; k < debitRows.length; k++) {
-    var p1 = debitRows[k].querySelector('.particulars-input');
-    if (p1) { p1.readOnly = true; p1.value = creditParticularText; }
+  // Always store money in paise to avoid float errors
+  function toPaise(v) {
+    var n = Number(v);
+    if (!isFinite(n) || n <= 0) return 0;
+    return Math.round(n * 100);
   }
-  for (var m = 0; m < creditRows.length; m++) {
-    var p2 = creditRows[m].querySelector('.particulars-input');
-    if (p2) { p2.readOnly = true; p2.value = debitParticularText; }
+  function paiseToStr(p) {
+    p = Number(p) || 0;
+    return (p / 100).toFixed(2);
   }
-}
 
-function clearForm() {
-  document.getElementById('date').value = '';
+  function normalizeAccountName(name) {
+    var n = String(name || "").trim();
+    if (!n) return "";
+    n = n.replace(/\s+/g, " ");
+    if (!/a\/c$/i.test(n)) n = n + " A/c";
+    n = n.replace(/A\/c\s*A\/c$/i, "A/c");
+    n = n.charAt(0).toUpperCase() + n.slice(1);
+    return n;
+  }
 
-  var debitRows = document.querySelectorAll('.debit-row');
-  for (var i = 0; i < debitRows.length; i++) {
-    if (i > 0) debitRows[i].remove();
-    else {
-      var inputs = debitRows[i].querySelectorAll('input');
-      for (var j = 0; j < inputs.length; j++) inputs[j].value = '';
-      var p = debitRows[i].querySelector('.particulars-input');
-      if (p) { p.readOnly = true; p.value = ''; }
+  function safeJSONParse(str, fallback) {
+    try {
+      var obj = JSON.parse(str);
+      return obj == null ? fallback : obj;
+    } catch (e) {
+      return fallback;
     }
   }
 
-  var creditRows = document.querySelectorAll('.credit-row');
-  for (var k = 0; k < creditRows.length; k++) {
-    if (k > 0) creditRows[k].remove();
-    else {
-      var inputs2 = creditRows[k].querySelectorAll('input');
-      for (var m = 0; m < inputs2.length; m++) inputs2[m].value = '';
-      var p2 = creditRows[k].querySelector('.particulars-input');
-      if (p2) { p2.readOnly = true; p2.value = ''; }
-    }
-  }
-}
-
-function saveEntry() {
-  autoFillParticularsInForm();
-
-  var date = document.getElementById('date').value;
-  if (!date) { alert('Please enter a transaction date'); return; }
-
-  var debits = [];
-  var credits = [];
-  var totalDebitInt = 0;
-  var totalCreditInt = 0;
-
-  var debitRows = document.querySelectorAll('.debit-row');
-  for (var i = 0; i < debitRows.length; i++) {
-    var row = debitRows[i];
-    var account = normalizeAccountName(row.querySelector('.account-input').value);
-    var amount = parseFloat(row.querySelector('.amount-input').value);
-    var particulars = row.querySelector('.particulars-input').value.trim();
-    if (account && !isNaN(amount) && amount > 0) {
-      debits.push({ account: account, amount: amount, particulars: particulars });
-      totalDebitInt += toMoneyInt(amount);
-    }
+  function persist() {
+    try { localStorage.setItem(LS_JOURNAL, JSON.stringify(journal)); } catch (e) {}
+    try { localStorage.setItem(LS_UNDO, JSON.stringify(undoStack)); } catch (e2) {}
   }
 
-  var creditRows = document.querySelectorAll('.credit-row');
-  for (var j = 0; j < creditRows.length; j++) {
-    var crow = creditRows[j];
-    var account2 = normalizeAccountName(crow.querySelector('.account-input').value);
-    var amount2 = parseFloat(crow.querySelector('.amount-input').value);
-    var particulars2 = crow.querySelector('.particulars-input').value.trim();
-    if (account2 && !isNaN(amount2) && amount2 > 0) {
-      credits.push({ account: account2, amount: amount2, particulars: particulars2 });
-      totalCreditInt += toMoneyInt(amount2);
-    }
+  function restore() {
+    var j = safeJSONParse(localStorage.getItem(LS_JOURNAL), []);
+    var u = safeJSONParse(localStorage.getItem(LS_UNDO), []);
+    if (!Array.isArray(j)) j = [];
+    if (!Array.isArray(u)) u = [];
+    journal = j;
+    undoStack = u;
   }
 
-  if (debits.length === 0 || credits.length === 0) {
-    alert('Please add at least one debit and one credit entry');
-    return;
+  // ------------------------------
+  // PAGE NAV
+  // ------------------------------
+  function showPage(pageIndex) {
+    var pages = $all(".page");
+    var navBtns = $all("nav button");
+    if (pageIndex < 0 || pageIndex >= pages.length) return;
+
+    pages.forEach(function (p) { p.classList.remove("active"); });
+    navBtns.forEach(function (b) { b.classList.remove("active"); });
+
+    pages[pageIndex].classList.add("active");
+    navBtns[pageIndex].classList.add("active");
   }
-  if (totalDebitInt !== totalCreditInt) {
-    alert('Debit (' + (totalDebitInt/100).toFixed(2) + ') and Credit (' + (totalCreditInt/100).toFixed(2) + ') must be equal');
-    return;
-  }
+  window.showPage = showPage;
 
-  journal.push({ date: date, debits: debits, credits: credits });
-  persist();
-  rebuild();
-  clearForm();
-  alert('Entry saved successfully!');
-  showPage(1);
-}
+  // ------------------------------
+  // FORM ROWS
+  // ------------------------------
+  function addDebit() {
+    var container = document.getElementById("debitContainer");
+    if (!container) return;
 
-function deleteJournalEntry(entryIndex) {
-  if (entryIndex < 0 || entryIndex >= journal.length) return;
-  var ok = confirm('Delete this journal entry? This will update ledger automatically.');
-  if (!ok) return;
+    var row = document.createElement("div");
+    row.className = "entry-row debit-row";
+    row.innerHTML =
+      '<input placeholder="Account Name" class="account-input" type="text" aria-label="Debit Account Name">' +
+      '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Debit Amount">' +
+      '<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Debit Particulars">';
+    container.appendChild(row);
 
-  var deleted = journal.splice(entryIndex, 1)[0];
-  if (deleted) {
-    undoStack.push(deleted);
-    if (undoStack.length > 20) undoStack.shift();
-  }
+    var p = $(".particulars-input", row);
+    if (p) { p.readOnly = true; p.value = ""; }
 
-  persist();
-  rebuild();
-}
-
-function undoDelete() {
-  if (!undoStack.length) {
-    alert('Nothing to undo.');
-    return;
-  }
-  var restored = undoStack.pop();
-  journal.push(restored);
-  persist();
-  rebuild();
-  alert('Last deleted entry restored!');
-}
-
-function clearAllData() {
-  var ok = confirm('Clear ALL data? This is for exhibition reset.');
-  if (!ok) return;
-
-  journal = [];
-  ledger = {};
-  undoStack = [];
-
-  try { localStorage.removeItem('journalData'); } catch(e){}
-  try { localStorage.removeItem('undoStack'); } catch(e){}
-  
-  rebuild();
-  clearForm();
-  alert('All data cleared.');
-  showPage(0);
-}
-
-function rebuild() {
-  ledger = {};
-  var journalTable = document.getElementById('journalTable');
-  var tbody = journalTable.querySelector('tbody');
-  var journalEmpty = document.getElementById('journalEmpty');
-
-  tbody.innerHTML = '';
-
-  if (journal.length === 0) {
-    journalEmpty.style.display = 'block';
-    journalTable.style.display = 'none';
-  } else {
-    journalEmpty.style.display = 'none';
-    journalTable.style.display = 'table';
-  }
-
-  for (var i = 0; i < journal.length; i++) {
-    var entry = journal[i];
-
-    for (var j = 0; j < entry.debits.length; j++) {
-      var d = entry.debits[j];
-      var row = tbody.insertRow();
-      row.innerHTML =
-        '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>' + escapeHtml(d.account) + '</td>' +
-        '<td>' + (i + 1) + '</td>' +
-        '<td class="debit-amount">' + Number(d.amount).toFixed(2) + '</td>' +
-        '<td></td>' +
-        '<td class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></td>';
-
-      if (!ledger[d.account]) ledger[d.account] = [];
-      ledger[d.account].push({
-        date: entry.date,
-        type: 'debit',
-        amount: Number(d.amount),
-        particulars: d.particulars,
-        jf: i + 1,
-        entryIndex: i
-      });
-    }
-
-    for (var k = 0; k < entry.credits.length; k++) {
-      var c = entry.credits[k];
-      var row2 = tbody.insertRow();
-      row2.innerHTML =
-        '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>' + escapeHtml(c.account) + '</td>' +
-        '<td>' + (i + 1) + '</td>' +
-        '<td></td>' +
-        '<td class="credit-amount">' + Number(c.amount).toFixed(2) + '</td>' +
-        '<td class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></td>';
-
-      if (!ledger[c.account]) ledger[c.account] = [];
-      ledger[c.account].push({
-        date: entry.date,
-        type: 'credit',
-        amount: Number(c.amount),
-        particulars: c.particulars,
-        jf: i + 1,
-        entryIndex: i
-      });
-    }
-  }
-
-  buildLedger();
-}
-
-function buildLedger() {
-  var ledgerBook = document.getElementById('ledgerBook');
-  var ledgerEmpty = document.getElementById('ledgerEmpty');
-
-  ledgerBook.innerHTML = '';
-
-  var accounts = [];
-  for (var k in ledger) if (Object.prototype.hasOwnProperty.call(ledger, k)) accounts.push(k);
-
-  if (accounts.length === 0) {
-    ledgerEmpty.style.display = 'block';
-    return;
-  } else ledgerEmpty.style.display = 'none';
-
-  accounts.sort();
-
-  for (var i = 0; i < accounts.length; i++) {
-    var accountName = accounts[i];
-    var entries = ledger[accountName].slice();
-
-    entries.sort(function(a, b) {
-      if (a.date < b.date) return -1;
-      if (a.date > b.date) return 1;
-      if (a.jf !== b.jf) return a.jf - b.jf;
-      if (a.type === b.type) return 0;
-      return a.type === 'debit' ? -1 : 1;
-    });
-
-    var balance = 0;
-    for (var j = 0; j < entries.length; j++) balance += (entries[j].type === 'debit' ? entries[j].amount : -entries[j].amount);
-    var balanceDisplay = balance >= 0 ? ('Dr ' + balance.toFixed(2)) : ('Cr ' + Math.abs(balance).toFixed(2));
-
-    var drRows = '';
-    var crRows = '';
-
-    for (var r = 0; r < entries.length; r++) {
-      var e = entries[r];
-      var p = e.particulars ? escapeHtml(e.particulars) : '—';
-
-      var delBtn = '<button class="btn btn-danger" onclick="deleteJournalEntry(' + e.entryIndex + ')">Delete</button>';
-
-      if (e.type === 'debit') {
-        drRows +=
-          '<tr>' +
-          '<td>' + escapeHtml(e.date) + '</td>' +
-          '<td>' + p + '</td>' +
-          '<td>' + e.jf + '</td>' +
-          '<td class="amt debit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
-          '<td class="action-cell">' + delBtn + '</td>' +
-          '</tr>';
-      } else {
-        crRows +=
-          '<tr>' +
-          '<td>' + escapeHtml(e.date) + '</td>' +
-          '<td>' + p + '</td>' +
-          '<td>' + e.jf + '</td>' +
-          '<td class="amt credit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
-          '<td class="action-cell">' + delBtn + '</td>' +
-          '</tr>';
-      }
-    }
-
-    if (!drRows) drRows = '<tr><td colspan="5">—</td></tr>';
-    if (!crRows) crRows = '<tr><td colspan="5">—</td></tr>';
-
-    var accountDiv = document.createElement('div');
-    accountDiv.className = 'ledger-account';
-
-    accountDiv.innerHTML =
-      '<div class="account-header">' +
-      '<div class="account-name">' + escapeHtml(accountName) + '</div>' +
-      '<div class="account-balance">' + escapeHtml(balanceDisplay) + '</div>' +
-      '</div>' +
-
-      '<div class="ledger-tformat">' +
-
-      '<div class="ledger-side">' +
-      '<div class="ledger-side-title dr">Dr.</div>' +
-      '<table class="ledger-table">' +
-      '<thead><tr><th>Date</th><th>Particulars</th><th>J.F</th><th>Amount</th><th>Action</th></tr></thead>' +
-      '<tbody>' + drRows + '</tbody>' +
-      '</table>' +
-      '</div>' +
-
-      '<div class="ledger-side">' +
-      '<div class="ledger-side-title cr">Cr.</div>' +
-      '<table class="ledger-table">' +
-      '<thead><tr><th>Date</th><th>Particulars</th><th>J.F</th><th>Amount</th><th>Action</th></tr></thead>' +
-      '<tbody>' + crRows + '</tbody>' +
-      '</table>' +
-      '</div>' +
-
-      '</div>';
-
-    ledgerBook.appendChild(accountDiv);
-  }
-}
-
-document.addEventListener('input', function(e) {
-  if (e.target && (e.target.classList.contains('account-input') || e.target.classList.contains('amount-input'))) {
     autoFillParticularsInForm();
   }
-});
 
-// ------------------------------------------------------------
-// ENTER / RETURN AUTO SHIFT + ENTER ON LAST CREDIT → SAVE ENTRY
-// ------------------------------------------------------------
-(function enableEnterNavigation(){
-  function focusEl(el){
-    if (!el) return;
-    el.focus();
-    try { if (el.select) el.select(); } catch(e){}
+  function addCredit() {
+    var container = document.getElementById("creditContainer");
+    if (!container) return;
+
+    var row = document.createElement("div");
+    row.className = "entry-row credit-row";
+    row.innerHTML =
+      '<input placeholder="Account Name" class="account-input" type="text" aria-label="Credit Account Name">' +
+      '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Credit Amount">' +
+      '<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Credit Particulars">';
+    container.appendChild(row);
+
+    var p = $(".particulars-input", row);
+    if (p) { p.readOnly = true; p.value = ""; }
+
+    autoFillParticularsInForm();
   }
 
-  function getRowInputs(row){
-    if (!row) return [];
-    var acc = row.querySelector('.account-input');
-    var amt = row.querySelector('.amount-input');
-    var par = row.querySelector('.particulars-input');
-    return [acc, amt, par].filter(Boolean);
+  window.addDebit = addDebit;
+  window.addCredit = addCredit;
+
+  function getRowsData(selector) {
+    var rows = $all(selector);
+    return rows.map(function (row) {
+      var accEl = $(".account-input", row);
+      var amtEl = $(".amount-input", row);
+      var acc = normalizeAccountName(accEl ? accEl.value : "");
+      var amt = toPaise(amtEl ? amtEl.value : 0);
+      return { acc: acc, amt: amt, row: row };
+    });
   }
 
-  function isLastCreditRow(row){
-    if (!row || !row.classList.contains('credit-row')) return false;
-    var creditRows = document.querySelectorAll('.credit-row');
-    if (!creditRows.length) return false;
-    return creditRows[creditRows.length - 1] === row;
+  function autoFillParticularsInForm() {
+    var debits = getRowsData(".debit-row");
+    var credits = getRowsData(".credit-row");
+
+    var debitAccounts = debits.map(function(d){ return d.acc; }).filter(Boolean);
+    var creditAccounts = credits.map(function(c){ return c.acc; }).filter(Boolean);
+
+    var debitParticularText = debitAccounts.length ? ("By " + debitAccounts.join(", ")) : "";
+    var creditParticularText = creditAccounts.length ? ("To " + creditAccounts.join(", ")) : "";
+
+    debits.forEach(function (d) {
+      var p = $(".particulars-input", d.row);
+      if (p) { p.readOnly = true; p.value = creditParticularText; }
+    });
+
+    credits.forEach(function (c) {
+      var p = $(".particulars-input", c.row);
+      if (p) { p.readOnly = true; p.value = debitParticularText; }
+    });
   }
 
-  function ensureNextRow(currentRow){
-    if (!currentRow) return null;
+  window.autoFillParticularsInForm = autoFillParticularsInForm;
 
-    if (currentRow.classList.contains('debit-row')) {
-      var next = currentRow.nextElementSibling;
-      if (next && next.classList.contains('debit-row')) return next;
-      addDebit();
-      return currentRow.nextElementSibling;
-    }
-
-    if (currentRow.classList.contains('credit-row')) {
-      var next2 = currentRow.nextElementSibling;
-      if (next2 && next2.classList.contains('credit-row')) return next2;
-      addCredit();
-      return currentRow.nextElementSibling;
-    }
-
-    return null;
-  }
-
-  document.addEventListener('keydown', function(e){
-    if (e.key !== 'Enter') return;
-
-    var t = e.target;
-    if (!t) return;
-
-    if (!(t.classList && (t.classList.contains('account-input') || t.classList.contains('amount-input') || t.classList.contains('particulars-input')))) {
-      return;
-    }
-
-    e.preventDefault();
-
-    var row = t.closest('.entry-row');
-    if (!row) return;
-
-    var inputs = getRowInputs(row);
-    var idx = inputs.indexOf(t);
-
-    // if last credit row + last input (particulars) → SAVE ENTRY
-    if (isLastCreditRow(row) && t.classList.contains('particulars-input')) {
-      var saveBtn = document.getElementById('saveEntryBtn');
-      if (saveBtn) {
-        autoFillParticularsInForm();
-        saveBtn.click();
-      } else {
-        saveEntry();
-      }
-      return;
-    }
-
-    // same row navigation
-    if (idx >= 0 && idx < inputs.length - 1) {
-      focusEl(inputs[idx + 1]);
-      return;
-    }
-
-    // next row
-    var nextRow = ensureNextRow(row);
-    if (nextRow) {
-      var nextInputs = getRowInputs(nextRow);
-      focusEl(nextInputs[0]);
+  document.addEventListener("input", function (e) {
+    if (!e.target || !e.target.classList) return;
+    if (e.target.classList.contains("account-input") || e.target.classList.contains("amount-input")) {
       autoFillParticularsInForm();
-      return;
     }
-  }, true);
-})();
+  });
 
-window.addEventListener('DOMContentLoaded', function() {
-  var pInputs = document.querySelectorAll('.particulars-input');
-  for (var i = 0; i < pInputs.length; i++) pInputs[i].readOnly = true;
+  // ------------------------------
+  // ENTER/RETURN AUTO SHIFT NAVIGATION
+  // ------------------------------
+  (function enableEnterNavigation(){
+    function focusEl(el){
+      if (!el) return;
+      el.focus();
+      try { if (el.select) el.select(); } catch(e){}
+    }
 
-  try {
-    var data = localStorage.getItem('journalData');
-    if (data) {
-      var parsed = JSON.parse(data);
-      if (Array.isArray(parsed)) {
-        journal = parsed;
-      } else {
-        journal = [];
-        localStorage.removeItem('journalData');
+    function getRowInputs(row){
+      if (!row) return [];
+      var acc = row.querySelector('.account-input');
+      var amt = row.querySelector('.amount-input');
+      var par = row.querySelector('.particulars-input');
+      var arr = [];
+      if (acc) arr.push(acc);
+      if (amt) arr.push(amt);
+      if (par) arr.push(par);
+      return arr;
+    }
+
+    function ensureNextRow(currentRow){
+      if (!currentRow) return null;
+
+      if (currentRow.classList.contains('debit-row')) {
+        var next = currentRow.nextElementSibling;
+        if (next && next.classList.contains('debit-row')) return next;
+        addDebit();
+        return currentRow.nextElementSibling;
       }
+
+      if (currentRow.classList.contains('credit-row')) {
+        var next2 = currentRow.nextElementSibling;
+        if (next2 && next2.classList.contains('credit-row')) return next2;
+        addCredit();
+        return currentRow.nextElementSibling;
+      }
+
+      return null;
     }
-  } catch (e) {
-    journal = [];
-    try { localStorage.removeItem('journalData'); } catch (x) {}
+
+    document.addEventListener('keydown', function(e){
+      if (e.key !== 'Enter') return;
+
+      var t = e.target;
+      if (!t || !t.classList) return;
+
+      // ALSO INCLUDE narration input for enter navigation
+      if (t.id === "narrationInput") {
+        e.preventDefault();
+        // go to first debit account input
+        var firstDebit = document.querySelector("#debitContainer .debit-row .account-input");
+        if (firstDebit) firstDebit.focus();
+        return;
+      }
+
+      if (!(t.classList.contains('account-input') || t.classList.contains('amount-input') || t.classList.contains('particulars-input'))) {
+        return;
+      }
+
+      e.preventDefault();
+
+      var row = t.closest('.entry-row');
+      if (!row) return;
+
+      var inputs = getRowInputs(row);
+      var idx = inputs.indexOf(t);
+
+      if (idx >= 0 && idx < inputs.length - 1) {
+        focusEl(inputs[idx + 1]);
+        return;
+      }
+
+      var nextRow = ensureNextRow(row);
+      if (nextRow) {
+        var nextInputs = getRowInputs(nextRow);
+        focusEl(nextInputs[0]);
+        autoFillParticularsInForm();
+        return;
+      }
+    }, true);
+  })();
+
+  // ------------------------------
+  // VALIDATION
+  // ------------------------------
+  function validateEntry(debits, credits, narration) {
+    var errors = [];
+
+    if (!debits.length) errors.push("Add at least 1 debit line.");
+    if (!credits.length) errors.push("Add at least 1 credit line.");
+
+    debits.forEach(function (d, idx) {
+      if (!d.acc) errors.push("Debit row " + (idx + 1) + ": Account name is required.");
+      if (d.amt <= 0) errors.push("Debit row " + (idx + 1) + ": Amount must be > 0.");
+    });
+
+    credits.forEach(function (c, idx) {
+      if (!c.acc) errors.push("Credit row " + (idx + 1) + ": Account name is required.");
+      if (c.amt <= 0) errors.push("Credit row " + (idx + 1) + ": Amount must be > 0.");
+    });
+
+    // Narration validation (kept minimal to not change meaning/UI)
+    if (narration != null) {
+      var n = String(narration).trim();
+      if (n.length > 300) errors.push("Narration is too long (max 300 characters).");
+    }
+
+    var debitTotal = debits.reduce(function(s, d){ return s + d.amt; }, 0);
+    var creditTotal = credits.reduce(function(s, c){ return s + c.amt; }, 0);
+
+    if (debitTotal !== creditTotal) {
+      errors.push("Debit total (" + paiseToStr(debitTotal) + ") must equal Credit total (" + paiseToStr(creditTotal) + ").");
+    }
+
+    return { ok: errors.length === 0, errors: errors, debitTotal: debitTotal, creditTotal: creditTotal };
   }
 
-  try {
-    var u = localStorage.getItem('undoStack');
-    if (u) {
-      var parsedU = JSON.parse(u);
-      if (Array.isArray(parsedU)) undoStack = parsedU;
+  // ------------------------------
+  // LEDGER UPDATE
+  // ------------------------------
+  function ensureLedgerAcc(name) {
+    if (!ledger[name]) ledger[name] = [];
+  }
+
+  function postToLedger(entry) {
+    var jf = entry.jf || "-";
+
+    entry.debits.forEach(function (d) {
+      ensureLedgerAcc(d.acc);
+      ledger[d.acc].push({
+        date: entry.date,
+        particulars: "To " + entry.credits.map(function(c){ return c.acc; }).join(", "),
+        debit: d.amt,
+        credit: 0,
+        jf: jf,
+        narration: entry.narration || "-"   // narration attached
+      });
+    });
+
+    entry.credits.forEach(function (c) {
+      ensureLedgerAcc(c.acc);
+      ledger[c.acc].push({
+        date: entry.date,
+        particulars: "By " + entry.debits.map(function(d){ return d.acc; }).join(", "),
+        debit: 0,
+        credit: c.amt,
+        jf: jf,
+        narration: entry.narration || "-"   // narration attached
+      });
+    });
+  }
+
+  function rebuildLedgerFromJournal() {
+    ledger = {};
+    journal.forEach(postToLedger);
+  }
+
+  // ------------------------------
+  // ADD ENTRY
+  // ------------------------------
+  function addEntry() {
+    var dateEl = $("#dateInput");
+    var narrationEl = $("#narrationInput");
+
+    var date = (dateEl ? dateEl.value : "").trim();
+    var narration = (narrationEl ? narrationEl.value : "").trim();
+
+    var debits = getRowsData(".debit-row").filter(function(d){ return d.acc || d.amt; });
+    var credits = getRowsData(".credit-row").filter(function(c){ return c.acc || c.amt; });
+
+    var v = validateEntry(debits, credits, narration);
+    if (!v.ok) {
+      alert("Fix these errors:\n\n" + v.errors.map(function(e){ return "• " + e; }).join("\n"));
+      return;
     }
-  } catch (e2) { undoStack = []; }
 
-  rebuild();
-});
+    var entry = {
+      date: date || new Date().toISOString().slice(0, 10),
+      narration: narration ? narration : "-",   // narration stored
+      debits: debits.map(function(d){ return { acc: d.acc, amt: d.amt }; }),
+      credits: credits.map(function(c){ return { acc: c.acc, amt: c.amt }; }),
+      jf: "-"
+    };
+
+    undoStack.push({ type: "add", index: journal.length, entry: entry });
+
+    journal.push(entry);
+    rebuildLedgerFromJournal();
+    persist();
+
+    resetEntryForm();
+    renderAll();
+  }
+
+  window.addEntry = addEntry;
+
+  // ------------------------------
+  // UNDO
+  // ------------------------------
+  function undoLast() {
+    if (!undoStack.length) {
+      alert("Nothing to undo.");
+      return;
+    }
+
+    var last = undoStack.pop();
+
+    if (last.type === "add") {
+      if (journal[last.index] && journal[last.index] === last.entry) {
+        journal.splice(last.index, 1);
+      } else {
+        var idx = journal.lastIndexOf(last.entry);
+        if (idx >= 0) journal.splice(idx, 1);
+      }
+    }
+
+    rebuildLedgerFromJournal();
+    persist();
+    renderAll();
+  }
+
+  window.undoLast = undoLast;
+
+  // ------------------------------
+  // FORM RESET
+  // ------------------------------
+  function resetEntryForm() {
+    var debitC = document.getElementById("debitContainer");
+    var creditC = document.getElementById("creditContainer");
+    if (!debitC || !creditC) return;
+
+    debitC.innerHTML = "";
+    creditC.innerHTML = "";
+
+    addDebit();
+    addCredit();
+
+    // narration reset
+    var narrationEl = $("#narrationInput");
+    if (narrationEl) narrationEl.value = "";
+
+    autoFillParticularsInForm();
+  }
+
+  window.resetEntryForm = resetEntryForm;
+
+  // ------------------------------
+  // RENDERING
+  // ------------------------------
+  function renderJournal() {
+    var out = document.getElementById("journalOutput");
+    if (!out) return;
+
+    if (!journal.length) {
+      out.innerHTML = "<p style='opacity:0.8'>No entries yet.</p>";
+      return;
+    }
+
+    var html = "";
+    journal.forEach(function (e, idx) {
+      var debitLines = e.debits.map(function(d){ return "<div>" + escapeHtml(d.acc) + " Dr. " + paiseToStr(d.amt) + "</div>"; }).join("");
+      var creditLines = e.credits.map(function(c){ return "<div>To " + escapeHtml(c.acc) + " " + paiseToStr(c.amt) + "</div>"; }).join("");
+
+      html +=
+        "<div class='entry-card'>" +
+          "<div><b>Entry " + (idx + 1) + "</b> | " + escapeHtml(e.date) + "</div>" +
+          "<div style='margin-top:6px'>" + debitLines + "</div>" +
+          "<div style='margin-top:6px'>" + creditLines + "</div>" +
+          "<div style='margin-top:6px'><i>Narration:</i> " + escapeHtml(e.narration || "-") + "</div>" +
+        "</div>";
+    });
+
+    out.innerHTML = html;
+  }
+
+  function renderLedger() {
+    var out = document.getElementById("ledgerOutput");
+    if (!out) return;
+
+    var accNames = Object.keys(ledger).sort();
+    if (!accNames.length) {
+      out.innerHTML = "<p style='opacity:0.8'>Ledger is empty.</p>";
+      return;
+    }
+
+    var html = "";
+    accNames.forEach(function (acc) {
+      var rows = ledger[acc] || [];
+      var debitTotal = 0, creditTotal = 0;
+
+      var rowHtml = rows.map(function (r) {
+        debitTotal += r.debit || 0;
+        creditTotal += r.credit || 0;
+
+        // narration kept but NOT shown in ledger UI to avoid UI change
+        return (
+          "<tr>" +
+            "<td>" + escapeHtml(r.date) + "</td>" +
+            "<td>" + escapeHtml(r.particulars) + "</td>" +
+            "<td>" + escapeHtml(r.jf || "-") + "</td>" +
+            "<td style='text-align:right'>" + (r.debit ? paiseToStr(r.debit) : "") + "</td>" +
+            "<td style='text-align:right'>" + (r.credit ? paiseToStr(r.credit) : "") + "</td>" +
+          "</tr>"
+        );
+      }).join("");
+
+      html +=
+        "<div class='ledger-card'>" +
+          "<h3>" + escapeHtml(acc) + "</h3>" +
+          "<div style='overflow:auto'>" +
+          "<table class='ledger-table'>" +
+            "<thead><tr><th>Date</th><th>Particulars</th><th>J/F</th><th>Debit</th><th>Credit</th></tr></thead>" +
+            "<tbody>" + rowHtml + "</tbody>" +
+            "<tfoot>" +
+              "<tr>" +
+                "<td colspan='3'><b>Total</b></td>" +
+                "<td style='text-align:right'><b>" + paiseToStr(debitTotal) + "</b></td>" +
+                "<td style='text-align:right'><b>" + paiseToStr(creditTotal) + "</b></td>" +
+              "</tr>" +
+            "</tfoot>" +
+          "</table>" +
+          "</div>" +
+        "</div>";
+    });
+
+    out.innerHTML = html;
+  }
+
+  function renderAll() {
+    renderJournal();
+    renderLedger();
+  }
+  window.renderAll = renderAll;
+
+  // ------------------------------
+  // INIT
+  // ------------------------------
+  function init() {
+    restore();
+    rebuildLedgerFromJournal();
+
+    if (!document.querySelector(".debit-row")) addDebit();
+    if (!document.querySelector(".credit-row")) addCredit();
+
+    autoFillParticularsInForm();
+    renderAll();
+  }
+
+  // crash guard (prevents white screen)
+  window.addEventListener("error", function(e){
+    console.error("Runtime error:", e.message, e.error);
+  });
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+
+})();
 </script>
-
-</body>
-</html>
