@@ -529,12 +529,6 @@ select:focus {
 <label for="date">Transaction Date</label>
 <input id="date" type="date" aria-label="Transaction Date">
 </div>
-
-<!-- ✅ NARRATION ADDED (same UI style, no redesign) -->
-<div class="input-group">
-<label for="narration">Narration</label>
-<input id="narration" type="text" aria-label="Narration" placeholder="Narration (Optional)">
-</div>
 </div>
 
 <div class="form-section">
@@ -561,7 +555,7 @@ select:focus {
 <button type="button" class="btn btn-add" onclick="addCredit()">+ Add Credit</button>
 </div>
 
-<button type="button" class="btn btn-primary" onclick="saveEntry()">Save Entry to Journal</button>
+<button type="button" class="btn btn-primary" onclick="saveEntry()" id="saveEntryBtn">Save Entry to Journal</button>
 </div>
 </div>
 
@@ -669,7 +663,6 @@ function addDebit() {
   var p = row.querySelector('.particulars-input');
   p.readOnly = true;
   p.value = '';
-  autoFillParticularsInForm();
 }
 
 function addCredit() {
@@ -683,7 +676,6 @@ function addCredit() {
   var p = row.querySelector('.particulars-input');
   p.readOnly = true;
   p.value = '';
-  autoFillParticularsInForm();
 }
 
 function autoFillParticularsInForm() {
@@ -717,7 +709,6 @@ function autoFillParticularsInForm() {
 
 function clearForm() {
   document.getElementById('date').value = '';
-  document.getElementById('narration').value = '';
 
   var debitRows = document.querySelectorAll('.debit-row');
   for (var i = 0; i < debitRows.length; i++) {
@@ -747,9 +738,6 @@ function saveEntry() {
 
   var date = document.getElementById('date').value;
   if (!date) { alert('Please enter a transaction date'); return; }
-
-  // ✅ narration
-  var narration = document.getElementById('narration').value.trim();
 
   var debits = [];
   var credits = [];
@@ -789,9 +777,7 @@ function saveEntry() {
     return;
   }
 
-  // ✅ narration saved
-  journal.push({ date: date, narration: narration, debits: debits, credits: credits });
-
+  journal.push({ date: date, debits: debits, credits: credits });
   persist();
   rebuild();
   clearForm();
@@ -836,7 +822,7 @@ function clearAllData() {
 
   try { localStorage.removeItem('journalData'); } catch(e){}
   try { localStorage.removeItem('undoStack'); } catch(e){}
-
+  
   rebuild();
   clearForm();
   alert('All data cleared.');
@@ -861,14 +847,13 @@ function rebuild() {
 
   for (var i = 0; i < journal.length; i++) {
     var entry = journal[i];
-    var narrationText = (entry.narration || '').trim();
 
     for (var j = 0; j < entry.debits.length; j++) {
       var d = entry.debits[j];
       var row = tbody.insertRow();
       row.innerHTML =
         '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>' + escapeHtml(d.account) + (narrationText ? '<div style="font-size:12px; opacity:0.8;">' + escapeHtml(narrationText) + '</div>' : '') + '</td>' +
+        '<td>' + escapeHtml(d.account) + '</td>' +
         '<td>' + (i + 1) + '</td>' +
         '<td class="debit-amount">' + Number(d.amount).toFixed(2) + '</td>' +
         '<td></td>' +
@@ -880,7 +865,6 @@ function rebuild() {
         type: 'debit',
         amount: Number(d.amount),
         particulars: d.particulars,
-        narration: narrationText,
         jf: i + 1,
         entryIndex: i
       });
@@ -891,7 +875,7 @@ function rebuild() {
       var row2 = tbody.insertRow();
       row2.innerHTML =
         '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>' + escapeHtml(c.account) + (narrationText ? '<div style="font-size:12px; opacity:0.8;">' + escapeHtml(narrationText) + '</div>' : '') + '</td>' +
+        '<td>' + escapeHtml(c.account) + '</td>' +
         '<td>' + (i + 1) + '</td>' +
         '<td></td>' +
         '<td class="credit-amount">' + Number(c.amount).toFixed(2) + '</td>' +
@@ -903,7 +887,6 @@ function rebuild() {
         type: 'credit',
         amount: Number(c.amount),
         particulars: c.particulars,
-        narration: narrationText,
         jf: i + 1,
         entryIndex: i
       });
@@ -950,12 +933,7 @@ function buildLedger() {
 
     for (var r = 0; r < entries.length; r++) {
       var e = entries[r];
-
-      // narration appended to particulars but doesn't change structure
       var p = e.particulars ? escapeHtml(e.particulars) : '—';
-      if (e.narration) {
-        p += '<div style="font-size:12px; opacity:0.75;">' + escapeHtml(e.narration) + '</div>';
-      }
 
       var delBtn = '<button class="btn btn-danger" onclick="deleteJournalEntry(' + e.entryIndex + ')">Delete</button>';
 
@@ -1021,6 +999,98 @@ document.addEventListener('input', function(e) {
     autoFillParticularsInForm();
   }
 });
+
+// ------------------------------------------------------------
+// ENTER / RETURN AUTO SHIFT + ENTER ON LAST CREDIT → SAVE ENTRY
+// ------------------------------------------------------------
+(function enableEnterNavigation(){
+  function focusEl(el){
+    if (!el) return;
+    el.focus();
+    try { if (el.select) el.select(); } catch(e){}
+  }
+
+  function getRowInputs(row){
+    if (!row) return [];
+    var acc = row.querySelector('.account-input');
+    var amt = row.querySelector('.amount-input');
+    var par = row.querySelector('.particulars-input');
+    return [acc, amt, par].filter(Boolean);
+  }
+
+  function isLastCreditRow(row){
+    if (!row || !row.classList.contains('credit-row')) return false;
+    var creditRows = document.querySelectorAll('.credit-row');
+    if (!creditRows.length) return false;
+    return creditRows[creditRows.length - 1] === row;
+  }
+
+  function ensureNextRow(currentRow){
+    if (!currentRow) return null;
+
+    if (currentRow.classList.contains('debit-row')) {
+      var next = currentRow.nextElementSibling;
+      if (next && next.classList.contains('debit-row')) return next;
+      addDebit();
+      return currentRow.nextElementSibling;
+    }
+
+    if (currentRow.classList.contains('credit-row')) {
+      var next2 = currentRow.nextElementSibling;
+      if (next2 && next2.classList.contains('credit-row')) return next2;
+      addCredit();
+      return currentRow.nextElementSibling;
+    }
+
+    return null;
+  }
+
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Enter') return;
+
+    var t = e.target;
+    if (!t) return;
+
+    if (!(t.classList && (t.classList.contains('account-input') || t.classList.contains('amount-input') || t.classList.contains('particulars-input')))) {
+      return;
+    }
+
+    e.preventDefault();
+
+    var row = t.closest('.entry-row');
+    if (!row) return;
+
+    var inputs = getRowInputs(row);
+    var idx = inputs.indexOf(t);
+
+    // if last credit row + last input (particulars) → SAVE ENTRY
+    if (isLastCreditRow(row) && t.classList.contains('particulars-input')) {
+      var saveBtn = document.getElementById('saveEntryBtn');
+      if (saveBtn) {
+        autoFillParticularsInForm();
+        saveBtn.click();
+      } else {
+        saveEntry();
+      }
+      return;
+    }
+
+    // same row navigation
+    if (idx >= 0 && idx < inputs.length - 1) {
+      focusEl(inputs[idx + 1]);
+      return;
+    }
+
+    // next row
+    var nextRow = ensureNextRow(row);
+    if (nextRow) {
+      var nextInputs = getRowInputs(nextRow);
+      focusEl(nextInputs[0]);
+      autoFillParticularsInForm();
+      return;
+    }
+  }, true);
+})();
 
 window.addEventListener('DOMContentLoaded', function() {
   var pInputs = document.querySelectorAll('.particulars-input');
