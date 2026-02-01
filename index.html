@@ -706,6 +706,8 @@
           <button class="btn primary" onclick="addEntry()">💎 Save Transaction</button>
           <button class="btn secondary" onclick="resetEntryForm()">🔄 Reset Form</button>
           <button class="btn danger" onclick="undoLast()">↶ Undo Last Action</button>
+          <!-- NEW: Delete All -->
+          <button class="btn danger" onclick="deleteAllEntries()">🧹 Delete All</button>
         </div>
 
         <div class="info-box">
@@ -738,6 +740,11 @@
             <div>
               <label>&nbsp;</label>
               <button class="btn secondary" onclick="clearJournalSearch()">Clear Filter</button>
+            </div>
+            <!-- NEW: Delete All also available in Journal page -->
+            <div>
+              <label>&nbsp;</label>
+              <button class="btn danger" onclick="deleteAllEntries()">🧹 Delete All</button>
             </div>
           </div>
         </div>
@@ -774,6 +781,7 @@
      COMPOUND JOURNAL → AUTO LEDGER (ELITE EDITION)
      Added:
      - Delete Entry button in Journal
+     - Delete All button (Journal + Entry page)
      - Auto Ledger Folio numbering (L.F.) CBSE style
      - Fixed broken ledger HTML render
      ========================================================== */
@@ -1161,6 +1169,39 @@
     }
     window.deleteEntry = deleteEntry;
 
+    /* ===== NEW: Delete All Entries ===== */
+    function deleteAllEntries() {
+      if (!journal || journal.length === 0) {
+        alert("No entries to delete.");
+        return;
+      }
+
+      var ok = confirm(
+        "DELETE ALL JOURNAL ENTRIES?\n\n" +
+        "Total entries: " + journal.length + "\n" +
+        "This will clear Journal + Ledger completely.\n\n" +
+        "This action can be undone (Undo button)."
+      );
+
+      if (!ok) return;
+
+      // Save undo snapshot
+      undoStack.push({
+        type: "deleteAll",
+        prevJournal: JSON.parse(JSON.stringify(journal))
+      });
+
+      // Clear everything
+      journal = [];
+      ledger = {};
+
+      persist();
+      renderAll();
+
+      alert("✓ All entries deleted successfully!");
+    }
+    window.deleteAllEntries = deleteAllEntries;
+
     function editEntry(index) {
       index = Number(index);
       if (!isFinite(index) || index < 0 || index >= journal.length) {
@@ -1258,6 +1299,8 @@
         if (last.oldEntry) {
           journal.splice(last.index, 0, last.oldEntry);
         }
+      } else if (last.type === "deleteAll") {
+        journal = last.prevJournal || [];
       }
 
       rebuildLedgerFromJournal();
