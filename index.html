@@ -1,856 +1,1058 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  BookOpen, 
-  FileText, 
-  ScrollText, 
-  Save, 
-  RotateCcw, 
-  Undo2, 
-  Trash2, 
-  Plus, 
-  Search, 
-  Pencil, 
-  TrendingUp, 
-  TrendingDown,
-  Info,
-  BadgeCheck,
-  Building2,
-  AlertCircle
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elite Ledger - Premium Accounting</title>
 
-// --- Helper Functions from original code ---
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
 
-function normalizeAccountName(name: string) {
-  let n = String(name || "").trim();
-  if (!n) return "";
-  n = n.replace(/\s+/g, " ");
-  // Original logic: if (!/a\/c$/i.test(n)) n = n + " A/c";
-  // But maybe we can make it smarter or keep it. Let's keep it to preserve behavior.
-  if (!/a\/c$/i.test(n)) n = n + " A/c";
-  n = n.replace(/A\/c\s*A\/c$/i, "A/c");
-  n = n.charAt(0).toUpperCase() + n.slice(1);
-  return n;
-}
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-function toPaise(v: string | number) {
-  const n = Number(v);
-  if (!Number.isFinite(n) || n <= 0) return 0;
-  return Math.round(n * 100);
-}
+    <!-- React 18 + ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-function paiseToStr(p: number) {
-  p = Number(p) || 0;
-  return (p / 100).toFixed(2);
-}
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-function safeJSONParse(str: string | null, fallback: any) {
-  try {
-    const obj = JSON.parse(str || "");
-    return obj == null ? fallback : obj;
-  } catch (e) {
-    return fallback;
-  }
-}
-
-// --- Types ---
-
-interface TransactionRow {
-  id: string; // React needs keys
-  acc: string;
-  amtStr: string; // Keep as string for input
-  amt: number;
-}
-
-interface JournalEntry {
-  date: string;
-  narration: string;
-  debits: { acc: string; amt: number }[];
-  credits: { acc: string; amt: number }[];
-  jf: string;
-}
-
-interface LedgerEntry {
-  entryIndex: number;
-  date: string;
-  particulars: string;
-  debit: number;
-  credit: number;
-  jf: string;
-  lf: string;
-}
-
-type ViewMode = 'new' | 'journal' | 'ledger';
-
-// --- Main Component ---
-
-export function AccountingApp() {
-  // Inject fonts and styles
-  useEffect(() => {
-    const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap';
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
-
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, []);
-
-  // State
-  const [view, setView] = useState<ViewMode>('new');
-  const [journal, setJournal] = useState<JournalEntry[]>([]);
-  const [undoStack, setUndoStack] = useState<any[]>([]);
-  
-  // Form State
-  const [date, setDate] = useState("");
-  const [narration, setNarration] = useState("");
-  const [debits, setDebits] = useState<TransactionRow[]>([]);
-  const [credits, setCredits] = useState<TransactionRow[]>([]);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-
-  // Search State
-  const [journalSearch, setJournalSearch] = useState("");
-  const [journalSearchMode, setJournalSearchMode] = useState("all");
-  const [ledgerSearch, setLedgerSearch] = useState("");
-
-  // Initialize
-  useEffect(() => {
-    const j = safeJSONParse(localStorage.getItem("journalData"), []);
-    const u = safeJSONParse(localStorage.getItem("undoStack"), []);
-    if (Array.isArray(j)) setJournal(j);
-    if (Array.isArray(u)) setUndoStack(u);
-    
-    // Initialize form with one empty row each
-    resetFormState();
-  }, []);
-
-  // Persistence
-  useEffect(() => {
-    localStorage.setItem("journalData", JSON.stringify(journal));
-  }, [journal]);
-
-  useEffect(() => {
-    localStorage.setItem("undoStack", JSON.stringify(undoStack));
-  }, [undoStack]);
-
-  const resetFormState = () => {
-    setDate(new Date().toISOString().slice(0, 10));
-    setNarration("");
-    setDebits([{ id: Math.random().toString(36), acc: "", amtStr: "", amt: 0 }]);
-    setCredits([{ id: Math.random().toString(36), acc: "", amtStr: "", amt: 0 }]);
-    setEditingIndex(null);
-  };
-
-  // --- Logic ---
-
-  const addDebitRow = () => {
-    setDebits([...debits, { id: Math.random().toString(36), acc: "", amtStr: "", amt: 0 }]);
-  };
-
-  const addCreditRow = () => {
-    setCredits([...credits, { id: Math.random().toString(36), acc: "", amtStr: "", amt: 0 }]);
-  };
-
-  const updateRow = (
-    type: 'debit' | 'credit', 
-    index: number, 
-    field: 'acc' | 'amtStr', 
-    value: string
-  ) => {
-    const updateList = (list: TransactionRow[]) => {
-      const newList = [...list];
-      const item = { ...newList[index] };
-      if (field === 'acc') item.acc = value; // Don't normalize while typing
-      if (field === 'amtStr') {
-        item.amtStr = value;
-        item.amt = toPaise(value);
+    <style>
+      html,
+      body {
+        height: 100%;
       }
-      newList[index] = item;
-      return newList;
-    };
+    </style>
+  </head>
 
-    if (type === 'debit') setDebits(updateList(debits));
-    else setCredits(updateList(credits));
-  };
+  <body>
+    <div id="root"></div>
 
-  const removeRow = (type: 'debit' | 'credit', index: number) => {
-    if (type === 'debit') {
-      if (debits.length > 1) setDebits(debits.filter((_, i) => i !== index));
-    } else {
-      if (credits.length > 1) setCredits(credits.filter((_, i) => i !== index));
-    }
-  };
+    <script type="text/babel">
+      const { useState, useEffect, useMemo } = React;
 
-  // Computed Particulars (Auto-fill logic)
-  const debitParticulars = useMemo(() => {
-    const validAccs = debits.map(d => normalizeAccountName(d.acc)).filter(Boolean);
-    return validAccs.length ? "By " + validAccs.join(", ") : "";
-  }, [debits]);
+      // --- Inline Icon Component (Lucide-like SVGs) ---
+      function Icon({ name, className }) {
+        const base =
+          "w-5 h-5 stroke-current fill-none stroke-[2] stroke-linecap-round stroke-linejoin-round";
+        const cls = className ? className : base;
 
-  const creditParticulars = useMemo(() => {
-    const validAccs = credits.map(c => normalizeAccountName(c.acc)).filter(Boolean);
-    return validAccs.length ? "To " + validAccs.join(", ") : "";
-  }, [credits]);
+        const icons = {
+          Building2: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M3 21V3h18v18" />
+              <path d="M9 21V9h6v12" />
+              <path d="M7 7h.01" />
+              <path d="M17 7h.01" />
+              <path d="M7 11h.01" />
+              <path d="M17 11h.01" />
+              <path d="M7 15h.01" />
+              <path d="M17 15h.01" />
+            </svg>
+          ),
+          Plus: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+            </svg>
+          ),
+          ScrollText: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M8 21h12a2 2 0 0 0 2-2V7" />
+              <path d="M6 3h12a2 2 0 0 1 2 2v2" />
+              <path d="M6 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2" />
+              <path d="M6 17h10" />
+              <path d="M6 13h10" />
+              <path d="M6 9h10" />
+            </svg>
+          ),
+          BookOpen: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M12 7v14" />
+              <path d="M3 18a2 2 0 0 0 2 2h7V6H5a2 2 0 0 0-2 2z" />
+              <path d="M21 18a2 2 0 0 1-2 2h-7V6h7a2 2 0 0 1 2 2z" />
+            </svg>
+          ),
+          Pencil: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M17 3a2.85 2.85 0 0 1 4 4L7 21H3v-4Z" />
+              <path d="M15 5l4 4" />
+            </svg>
+          ),
+          Save: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+              <path d="M17 21v-8H7v8" />
+              <path d="M7 3v5h8" />
+            </svg>
+          ),
+          RotateCcw: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M3 12a9 9 0 1 0 3-6.7" />
+              <path d="M3 4v6h6" />
+            </svg>
+          ),
+          Undo2: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M9 14 4 9l5-5" />
+              <path d="M4 9h10a6 6 0 0 1 0 12h-4" />
+            </svg>
+          ),
+          Trash2: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M3 6h18" />
+              <path d="M8 6V4h8v2" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              <path d="M10 11v6" />
+              <path d="M14 11v6" />
+            </svg>
+          ),
+          TrendingDown: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M3 7l6 6 4-4 8 8" />
+              <path d="M21 17V7h-10" />
+            </svg>
+          ),
+          TrendingUp: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M3 17l6-6 4 4 8-8" />
+              <path d="M21 7v10H11" />
+            </svg>
+          ),
+          Search: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.3-4.3" />
+            </svg>
+          ),
+          Info: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4" />
+              <path d="M12 8h.01" />
+            </svg>
+          ),
+          BadgeCheck: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M12 2l3 3 4 .5-2.5 3.2.8 4.3L12 11l-3.3 2.3.8-4.3L7 5.5 11 5z" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+          ),
+        };
 
-  // Actions
+        return icons[name] || null;
+      }
 
-  const handleSaveEntry = () => {
-    // 1. Prepare data
-    const finalDebits = debits
-      .map(d => ({ ...d, acc: normalizeAccountName(d.acc) }))
-      .filter(d => d.acc || d.amt > 0);
-    const finalCredits = credits
-      .map(c => ({ ...c, acc: normalizeAccountName(c.acc) }))
-      .filter(c => c.acc || c.amt > 0);
+      // --- Helper Functions ---
+      function normalizeAccountName(name) {
+        let n = String(name || "").trim();
+        if (!n) return "";
+        n = n.replace(/\s+/g, " ");
+        if (!/a\/c$/i.test(n)) n = n + " A/c";
+        n = n.replace(/A\/c\s*A\/c$/i, "A/c");
+        n = n.charAt(0).toUpperCase() + n.slice(1);
+        return n;
+      }
 
-    // 2. Validate
-    const errors = [];
-    if (!finalDebits.length) errors.push("Add at least 1 debit line.");
-    if (!finalCredits.length) errors.push("Add at least 1 credit line.");
+      function toPaise(v) {
+        const n = Number(v);
+        if (!Number.isFinite(n) || n <= 0) return 0;
+        return Math.round(n * 100);
+      }
 
-    finalDebits.forEach((d, i) => {
-      if (!d.acc) errors.push(`Debit row ${i + 1}: Account name is required.`);
-      if (d.amt <= 0) errors.push(`Debit row ${i + 1}: Amount must be > 0.`);
-    });
-    finalCredits.forEach((c, i) => {
-      if (!c.acc) errors.push(`Credit row ${i + 1}: Account name is required.`);
-      if (c.amt <= 0) errors.push(`Credit row ${i + 1}: Amount must be > 0.`);
-    });
+      function paiseToStr(p) {
+        p = Number(p) || 0;
+        return (p / 100).toFixed(2);
+      }
 
-    const dTotal = finalDebits.reduce((sum, d) => sum + d.amt, 0);
-    const cTotal = finalCredits.reduce((sum, c) => sum + c.amt, 0);
+      function safeJSONParse(str, fallback) {
+        try {
+          const obj = JSON.parse(str || "");
+          return obj == null ? fallback : obj;
+        } catch {
+          return fallback;
+        }
+      }
 
-    if (dTotal !== cTotal) {
-      errors.push(`Debit total (₹${paiseToStr(dTotal)}) must equal Credit total (₹${paiseToStr(cTotal)}).`);
-    }
+      // --- App ---
+      function AccountingApp() {
+        const [view, setView] = useState("new");
+        const [journal, setJournal] = useState([]);
+        const [undoStack, setUndoStack] = useState([]);
 
-    if (errors.length > 0) {
-      alert("Please fix these errors:\n\n" + errors.map(e => "• " + e).join("\n"));
-      return;
-    }
+        const [date, setDate] = useState("");
+        const [narration, setNarration] = useState("");
+        const [debits, setDebits] = useState([]);
+        const [credits, setCredits] = useState([]);
+        const [editingIndex, setEditingIndex] = useState(null);
 
-    // 3. Create Entry
-    const entry: JournalEntry = {
-      date: date || new Date().toISOString().slice(0, 10),
-      narration: narration || "-",
-      debits: finalDebits.map(d => ({ acc: d.acc, amt: d.amt })),
-      credits: finalCredits.map(c => ({ acc: c.acc, amt: c.amt })),
-      jf: "-"
-    };
+        const [journalSearch, setJournalSearch] = useState("");
+        const [journalSearchMode, setJournalSearchMode] = useState("all");
+        const [ledgerSearch, setLedgerSearch] = useState("");
 
-    // 4. Save & Undo Logic
-    if (editingIndex !== null) {
-      const oldEntry = JSON.parse(JSON.stringify(journal[editingIndex]));
-      setUndoStack([...undoStack, { type: "edit", index: editingIndex, oldEntry }]);
-      
-      const newJournal = [...journal];
-      newJournal[editingIndex] = entry;
-      setJournal(newJournal);
-      alert("✓ Entry updated successfully!");
-    } else {
-      setUndoStack([...undoStack, { type: "add", index: journal.length, entry }]);
-      setJournal([...journal, entry]);
-    }
+        const resetFormState = () => {
+          setDate(new Date().toISOString().slice(0, 10));
+          setNarration("");
+          setDebits([{ id: crypto.randomUUID(), acc: "", amtStr: "", amt: 0 }]);
+          setCredits([{ id: crypto.randomUUID(), acc: "", amtStr: "", amt: 0 }]);
+          setEditingIndex(null);
+        };
 
-    resetFormState();
-  };
+        useEffect(() => {
+          const j = safeJSONParse(localStorage.getItem("journalData"), []);
+          const u = safeJSONParse(localStorage.getItem("undoStack"), []);
+          if (Array.isArray(j)) setJournal(j);
+          if (Array.isArray(u)) setUndoStack(u);
+          resetFormState();
+          // eslint-disable-next-line
+        }, []);
 
-  const handleEditEntry = (index: number) => {
-    const e = journal[index];
-    setDate(e.date);
-    setNarration(e.narration === "-" ? "" : e.narration);
-    setDebits(e.debits.map(d => ({ 
-      id: Math.random().toString(36), 
-      acc: d.acc, 
-      amt: d.amt, 
-      amtStr: paiseToStr(d.amt) 
-    })));
-    setCredits(e.credits.map(c => ({ 
-      id: Math.random().toString(36), 
-      acc: c.acc, 
-      amt: c.amt, 
-      amtStr: paiseToStr(c.amt) 
-    })));
-    setEditingIndex(index);
-    setView('new');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+        useEffect(() => {
+          localStorage.setItem("journalData", JSON.stringify(journal));
+        }, [journal]);
 
-  const handleDeleteEntry = (index: number) => {
-    if (!window.confirm(`Delete Entry #${index + 1}?`)) return;
-    
-    const oldEntry = JSON.parse(JSON.stringify(journal[index]));
-    setUndoStack([...undoStack, { type: "delete", index, oldEntry }]);
-    
-    setJournal(journal.filter((_, i) => i !== index));
-  };
+        useEffect(() => {
+          localStorage.setItem("undoStack", JSON.stringify(undoStack));
+        }, [undoStack]);
 
-  const handleDeleteAll = () => {
-    if (!journal.length) return alert("No entries to delete.");
-    if (!window.confirm("DELETE ALL ENTRIES?\nThis action can be undone.")) return;
+        const addDebitRow = () =>
+          setDebits((prev) => [...prev, { id: crypto.randomUUID(), acc: "", amtStr: "", amt: 0 }]);
 
-    setUndoStack([...undoStack, { type: "deleteAll", prevJournal: JSON.parse(JSON.stringify(journal)) }]);
-    setJournal([]);
-    alert("✓ All entries deleted successfully!");
-  };
+        const addCreditRow = () =>
+          setCredits((prev) => [...prev, { id: crypto.randomUUID(), acc: "", amtStr: "", amt: 0 }]);
 
-  const handleUndo = () => {
-    if (!undoStack.length) return alert("Nothing to undo.");
-    const last = undoStack[undoStack.length - 1];
-    const newStack = undoStack.slice(0, -1);
-    
-    if (last.type === "add") {
-       // Logic: remove the entry that was added.
-       // Original logic checked if entry is same. Here index might have shifted if we did other things? 
-       // Original script was synchronous. Here React state is async but functional updates are safe.
-       // We'll trust the index or find the object.
-       setJournal(prev => {
-         // Simple removal by reference check or index if it matches
-         const idx = last.index;
-         if (prev[idx] === last.entry) return prev.filter((_, i) => i !== idx);
-         // Fallback if index shifted (unlikely in this single-user local app but safe)
-         return prev.filter(e => e !== last.entry);
-       });
-    } else if (last.type === "edit") {
-       setJournal(prev => {
-         const copy = [...prev];
-         if (copy[last.index]) copy[last.index] = last.oldEntry;
-         return copy;
-       });
-    } else if (last.type === "delete") {
-       setJournal(prev => {
-         const copy = [...prev];
-         copy.splice(last.index, 0, last.oldEntry);
-         return copy;
-       });
-    } else if (last.type === "deleteAll") {
-       setJournal(last.prevJournal || []);
-    }
-    
-    setUndoStack(newStack);
-  };
+        const updateRow = (type, index, field, value) => {
+          const updateList = (list) => {
+            const newList = [...list];
+            const item = { ...newList[index] };
+            if (field === "acc") item.acc = value;
+            if (field === "amtStr") {
+              item.amtStr = value;
+              item.amt = toPaise(value);
+            }
+            newList[index] = item;
+            return newList;
+          };
 
-  // --- Ledger Generation ---
-  
-  const ledgerData = useMemo(() => {
-    const ledger: Record<string, LedgerEntry[]> = {};
-    const accSet = new Set<string>();
-    
-    journal.forEach(e => {
-      e.debits.forEach(d => accSet.add(d.acc));
-      e.credits.forEach(c => accSet.add(c.acc));
-    });
-    
-    const sortedAccs = Array.from(accSet).sort();
-    const folioMap: Record<string, string> = {};
-    sortedAccs.forEach((acc, i) => folioMap[acc] = "L" + (i + 1));
-    
-    const ensureAcc = (acc: string) => { if (!ledger[acc]) ledger[acc] = []; };
+          if (type === "debit") setDebits((prev) => updateList(prev));
+          else setCredits((prev) => updateList(prev));
+        };
 
-    journal.forEach((entry, idx) => {
-      const jf = entry.jf || "-";
-      const creditParticularsStr = "To " + entry.credits.map(c => c.acc).join(", ");
-      const debitParticularsStr = "By " + entry.debits.map(d => d.acc).join(", ");
+        const removeRow = (type, index) => {
+          if (type === "debit") {
+            setDebits((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
+          } else {
+            setCredits((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
+          }
+        };
 
-      entry.debits.forEach(d => {
-        ensureAcc(d.acc);
-        ledger[d.acc].push({
-          entryIndex: idx,
-          date: entry.date,
-          particulars: creditParticularsStr,
-          debit: d.amt,
-          credit: 0,
-          jf,
-          lf: folioMap[d.acc] || "-"
-        });
-      });
+        const debitParticulars = useMemo(() => {
+          const validAccs = debits.map((d) => normalizeAccountName(d.acc)).filter(Boolean);
+          return validAccs.length ? "By " + validAccs.join(", ") : "";
+        }, [debits]);
 
-      entry.credits.forEach(c => {
-        ensureAcc(c.acc);
-        ledger[c.acc].push({
-          entryIndex: idx,
-          date: entry.date,
-          particulars: debitParticularsStr,
-          debit: 0,
-          credit: c.amt,
-          jf,
-          lf: folioMap[c.acc] || "-"
-        });
-      });
-    });
+        const creditParticulars = useMemo(() => {
+          const validAccs = credits.map((c) => normalizeAccountName(c.acc)).filter(Boolean);
+          return validAccs.length ? "To " + validAccs.join(", ") : "";
+        }, [credits]);
 
-    return { ledger, folioMap };
-  }, [journal]);
+        const handleSaveEntry = () => {
+          const finalDebits = debits
+            .map((d) => ({ ...d, acc: normalizeAccountName(d.acc) }))
+            .filter((d) => d.acc || d.amt > 0);
 
-  // --- Render Helpers ---
+          const finalCredits = credits
+            .map((c) => ({ ...c, acc: normalizeAccountName(c.acc) }))
+            .filter((c) => c.acc || c.amt > 0);
 
-  const getFilteredJournal = () => {
-    if (!journalSearch) return journal;
-    const q = journalSearch.toLowerCase();
-    return journal.filter(e => {
-      const date = e.date.toLowerCase();
-      const narr = e.narration.toLowerCase();
-      const accs = [...e.debits, ...e.credits].map(x => x.acc.toLowerCase()).join(" ");
-      
-      if (journalSearchMode === 'date') return date.includes(q);
-      if (journalSearchMode === 'narration') return narr.includes(q);
-      if (journalSearchMode === 'account') return accs.includes(q);
-      return date.includes(q) || narr.includes(q) || accs.includes(q);
-    });
-  };
+          const errors = [];
 
-  const getFilteredLedgerAccounts = () => {
-    const accounts = Object.keys(ledgerData.ledger).sort();
-    if (!ledgerSearch) return accounts;
-    const q = ledgerSearch.toLowerCase();
-    return accounts.filter(a => a.toLowerCase().includes(q));
-  };
+          if (!finalDebits.length) errors.push("Add at least 1 debit line.");
+          if (!finalCredits.length) errors.push("Add at least 1 credit line.");
 
-  return (
-    <div className="min-h-screen bg-[#f4f1ea] text-[#4a3b32] font-serif selection:bg-[#d4b483] selection:text-[#2c1810]" style={{ fontFamily: '"Crimson Text", serif' }}>
-      {/* Background Texture Overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
+          finalDebits.forEach((d, i) => {
+            if (!d.acc) errors.push(`Debit row ${i + 1}: Account name is required.`);
+            if (d.amt <= 0) errors.push(`Debit row ${i + 1}: Amount must be > 0.`);
+          });
 
-      {/* Header */}
-      <header className="relative bg-gradient-to-r from-[#5c4033] via-[#704214] to-[#5c4033] border-b-4 border-[#8b5e3c] sticky top-0 z-50 shadow-xl">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-10 mix-blend-overlay"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-[#d4af37] opacity-50"></div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="flex justify-between h-20 items-center">
-            <div className="flex items-center gap-4">
-              <div className="bg-gradient-to-br from-[#d4af37] to-[#8b6c42] p-2 rounded-lg text-[#2c1810] shadow-lg ring-1 ring-[#f4e4bc]/30">
-                <Building2 className="w-7 h-7" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold tracking-wide text-[#f4e4bc] leading-none" style={{ fontFamily: '"Playfair Display", serif' }}>ELITE LEDGER</h1>
-                <p className="text-xs text-[#d4af37] font-semibold tracking-[0.2em] uppercase mt-1">Premium Accounting</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center bg-[#4a3228] rounded-full p-1 border border-[#6d4c3d] shadow-inner">
-               {[
-                 { id: 'new', label: 'Transaction', icon: Plus },
-                 { id: 'journal', label: 'Journal', icon: ScrollText },
-                 { id: 'ledger', label: 'LedgerBook', icon: BookOpen },
-               ].map((tab) => (
-                 <button
-                   key={tab.id}
-                   onClick={() => setView(tab.id as ViewMode)}
-                   className={`
-                     flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all duration-300
-                     ${view === tab.id 
-                       ? 'bg-gradient-to-b from-[#f4e4bc] to-[#d4af37] text-[#3e2723] shadow-md transform scale-105' 
-                       : 'text-[#a68b7c] hover:text-[#d4af37] hover:bg-[#5c4033]'}
-                   `}
-                   style={{ fontFamily: '"Playfair Display", serif' }}
-                 >
-                   <tab.icon className="w-4 h-4" />
-                   {tab.label}
-                 </button>
-               ))}
-            </div>
-          </div>
-        </div>
-      </header>
+          finalCredits.forEach((c, i) => {
+            if (!c.acc) errors.push(`Credit row ${i + 1}: Account name is required.`);
+            if (c.amt <= 0) errors.push(`Credit row ${i + 1}: Amount must be > 0.`);
+          });
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
-        
-        {/* VIEW: NEW ENTRY */}
-        {view === 'new' && (
-          <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="bg-[#fdfbf7] rounded-xl shadow-[0_4px_20px_-4px_rgba(62,39,35,0.15)] border border-[#dcd0b9] overflow-hidden relative">
-              {/* Card Decoration */}
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#d4af37] via-[#8b5e3c] to-[#d4af37]"></div>
-              
-              <div className="px-8 py-6 border-b border-[#e8dfcf] bg-[#faf8f2] flex items-center justify-between">
-                <h2 className="text-2xl font-bold flex items-center gap-3 text-[#5c4033]" style={{ fontFamily: '"Playfair Display", serif' }}>
-                  <Pencil className="w-6 h-6 text-[#d4af37]" />
-                  {editingIndex !== null ? 'Edit Transaction' : 'New Transaction Entry'}
-                </h2>
-                {editingIndex !== null && (
-                  <span className="text-xs font-bold px-3 py-1 bg-[#fff8e1] text-[#b08d55] border border-[#ffe082] rounded-full tracking-wider uppercase">Editing Mode</span>
-                )}
-              </div>
+          const dTotal = finalDebits.reduce((sum, d) => sum + d.amt, 0);
+          const cTotal = finalCredits.reduce((sum, c) => sum + c.amt, 0);
 
-              <div className="p-8 space-y-10">
-                {/* Header Inputs */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-                  <div className="md:col-span-4">
-                    <label className="block text-xs font-bold text-[#8d7b68] uppercase tracking-widest mb-2 font-sans">
-                      Transaction Date
-                    </label>
-                    <input
-                      type="date"
-                      value={date}
-                      onChange={e => setDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#fffefc] border-2 border-[#e6dec8] rounded-lg text-[#5c4033] focus:border-[#d4af37] focus:ring-4 focus:ring-[#d4af37]/10 transition-all outline-none font-medium"
-                    />
-                  </div>
-                  <div className="md:col-span-8">
-                    <label className="block text-xs font-bold text-[#8d7b68] uppercase tracking-widest mb-2 font-sans">
-                      Narration
-                    </label>
-                    <input
-                      type="text"
-                      value={narration}
-                      onChange={e => setNarration(e.target.value)}
-                      placeholder="Description of the transaction..."
-                      className="w-full px-4 py-3 bg-[#fffefc] border-2 border-[#e6dec8] rounded-lg text-[#5c4033] placeholder-[#d0c4b4] focus:border-[#d4af37] focus:ring-4 focus:ring-[#d4af37]/10 transition-all outline-none"
-                    />
-                  </div>
-                </div>
+          if (dTotal !== cTotal) {
+            errors.push(
+              `Debit total (₹${paiseToStr(dTotal)}) must equal Credit total (₹${paiseToStr(cTotal)}).`
+            );
+          }
 
-                {/* Debits & Credits Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 relative">
-                  {/* Vertical Divider */}
-                  <div className="hidden lg:block absolute left-1/2 top-4 bottom-4 w-[1px] bg-[#e6dec8]"></div>
+          if (errors.length) {
+            alert("Please fix these errors:\n\n" + errors.map((e) => "• " + e).join("\n"));
+            return;
+          }
 
-                  {/* Debits */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-[#556b2f] border-b-2 border-[#556b2f]/20 pb-2 mb-4 flex items-center gap-2" style={{ fontFamily: '"Playfair Display", serif' }}>
-                      <TrendingDown className="w-5 h-5" /> Debit Accounts
-                    </h3>
-                    <div className="space-y-4">
-                      {debits.map((row, i) => (
-                        <div key={row.id} className="group flex gap-3 items-start animate-in fade-in slide-in-from-left-2 duration-300">
-                          <div className="flex-1 space-y-1">
-                            <input
-                              placeholder="Account Name"
-                              value={row.acc}
-                              onChange={e => updateRow('debit', i, 'acc', e.target.value)}
-                              className="w-full px-3 py-2.5 bg-[#f9fcf8] border border-[#d5e0d5] rounded-md text-[#2c3e2c] focus:border-[#556b2f] focus:ring-2 focus:ring-[#556b2f]/20 outline-none shadow-sm placeholder-[#b0c4b0]"
-                            />
-                            <div className="text-[11px] text-[#8a9a8a] px-1 italic font-serif">
-                              {creditParticulars ? `To ${creditParticulars.replace(/^To /, '')}` : 'Particulars...'}
-                            </div>
-                          </div>
-                          <input
-                            type="number"
-                            placeholder="0.00"
-                            value={row.amtStr}
-                            onChange={e => updateRow('debit', i, 'amtStr', e.target.value)}
-                            className="w-28 px-3 py-2.5 bg-[#f9fcf8] border border-[#d5e0d5] rounded-md text-right font-mono text-[#2c3e2c] focus:border-[#556b2f] focus:ring-2 focus:ring-[#556b2f]/20 outline-none shadow-sm"
-                          />
-                          <button 
-                            onClick={() => removeRow('debit', i)}
-                            className="p-2.5 text-[#b0b0b0] hover:text-[#a0522d] hover:bg-[#faf0f0] rounded-md transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
+          const entry = {
+            date: date || new Date().toISOString().slice(0, 10),
+            narration: narration || "-",
+            debits: finalDebits.map((d) => ({ acc: d.acc, amt: d.amt })),
+            credits: finalCredits.map((c) => ({ acc: c.acc, amt: c.amt })),
+            jf: "-",
+          };
+
+          if (editingIndex !== null) {
+            const oldEntry = JSON.parse(JSON.stringify(journal[editingIndex]));
+            setUndoStack((prev) => [...prev, { type: "edit", index: editingIndex, oldEntry }]);
+
+            setJournal((prev) => {
+              const copy = [...prev];
+              copy[editingIndex] = entry;
+              return copy;
+            });
+
+            alert("✓ Entry updated successfully!");
+          } else {
+            setUndoStack((prev) => [...prev, { type: "add", index: journal.length, entry }]);
+            setJournal((prev) => [...prev, entry]);
+          }
+
+          resetFormState();
+        };
+
+        const handleEditEntry = (index) => {
+          const e = journal[index];
+          setDate(e.date);
+          setNarration(e.narration === "-" ? "" : e.narration);
+
+          setDebits(
+            e.debits.map((d) => ({
+              id: crypto.randomUUID(),
+              acc: d.acc,
+              amt: d.amt,
+              amtStr: paiseToStr(d.amt),
+            }))
+          );
+
+          setCredits(
+            e.credits.map((c) => ({
+              id: crypto.randomUUID(),
+              acc: c.acc,
+              amt: c.amt,
+              amtStr: paiseToStr(c.amt),
+            }))
+          );
+
+          setEditingIndex(index);
+          setView("new");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        };
+
+        const handleDeleteEntry = (index) => {
+          if (!window.confirm(`Delete Entry #${index + 1}?`)) return;
+          const oldEntry = JSON.parse(JSON.stringify(journal[index]));
+          setUndoStack((prev) => [...prev, { type: "delete", index, oldEntry }]);
+          setJournal((prev) => prev.filter((_, i) => i !== index));
+        };
+
+        const handleDeleteAll = () => {
+          if (!journal.length) return alert("No entries to delete.");
+          if (!window.confirm("DELETE ALL ENTRIES?\nThis action can be undone.")) return;
+
+          setUndoStack((prev) => [
+            ...prev,
+            { type: "deleteAll", prevJournal: JSON.parse(JSON.stringify(journal)) },
+          ]);
+          setJournal([]);
+          alert("✓ All entries deleted successfully!");
+        };
+
+        const handleUndo = () => {
+          if (!undoStack.length) return alert("Nothing to undo.");
+
+          const last = undoStack[undoStack.length - 1];
+          setUndoStack((prev) => prev.slice(0, -1));
+
+          if (last.type === "add") {
+            setJournal((prev) => prev.filter((_, i) => i !== last.index));
+          } else if (last.type === "edit") {
+            setJournal((prev) => {
+              const copy = [...prev];
+              if (copy[last.index]) copy[last.index] = last.oldEntry;
+              return copy;
+            });
+          } else if (last.type === "delete") {
+            setJournal((prev) => {
+              const copy = [...prev];
+              copy.splice(last.index, 0, last.oldEntry);
+              return copy;
+            });
+          } else if (last.type === "deleteAll") {
+            setJournal(last.prevJournal || []);
+          }
+        };
+
+        // Ledger generation (L.F.)
+        const ledgerData = useMemo(() => {
+          const ledger = {};
+          const accSet = new Set();
+
+          journal.forEach((e) => {
+            e.debits.forEach((d) => accSet.add(d.acc));
+            e.credits.forEach((c) => accSet.add(c.acc));
+          });
+
+          const sortedAccs = Array.from(accSet).sort();
+          const folioMap = {};
+          sortedAccs.forEach((acc, i) => (folioMap[acc] = "L" + (i + 1)));
+
+          const ensureAcc = (acc) => {
+            if (!ledger[acc]) ledger[acc] = [];
+          };
+
+          journal.forEach((entry, idx) => {
+            const jf = entry.jf || "-";
+            const creditParticularsStr = "To " + entry.credits.map((c) => c.acc).join(", ");
+            const debitParticularsStr = "By " + entry.debits.map((d) => d.acc).join(", ");
+
+            entry.debits.forEach((d) => {
+              ensureAcc(d.acc);
+              ledger[d.acc].push({
+                entryIndex: idx,
+                date: entry.date,
+                particulars: creditParticularsStr,
+                debit: d.amt,
+                credit: 0,
+                jf,
+                lf: folioMap[d.acc] || "-",
+              });
+            });
+
+            entry.credits.forEach((c) => {
+              ensureAcc(c.acc);
+              ledger[c.acc].push({
+                entryIndex: idx,
+                date: entry.date,
+                particulars: debitParticularsStr,
+                debit: 0,
+                credit: c.amt,
+                jf,
+                lf: folioMap[c.acc] || "-",
+              });
+            });
+          });
+
+          return { ledger, folioMap };
+        }, [journal]);
+
+        const getFilteredJournal = () => {
+          if (!journalSearch) return journal;
+          const q = journalSearch.toLowerCase();
+
+          return journal.filter((e) => {
+            const dateStr = e.date.toLowerCase();
+            const narr = e.narration.toLowerCase();
+            const accs = [...e.debits, ...e.credits].map((x) => x.acc.toLowerCase()).join(" ");
+
+            if (journalSearchMode === "date") return dateStr.includes(q);
+            if (journalSearchMode === "narration") return narr.includes(q);
+            if (journalSearchMode === "account") return accs.includes(q);
+            return dateStr.includes(q) || narr.includes(q) || accs.includes(q);
+          });
+        };
+
+        const getFilteredLedgerAccounts = () => {
+          const accounts = Object.keys(ledgerData.ledger).sort();
+          if (!ledgerSearch) return accounts;
+          const q = ledgerSearch.toLowerCase();
+          return accounts.filter((a) => a.toLowerCase().includes(q));
+        };
+
+        return (
+          <div
+            className="min-h-screen bg-[#f4f1ea] text-[#4a3b32] font-serif selection:bg-[#d4b483] selection:text-[#2c1810]"
+            style={{ fontFamily: '"Crimson Text", serif' }}
+          >
+            {/* Header */}
+            <header className="relative bg-gradient-to-r from-[#5c4033] via-[#704214] to-[#5c4033] border-b-4 border-[#8b5e3c] sticky top-0 z-50 shadow-xl">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+                <div className="flex justify-between h-20 items-center">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-[#d4af37] to-[#8b6c42] p-2 rounded-lg text-[#2c1810] shadow-lg ring-1 ring-[#f4e4bc]/30">
+                      <Icon name="Building2" className="w-7 h-7" />
                     </div>
-                    <button 
-                      onClick={addDebitRow}
-                      className="mt-2 w-full py-2.5 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-[#556b2f] bg-[#f0f5ee] hover:bg-[#e6efe4] rounded-lg transition-colors border border-[#dcebdc] font-sans"
-                    >
-                      <Plus className="w-3 h-3" /> Add Debit Line
-                    </button>
-                  </div>
-
-                  {/* Credits */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-[#8b4513] border-b-2 border-[#8b4513]/20 pb-2 mb-4 flex items-center gap-2" style={{ fontFamily: '"Playfair Display", serif' }}>
-                       <TrendingUp className="w-5 h-5" /> Credit Accounts
-                    </h3>
-                    <div className="space-y-4">
-                      {credits.map((row, i) => (
-                        <div key={row.id} className="group flex gap-3 items-start animate-in fade-in slide-in-from-right-2 duration-300">
-                          <div className="flex-1 space-y-1">
-                            <input
-                              placeholder="Account Name"
-                              value={row.acc}
-                              onChange={e => updateRow('credit', i, 'acc', e.target.value)}
-                              className="w-full px-3 py-2.5 bg-[#fffaf8] border border-[#e6d8d0] rounded-md text-[#5c3a2e] focus:border-[#8b4513] focus:ring-2 focus:ring-[#8b4513]/20 outline-none shadow-sm placeholder-[#d6c4bc]"
-                            />
-                            <div className="text-[11px] text-[#a89088] px-1 italic font-serif">
-                              {debitParticulars ? `By ${debitParticulars.replace(/^By /, '')}` : 'Particulars...'}
-                            </div>
-                          </div>
-                          <input
-                            type="number"
-                            placeholder="0.00"
-                            value={row.amtStr}
-                            onChange={e => updateRow('credit', i, 'amtStr', e.target.value)}
-                            className="w-28 px-3 py-2.5 bg-[#fffaf8] border border-[#e6d8d0] rounded-md text-right font-mono text-[#5c3a2e] focus:border-[#8b4513] focus:ring-2 focus:ring-[#8b4513]/20 outline-none shadow-sm"
-                          />
-                          <button 
-                            onClick={() => removeRow('credit', i)}
-                            className="p-2.5 text-[#b0b0b0] hover:text-[#a0522d] hover:bg-[#faf0f0] rounded-md transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
+                    <div>
+                      <h1
+                        className="text-2xl font-bold tracking-wide text-[#f4e4bc] leading-none"
+                        style={{ fontFamily: '"Playfair Display", serif' }}
+                      >
+                        ELITE LEDGER
+                      </h1>
+                      <p className="text-xs text-[#d4af37] font-semibold tracking-[0.2em] uppercase mt-1">
+                        Premium Accounting
+                      </p>
                     </div>
-                    <button 
-                      onClick={addCreditRow}
-                      className="mt-2 w-full py-2.5 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-[#8b4513] bg-[#fbf5f2] hover:bg-[#f6ede8] rounded-lg transition-colors border border-[#efe0d8] font-sans"
-                    >
-                      <Plus className="w-3 h-3" /> Add Credit Line
-                    </button>
+                  </div>
+
+                  <div className="flex items-center bg-[#4a3228] rounded-full p-1 border border-[#6d4c3d] shadow-inner">
+                    {[
+                      { id: "new", label: "Transaction", icon: "Plus" },
+                      { id: "journal", label: "Journal", icon: "ScrollText" },
+                      { id: "ledger", label: "LedgerBook", icon: "BookOpen" },
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setView(tab.id)}
+                        className={`
+                          flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all duration-300
+                          ${
+                            view === tab.id
+                              ? "bg-gradient-to-b from-[#f4e4bc] to-[#d4af37] text-[#3e2723] shadow-md transform scale-105"
+                              : "text-[#a68b7c] hover:text-[#d4af37] hover:bg-[#5c4033]"
+                          }
+                        `}
+                        style={{ fontFamily: '"Playfair Display", serif' }}
+                      >
+                        <Icon name={tab.icon} className="w-4 h-4" />
+                        {tab.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
-
-                {/* Footer Actions */}
-                <div className="pt-8 border-t border-[#e8dfcf] flex flex-wrap gap-4">
-                  <button 
-                    onClick={handleSaveEntry}
-                    className="flex-1 bg-gradient-to-br from-[#5c4033] to-[#3e2723] text-[#f4e4bc] hover:shadow-lg hover:shadow-[#5c4033]/20 px-8 py-4 rounded-lg font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-3 transition-all active:scale-[0.98] border border-[#3e2723]"
-                  >
-                    <Save className="w-5 h-5" />
-                    {editingIndex !== null ? 'Update Entry' : 'Post to Ledger'}
-                  </button>
-                  <button 
-                    onClick={resetFormState}
-                    className="px-6 py-4 bg-[#fdfbf7] border-2 border-[#dcd0b9] text-[#8d7b68] hover:bg-[#f4f1ea] hover:border-[#cfc0a6] rounded-lg font-bold text-sm tracking-widest uppercase flex items-center gap-2 transition-colors"
-                  >
-                    <RotateCcw className="w-4 h-4" /> Reset
-                  </button>
-                  <button 
-                    onClick={handleUndo}
-                    className="px-6 py-4 bg-[#fff5f5] border-2 border-[#e6c8c8] text-[#a0522d] hover:bg-[#ffebeb] rounded-lg font-bold text-sm tracking-widest uppercase flex items-center gap-2 transition-colors"
-                  >
-                    <Undo2 className="w-4 h-4" /> Undo
-                  </button>
-                </div>
               </div>
-            </div>
-            
-            <div className="bg-[#eef2f5] border-l-4 border-[#78909c] rounded-r-lg p-4 flex gap-4 shadow-sm">
-              <Info className="w-6 h-6 text-[#546e7a] flex-shrink-0" />
-              <p className="text-[#455a64] italic">Pro Tip: Press <strong>Enter</strong> in any field to automatically move to the next. Amounts are auto-rounded.</p>
-            </div>
-          </div>
-        )}
+            </header>
 
-        {/* VIEW: JOURNAL */}
-        {view === 'journal' && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Toolbar */}
-            <div className="bg-[#fdfbf7] p-5 rounded-xl border border-[#dcd0b9] shadow-sm flex flex-col sm:flex-row gap-5 justify-between items-center relative overflow-hidden">
-               <div className="absolute top-0 left-0 w-1 h-full bg-[#d4af37]"></div>
-              
-              <div className="flex items-center gap-3 w-full sm:w-auto z-10">
-                <div className="relative flex-1 sm:w-80">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a68b7c]" />
-                  <input 
-                    type="text" 
-                    placeholder="Search ledger entries..."
-                    value={journalSearch}
-                    onChange={e => setJournalSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-[#f4f1ea] border border-[#d4c5b0] rounded-lg text-sm text-[#5c4033] focus:bg-[#fffefc] focus:border-[#8b5e3c] focus:ring-2 focus:ring-[#8b5e3c]/10 outline-none transition-all placeholder-[#a68b7c]"
-                  />
-                </div>
-                <select 
-                  value={journalSearchMode}
-                  onChange={e => setJournalSearchMode(e.target.value)}
-                  className="bg-[#f4f1ea] border border-[#d4c5b0] text-sm text-[#5c4033] rounded-lg px-4 py-2.5 outline-none focus:border-[#8b5e3c]"
-                >
-                  <option value="all">All Fields</option>
-                  <option value="account">Account</option>
-                  <option value="narration">Narration</option>
-                  <option value="date">Date</option>
-                </select>
-              </div>
-              <div className="text-sm font-serif text-[#8d7b68] italic z-10">
-                Showing <strong>{getFilteredJournal().length}</strong> records
-              </div>
-            </div>
+            {/* Main */}
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+              {/* NEW */}
+              {view === "new" && (
+                <div className="max-w-4xl mx-auto space-y-8">
+                  <div className="bg-[#fdfbf7] rounded-xl shadow-[0_4px_20px_-4px_rgba(62,39,35,0.15)] border border-[#dcd0b9] overflow-hidden relative">
+                    <div className="px-8 py-6 border-b border-[#e8dfcf] bg-[#faf8f2] flex items-center justify-between">
+                      <h2
+                        className="text-2xl font-bold flex items-center gap-3 text-[#5c4033]"
+                        style={{ fontFamily: '"Playfair Display", serif' }}
+                      >
+                        <Icon name="Pencil" className="w-6 h-6 text-[#d4af37]" />
+                        {editingIndex !== null ? "Edit Transaction" : "New Transaction Entry"}
+                      </h2>
 
-            {/* Journal Table */}
-            <div className="bg-[#fffefc] rounded-xl border border-[#dcd0b9] shadow-lg overflow-hidden">
-              {getFilteredJournal().length === 0 ? (
-                <div className="p-20 text-center text-[#d4c5b0]">
-                  <ScrollText className="w-20 h-20 mx-auto mb-6 opacity-30" />
-                  <h3 className="text-2xl font-serif text-[#8d7b68] mb-2" style={{ fontFamily: '"Playfair Display", serif' }}>The Journal is Empty</h3>
-                  <p className="font-serif italic text-[#a68b7c]">Create a transaction to begin recording history.</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-[#f0ece3] border-b-2 border-[#d4af37]">
-                        <th className="px-6 py-4 text-left font-bold text-[#5c4033] uppercase tracking-wider w-32 font-serif border-r border-[#e0d8c8]">Date</th>
-                        <th className="px-6 py-4 text-left font-bold text-[#5c4033] uppercase tracking-wider font-serif">Particulars</th>
-                        <th className="px-6 py-4 text-center font-bold text-[#5c4033] uppercase tracking-wider w-24 font-serif border-l border-r border-[#e0d8c8]">L.F.</th>
-                        <th className="px-6 py-4 text-right font-bold text-[#5c4033] uppercase tracking-wider w-40 font-serif border-r border-[#e0d8c8]">Debit (₹)</th>
-                        <th className="px-6 py-4 text-right font-bold text-[#5c4033] uppercase tracking-wider w-40 font-serif">Credit (₹)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#f0ece3]">
-                      {getFilteredJournal().map((entry, idx) => (
-                        <React.Fragment key={idx}>
-                          {/* Debits */}
-                          {entry.debits.map((d, di) => (
-                            <tr key={`d-${idx}-${di}`} className="group hover:bg-[#faf8f2] transition-colors">
-                              <td className="px-6 py-3 text-[#5c4033] font-serif border-r border-[#f4f1ea]">{di === 0 ? entry.date : ''}</td>
-                              <td className="px-6 py-3">
-                                <span className="font-bold text-[#2c1810] text-base">{d.acc}</span> <span className="text-[#a68b7c] text-xs font-serif italic ml-1">Dr.</span>
-                                {di === 0 && (
-                                  <div className="flex gap-3 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => handleEditEntry(idx)} className="text-[#8b5e3c] text-xs font-bold uppercase tracking-wide hover:underline">Edit</button>
-                                    <button onClick={() => handleDeleteEntry(idx)} className="text-[#a0522d] text-xs font-bold uppercase tracking-wide hover:underline">Delete</button>
-                                    {entry.narration !== '-' && (
-                                      <span className="text-[#8d7b68] text-sm italic font-serif ml-2 border-l border-[#dcd0b9] pl-3">"{entry.narration}"</span>
-                                    )}
+                      <div className="flex gap-3">
+                        <button
+                          onClick={handleDeleteAll}
+                          className="px-5 py-2 bg-[#fff5f5] border-2 border-[#e6c8c8] text-[#a0522d] hover:bg-[#ffebeb] rounded-lg font-bold text-xs tracking-widest uppercase flex items-center gap-2 transition-colors"
+                        >
+                          <Icon name="Trash2" className="w-4 h-4" /> Delete All
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="p-8 space-y-10">
+                      {/* Date + narration */}
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                        <div className="md:col-span-4">
+                          <label className="block text-xs font-bold text-[#8d7b68] uppercase tracking-widest mb-2 font-sans">
+                            Transaction Date
+                          </label>
+                          <input
+                            type="date"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                            className="w-full px-4 py-3 bg-[#fffefc] border-2 border-[#e6dec8] rounded-lg text-[#5c4033] focus:border-[#d4af37] focus:ring-4 focus:ring-[#d4af37]/10 transition-all outline-none font-medium"
+                          />
+                        </div>
+                        <div className="md:col-span-8">
+                          <label className="block text-xs font-bold text-[#8d7b68] uppercase tracking-widest mb-2 font-sans">
+                            Narration
+                          </label>
+                          <input
+                            type="text"
+                            value={narration}
+                            onChange={(e) => setNarration(e.target.value)}
+                            placeholder="Description of the transaction..."
+                            className="w-full px-4 py-3 bg-[#fffefc] border-2 border-[#e6dec8] rounded-lg text-[#5c4033] placeholder-[#d0c4b4] focus:border-[#d4af37] focus:ring-4 focus:ring-[#d4af37]/10 transition-all outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Debits & Credits */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 relative">
+                        <div className="space-y-4">
+                          <h3
+                            className="text-lg font-bold text-[#556b2f] border-b-2 border-[#556b2f]/20 pb-2 mb-4 flex items-center gap-2"
+                            style={{ fontFamily: '"Playfair Display", serif' }}
+                          >
+                            <Icon name="TrendingDown" className="w-5 h-5" /> Debit Accounts
+                          </h3>
+
+                          <div className="space-y-4">
+                            {debits.map((row, i) => (
+                              <div key={row.id} className="flex gap-3 items-start">
+                                <div className="flex-1 space-y-1">
+                                  <input
+                                    placeholder="Account Name"
+                                    value={row.acc}
+                                    onChange={(e) => updateRow("debit", i, "acc", e.target.value)}
+                                    className="w-full px-3 py-2.5 bg-[#f9fcf8] border border-[#d5e0d5] rounded-md text-[#2c3e2c] focus:border-[#556b2f] focus:ring-2 focus:ring-[#556b2f]/20 outline-none shadow-sm placeholder-[#b0c4b0]"
+                                  />
+                                  <div className="text-[11px] text-[#8a9a8a] px-1 italic font-serif">
+                                    {creditParticulars
+                                      ? `To ${creditParticulars.replace(/^To /, "")}`
+                                      : "Particulars..."}
                                   </div>
-                                )}
-                              </td>
-                              <td className="px-6 py-3 text-center text-[#8d7b68] font-serif border-l border-r border-[#f4f1ea]">{ledgerData.folioMap[d.acc]}</td>
-                              <td className="px-6 py-3 text-right font-mono text-[#2e4a2e] font-medium text-base bg-[#f4f8f4]/50 border-r border-[#f4f1ea]">{paiseToStr(d.amt)}</td>
-                              <td className="px-6 py-3 text-right font-mono text-[#a68b7c]"></td>
-                            </tr>
-                          ))}
-                          {/* Credits */}
-                          {entry.credits.map((c, ci) => (
-                            <tr key={`c-${idx}-${ci}`} className="hover:bg-[#faf8f2] transition-colors">
-                              <td className="px-6 py-3 border-r border-[#f4f1ea]"></td>
-                              <td className="px-6 py-3 pl-12">
-                                <span className="text-[#8d7b68] text-xs font-serif italic mr-2">To</span>
-                                <span className="text-[#4a3b32]">{c.acc}</span>
-                              </td>
-                              <td className="px-6 py-3 text-center text-[#8d7b68] font-serif border-l border-r border-[#f4f1ea]">{ledgerData.folioMap[c.acc]}</td>
-                              <td className="px-6 py-3 text-right font-mono text-[#a68b7c] border-r border-[#f4f1ea]"></td>
-                              <td className="px-6 py-3 text-right font-mono text-[#5c3a2e] font-medium text-base bg-[#fcf6f4]/50">{paiseToStr(c.amt)}</td>
-                            </tr>
-                          ))}
-                          {/* Decorative Separator */}
-                          <tr><td colSpan={5} className="bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] bg-[#e8e4db] h-[2px] p-0 opacity-50"></td></tr>
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
+                                </div>
+
+                                <input
+                                  type="number"
+                                  placeholder="0.00"
+                                  value={row.amtStr}
+                                  onChange={(e) => updateRow("debit", i, "amtStr", e.target.value)}
+                                  className="w-28 px-3 py-2.5 bg-[#f9fcf8] border border-[#d5e0d5] rounded-md text-right font-mono text-[#2c3e2c] focus:border-[#556b2f] focus:ring-2 focus:ring-[#556b2f]/20 outline-none shadow-sm"
+                                />
+
+                                <button
+                                  onClick={() => removeRow("debit", i)}
+                                  className="p-2.5 text-[#b0b0b0] hover:text-[#a0522d] hover:bg-[#faf0f0] rounded-md transition-colors"
+                                  title="Remove row"
+                                >
+                                  <Icon name="Trash2" className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+
+                          <button
+                            onClick={addDebitRow}
+                            className="mt-2 w-full py-2.5 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-[#556b2f] bg-[#f0f5ee] hover:bg-[#e6efe4] rounded-lg transition-colors border border-[#dcebdc] font-sans"
+                          >
+                            <Icon name="Plus" className="w-3 h-3" /> Add Debit Line
+                          </button>
+                        </div>
+
+                        <div className="space-y-4">
+                          <h3
+                            className="text-lg font-bold text-[#8b4513] border-b-2 border-[#8b4513]/20 pb-2 mb-4 flex items-center gap-2"
+                            style={{ fontFamily: '"Playfair Display", serif' }}
+                          >
+                            <Icon name="TrendingUp" className="w-5 h-5" /> Credit Accounts
+                          </h3>
+
+                          <div className="space-y-4">
+                            {credits.map((row, i) => (
+                              <div key={row.id} className="flex gap-3 items-start">
+                                <div className="flex-1 space-y-1">
+                                  <input
+                                    placeholder="Account Name"
+                                    value={row.acc}
+                                    onChange={(e) => updateRow("credit", i, "acc", e.target.value)}
+                                    className="w-full px-3 py-2.5 bg-[#fffaf8] border border-[#e6d8d0] rounded-md text-[#5c3a2e] focus:border-[#8b4513] focus:ring-2 focus:ring-[#8b4513]/20 outline-none shadow-sm placeholder-[#d6c4bc]"
+                                  />
+                                  <div className="text-[11px] text-[#a89088] px-1 italic font-serif">
+                                    {debitParticulars
+                                      ? `By ${debitParticulars.replace(/^By /, "")}`
+                                      : "Particulars..."}
+                                  </div>
+                                </div>
+
+                                <input
+                                  type="number"
+                                  placeholder="0.00"
+                                  value={row.amtStr}
+                                  onChange={(e) => updateRow("credit", i, "amtStr", e.target.value)}
+                                  className="w-28 px-3 py-2.5 bg-[#fffaf8] border border-[#e6d8d0] rounded-md text-right font-mono text-[#5c3a2e] focus:border-[#8b4513] focus:ring-2 focus:ring-[#8b4513]/20 outline-none shadow-sm"
+                                />
+
+                                <button
+                                  onClick={() => removeRow("credit", i)}
+                                  className="p-2.5 text-[#b0b0b0] hover:text-[#a0522d] hover:bg-[#faf0f0] rounded-md transition-colors"
+                                  title="Remove row"
+                                >
+                                  <Icon name="Trash2" className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+
+                          <button
+                            onClick={addCreditRow}
+                            className="mt-2 w-full py-2.5 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-[#8b4513] bg-[#fbf5f2] hover:bg-[#f6ede8] rounded-lg transition-colors border border-[#efe0d8] font-sans"
+                          >
+                            <Icon name="Plus" className="w-3 h-3" /> Add Credit Line
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="pt-8 border-t border-[#e8dfcf] flex flex-wrap gap-4">
+                        <button
+                          onClick={handleSaveEntry}
+                          className="flex-1 bg-gradient-to-br from-[#5c4033] to-[#3e2723] text-[#f4e4bc] hover:shadow-lg hover:shadow-[#5c4033]/20 px-8 py-4 rounded-lg font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-3 transition-all active:scale-[0.98] border border-[#3e2723]"
+                        >
+                          <Icon name="Save" className="w-5 h-5" />
+                          {editingIndex !== null ? "Update Entry" : "Post to Ledger"}
+                        </button>
+
+                        <button
+                          onClick={resetFormState}
+                          className="px-6 py-4 bg-[#fdfbf7] border-2 border-[#dcd0b9] text-[#8d7b68] hover:bg-[#f4f1ea] hover:border-[#cfc0a6] rounded-lg font-bold text-sm tracking-widest uppercase flex items-center gap-2 transition-colors"
+                        >
+                          <Icon name="RotateCcw" className="w-4 h-4" /> Reset
+                        </button>
+
+                        <button
+                          onClick={handleUndo}
+                          className="px-6 py-4 bg-[#fff5f5] border-2 border-[#e6c8c8] text-[#a0522d] hover:bg-[#ffebeb] rounded-lg font-bold text-sm tracking-widest uppercase flex items-center gap-2 transition-colors"
+                        >
+                          <Icon name="Undo2" className="w-4 h-4" /> Undo
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#eef2f5] border-l-4 border-[#78909c] rounded-r-lg p-4 flex gap-4 shadow-sm">
+                    <Icon name="Info" className="w-6 h-6 text-[#546e7a] flex-shrink-0" />
+                    <p className="text-[#455a64] italic">
+                      Pro Tip: Amounts are auto-rounded. Debit must equal Credit.
+                    </p>
+                  </div>
                 </div>
               )}
-            </div>
-          </div>
-        )}
 
-        {/* VIEW: LEDGER */}
-        {view === 'ledger' && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Toolbar */}
-             <div className="bg-[#fdfbf7] p-5 rounded-xl border border-[#dcd0b9] shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-1 h-full bg-[#8b5e3c]"></div>
-                <div className="relative max-w-md">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a68b7c]" />
-                  <input 
-                    type="text" 
-                    placeholder="Filter accounts..."
-                    value={ledgerSearch}
-                    onChange={e => setLedgerSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-[#f4f1ea] border border-[#d4c5b0] rounded-lg text-sm text-[#5c4033] focus:bg-[#fffefc] focus:border-[#8b5e3c] outline-none transition-all placeholder-[#a68b7c]"
-                  />
-                </div>
-             </div>
+              {/* JOURNAL */}
+              {view === "journal" && (
+                <div className="space-y-8">
+                  <div className="bg-[#fdfbf7] p-5 rounded-xl border border-[#dcd0b9] shadow-sm flex flex-col sm:flex-row gap-5 justify-between items-center">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                      <div className="relative flex-1 sm:w-80">
+                        <Icon
+                          name="Search"
+                          className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a68b7c]"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Search ledger entries..."
+                          value={journalSearch}
+                          onChange={(e) => setJournalSearch(e.target.value)}
+                          className="w-full pl-10 pr-4 py-2.5 bg-[#f4f1ea] border border-[#d4c5b0] rounded-lg text-sm text-[#5c4033] focus:bg-[#fffefc] focus:border-[#8b5e3c] focus:ring-2 focus:ring-[#8b5e3c]/10 outline-none transition-all placeholder-[#a68b7c]"
+                        />
+                      </div>
 
-             {getFilteredLedgerAccounts().length === 0 ? (
-                <div className="p-20 text-center text-[#d4c5b0] bg-[#fffefc] rounded-xl border border-[#dcd0b9]">
-                  <BookOpen className="w-20 h-20 mx-auto mb-6 opacity-30" />
-                  <h3 className="text-2xl font-serif text-[#8d7b68]" style={{ fontFamily: '"Playfair Display", serif' }}>No Accounts Found</h3>
-                </div>
-             ) : (
-               <div className="space-y-10">
-                 {getFilteredLedgerAccounts().map(accName => {
-                   const entries = ledgerData.ledger[accName];
-                   const drTotal = entries.reduce((sum, e) => sum + e.debit, 0);
-                   const crTotal = entries.reduce((sum, e) => sum + e.credit, 0);
-                   const balance = drTotal - crTotal;
-                   const balStr = paiseToStr(Math.abs(balance));
-                   const balType = balance >= 0 ? "Dr" : "Cr";
-                   
-                   const drRows = entries.filter(e => e.debit > 0);
-                   const crRows = entries.filter(e => e.credit > 0);
-                   const maxRows = Math.max(drRows.length, crRows.length);
+                      <select
+                        value={journalSearchMode}
+                        onChange={(e) => setJournalSearchMode(e.target.value)}
+                        className="bg-[#f4f1ea] border border-[#d4c5b0] text-sm text-[#5c4033] rounded-lg px-4 py-2.5 outline-none focus:border-[#8b5e3c]"
+                      >
+                        <option value="all">All Fields</option>
+                        <option value="account">Account</option>
+                        <option value="narration">Narration</option>
+                        <option value="date">Date</option>
+                      </select>
+                    </div>
 
-                   return (
-                     <div key={accName} className="bg-[#fffefc] rounded-xl border-2 border-[#d4c5b0] shadow-lg overflow-hidden">
-                       <div className="bg-[#f0ece3] px-8 py-5 border-b-2 border-[#d4c5b0] flex flex-wrap justify-between items-center gap-4 relative">
-                         {/* Header Texture */}
-                         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cardboard.png')]"></div>
-                         
-                         <h3 className="text-xl font-bold text-[#3e2723] flex items-center gap-3 relative z-10" style={{ fontFamily: '"Playfair Display", serif' }}>
-                           <BadgeCheck className="w-6 h-6 text-[#d4af37]" /> {accName}
-                         </h3>
-                         <div className="flex gap-4 relative z-10">
-                           <span className="px-4 py-1.5 bg-[#fffefc] border border-[#dcd0b9] rounded-full text-xs font-bold text-[#8d7b68] shadow-sm uppercase tracking-wide">
-                             {entries.length} Records
-                           </span>
-                           <span className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-sm border uppercase tracking-wide ${
-                             balance >= 0 ? 'bg-[#e8f5e9] text-[#2e7d32] border-[#c8e6c9]' : 'bg-[#ffebee] text-[#c62828] border-[#ffcdd2]'
-                           }`}>
-                             Bal: ₹{balStr} {balType}
-                           </span>
-                         </div>
-                       </div>
-                       
-                       <div className="overflow-x-auto">
-                         <table className="w-full text-sm border-collapse">
-                            <thead>
-                              <tr className="bg-[#e0d8c8] border-b border-[#d4c5b0] text-xs uppercase tracking-widest text-[#5c4033] font-bold">
-                                <th colSpan={4} className="py-3 text-center border-r-2 border-[#d4c5b0] bg-[#dcedc8]/50 text-[#33691e]">Debit Side</th>
-                                <th colSpan={4} className="py-3 text-center bg-[#ffe0b2]/50 text-[#e65100]">Credit Side</th>
-                              </tr>
-                              <tr className="bg-[#f9f7f2] border-b border-[#e0d8c8] text-xs font-bold text-[#8d7b68] uppercase">
-                                {/* Dr Headers */}
-                                <th className="px-4 py-3 text-left w-28 font-serif">Date</th>
-                                <th className="px-4 py-3 text-left font-serif">Particulars</th>
-                                <th className="px-4 py-3 text-center w-16 font-serif">JF</th>
-                                <th className="px-4 py-3 text-right w-28 border-r-2 border-[#e0d8c8] font-serif">Amount</th>
-                                
-                                {/* Cr Headers */}
-                                <th className="px-4 py-3 text-left w-28 font-serif pl-6">Date</th>
-                                <th className="px-4 py-3 text-left font-serif">Particulars</th>
-                                <th className="px-4 py-3 text-center w-16 font-serif">JF</th>
-                                <th className="px-4 py-3 text-right w-28 font-serif">Amount</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#f0ece3]">
-                              {Array.from({ length: maxRows }).map((_, i) => {
-                                const d = drRows[i];
-                                const c = crRows[i];
-                                return (
-                                  <tr key={i} className="hover:bg-[#faf8f2]">
-                                    {/* Debit Side */}
-                                    <td className="px-4 py-2.5 text-xs text-[#5c4033] font-serif">{d?.date}</td>
-                                    <td className="px-4 py-2.5 text-[#3e2723] truncate max-w-[150px] font-medium" title={d?.particulars}>{d?.particulars}</td>
-                                    <td className="px-4 py-2.5 text-center text-xs text-[#a68b7c]">{d ? (d.jf || '-') : ''}</td>
-                                    <td className="px-4 py-2.5 text-right font-mono text-[#2e4a2e] border-r-2 border-[#f0ece3] bg-[#f1f8e9]/30">
-                                      {d ? paiseToStr(d.debit) : ''}
-                                    </td>
+                    <div className="text-sm font-serif text-[#8d7b68] italic">
+                      Showing <strong>{getFilteredJournal().length}</strong> records
+                    </div>
+                  </div>
 
-                                    {/* Credit Side */}
-                                    <td className="px-4 py-2.5 text-xs text-[#5c4033] font-serif pl-6">{c?.date}</td>
-                                    <td className="px-4 py-2.5 text-[#3e2723] truncate max-w-[150px] font-medium" title={c?.particulars}>{c?.particulars}</td>
-                                    <td className="px-4 py-2.5 text-center text-xs text-[#a68b7c]">{c ? (c.jf || '-') : ''}</td>
-                                    <td className="px-4 py-2.5 text-right font-mono text-[#5c3a2e] bg-[#fff3e0]/30">
-                                      {c ? paiseToStr(c.credit) : ''}
-                                    </td>
-                                  </tr>
-                                );
-                              })}
+                  <div className="bg-[#fffefc] rounded-xl border border-[#dcd0b9] shadow-lg overflow-hidden">
+                    {getFilteredJournal().length === 0 ? (
+                      <div className="p-20 text-center text-[#d4c5b0]">
+                        <Icon name="ScrollText" className="w-20 h-20 mx-auto mb-6 opacity-30" />
+                        <h3
+                          className="text-2xl font-serif text-[#8d7b68] mb-2"
+                          style={{ fontFamily: '"Playfair Display", serif' }}
+                        >
+                          The Journal is Empty
+                        </h3>
+                        <p className="font-serif italic text-[#a68b7c]">
+                          Create a transaction to begin recording history.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="bg-[#f0ece3] border-b-2 border-[#d4af37]">
+                              <th className="px-6 py-4 text-left font-bold text-[#5c4033] uppercase tracking-wider w-32 font-serif border-r border-[#e0d8c8]">
+                                Date
+                              </th>
+                              <th className="px-6 py-4 text-left font-bold text-[#5c4033] uppercase tracking-wider font-serif">
+                                Particulars
+                              </th>
+                              <th className="px-6 py-4 text-center font-bold text-[#5c4033] uppercase tracking-wider w-24 font-serif border-l border-r border-[#e0d8c8]">
+                                L.F.
+                              </th>
+                              <th className="px-6 py-4 text-right font-bold text-[#5c4033] uppercase tracking-wider w-40 font-serif border-r border-[#e0d8c8]">
+                                Debit (₹)
+                              </th>
+                              <th className="px-6 py-4 text-right font-bold text-[#5c4033] uppercase tracking-wider w-40 font-serif">
+                                Credit (₹)
+                              </th>
+                            </tr>
+                          </thead>
+
+                          {getFilteredJournal().map((entry, idx) => (
+                            <tbody
+                              key={idx}
+                              className="divide-y divide-[#f0ece3] border-b border-[#e0d8c8]"
+                            >
+                              {entry.debits.map((d, di) => (
+                                <tr
+                                  key={`d-${idx}-${di}`}
+                                  className="group hover:bg-[#faf8f2] transition-colors"
+                                >
+                                  <td className="px-6 py-3 text-[#5c4033] font-serif border-r border-[#f4f1ea]">
+                                    {di === 0 ? entry.date : ""}
+                                  </td>
+                                  <td className="px-6 py-3">
+                                    <span className="font-bold text-[#2c1810] text-base">
+                                      {d.acc}
+                                    </span>{" "}
+                                    <span className="text-[#a68b7c] text-xs font-serif italic ml-1">
+                                      Dr.
+                                    </span>
+
+                                    {di === 0 && (
+                                      <div className="flex gap-3 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                          onClick={() => handleEditEntry(idx)}
+                                          className="text-[#8b5e3c] text-xs font-bold uppercase tracking-wide hover:underline"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteEntry(idx)}
+                                          className="text-[#a0522d] text-xs font-bold uppercase tracking-wide hover:underline"
+                                        >
+                                          Delete
+                                        </button>
+                                        {entry.narration !== "-" && (
+                                          <span className="text-[#8d7b68] text-sm italic font-serif ml-2 border-l border-[#dcd0b9] pl-3">
+                                            "{entry.narration}"
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-3 text-center text-[#8d7b68] font-serif border-l border-r border-[#f4f1ea]">
+                                    {ledgerData.folioMap[d.acc]}
+                                  </td>
+                                  <td className="px-6 py-3 text-right font-mono text-[#2e4a2e] font-medium text-base bg-[#f4f8f4]/50 border-r border-[#f4f1ea]">
+                                    {paiseToStr(d.amt)}
+                                  </td>
+                                  <td className="px-6 py-3 text-right font-mono text-[#a68b7c]"></td>
+                                </tr>
+                              ))}
+
+                              {entry.credits.map((c, ci) => (
+                                <tr
+                                  key={`c-${idx}-${ci}`}
+                                  className="hover:bg-[#faf8f2] transition-colors"
+                                >
+                                  <td className="px-6 py-3 border-r border-[#f4f1ea]"></td>
+                                  <td className="px-6 py-3 pl-12">
+                                    <span className="text-[#8d7b68] text-xs font-serif italic mr-2">
+                                      To
+                                    </span>
+                                    <span className="text-[#4a3b32]">{c.acc}</span>
+                                  </td>
+                                  <td className="px-6 py-3 text-center text-[#8d7b68] font-serif border-l border-r border-[#f4f1ea]">
+                                    {ledgerData.folioMap[c.acc]}
+                                  </td>
+                                  <td className="px-6 py-3 text-right font-mono text-[#a68b7c] border-r border-[#f4f1ea]"></td>
+                                  <td className="px-6 py-3 text-right font-mono text-[#5c3a2e] font-medium text-base bg-[#fcf6f4]/50">
+                                    {paiseToStr(c.amt)}
+                                  </td>
+                                </tr>
+                              ))}
                             </tbody>
-                            <tfoot className="bg-[#f0ece3] border-t-2 border-[#d4c5b0] font-bold text-[#3e2723]">
-                              <tr>
-                                <td colSpan={3} className="px-4 py-3 text-right text-xs uppercase text-[#8d7b68] tracking-widest font-serif">Total Dr.</td>
-                                <td className="px-4 py-3 text-right font-mono border-r-2 border-[#d4c5b0] text-base">₹{paiseToStr(drTotal)}</td>
-                                <td colSpan={3} className="px-4 py-3 text-right text-xs uppercase text-[#8d7b68] tracking-widest font-serif">Total Cr.</td>
-                                <td className="px-4 py-3 text-right font-mono text-base">₹{paiseToStr(crTotal)}</td>
-                              </tr>
-                            </tfoot>
-                         </table>
-                       </div>
-                     </div>
-                   );
-                 })}
-               </div>
-             )}
+                          ))}
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* LEDGER */}
+              {view === "ledger" && (
+                <div className="space-y-8">
+                  <div className="bg-[#fdfbf7] p-5 rounded-xl border border-[#dcd0b9] shadow-sm">
+                    <div className="relative max-w-md">
+                      <Icon
+                        name="Search"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a68b7c]"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Filter accounts..."
+                        value={ledgerSearch}
+                        onChange={(e) => setLedgerSearch(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 bg-[#f4f1ea] border border-[#d4c5b0] rounded-lg text-sm text-[#5c4033] focus:bg-[#fffefc] focus:border-[#8b5e3c] outline-none transition-all placeholder-[#a68b7c]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-10">
+                    {getFilteredLedgerAccounts().map((accName) => {
+                      const entries = ledgerData.ledger[accName];
+                      const drTotal = entries.reduce((sum, e) => sum + e.debit, 0);
+                      const crTotal = entries.reduce((sum, e) => sum + e.credit, 0);
+                      const balance = drTotal - crTotal;
+                      const balStr = paiseToStr(Math.abs(balance));
+                      const balType = balance >= 0 ? "Dr" : "Cr";
+
+                      const drRows = entries.filter((e) => e.debit > 0);
+                      const crRows = entries.filter((e) => e.credit > 0);
+                      const maxRows = Math.max(drRows.length, crRows.length);
+
+                      return (
+                        <div
+                          key={accName}
+                          className="bg-[#fffefc] rounded-xl border-2 border-[#d4c5b0] shadow-lg overflow-hidden"
+                        >
+                          <div className="bg-[#f0ece3] px-8 py-5 border-b-2 border-[#d4c5b0] flex flex-wrap justify-between items-center gap-4">
+                            <h3
+                              className="text-xl font-bold text-[#3e2723] flex items-center gap-3"
+                              style={{ fontFamily: '"Playfair Display", serif' }}
+                            >
+                              <Icon name="BadgeCheck" className="w-6 h-6 text-[#d4af37]" />{" "}
+                              {accName}
+                            </h3>
+
+                            <div className="flex gap-4">
+                              <span className="px-4 py-1.5 bg-[#fffefc] border border-[#dcd0b9] rounded-full text-xs font-bold text-[#8d7b68] shadow-sm uppercase tracking-wide">
+                                {entries.length} Records
+                              </span>
+                              <span
+                                className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-sm border uppercase tracking-wide ${
+                                  balance >= 0
+                                    ? "bg-[#e8f5e9] text-[#2e7d32] border-[#c8e6c9]"
+                                    : "bg-[#ffebee] text-[#c62828] border-[#ffcdd2]"
+                                }`}
+                              >
+                                Bal: ₹{balStr} {balType}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm border-collapse">
+                              <thead>
+                                <tr className="bg-[#e0d8c8] border-b border-[#d4c5b0] text-xs uppercase tracking-widest text-[#5c4033] font-bold">
+                                  <th
+                                    colSpan="4"
+                                    className="py-3 text-center border-r-2 border-[#d4c5b0] bg-[#dcedc8]/50 text-[#33691e]"
+                                  >
+                                    Debit Side
+                                  </th>
+                                  <th
+                                    colSpan="4"
+                                    className="py-3 text-center bg-[#ffe0b2]/50 text-[#e65100]"
+                                  >
+                                    Credit Side
+                                  </th>
+                                </tr>
+                                <tr className="bg-[#f9f7f2] border-b border-[#e0d8c8] text-xs font-bold text-[#8d7b68] uppercase">
+                                  <th className="px-4 py-3 text-left w-28 font-serif">Date</th>
+                                  <th className="px-4 py-3 text-left font-serif">Particulars</th>
+                                  <th className="px-4 py-3 text-center w-16 font-serif">JF</th>
+                                  <th className="px-4 py-3 text-right w-28 border-r-2 border-[#e0d8c8] font-serif">
+                                    Amount
+                                  </th>
+
+                                  <th className="px-4 py-3 text-left w-28 font-serif pl-6">
+                                    Date
+                                  </th>
+                                  <th className="px-4 py-3 text-left font-serif">Particulars</th>
+                                  <th className="px-4 py-3 text-center w-16 font-serif">JF</th>
+                                  <th className="px-4 py-3 text-right w-28 font-serif">Amount</th>
+                                </tr>
+                              </thead>
+
+                              <tbody className="divide-y divide-[#f0ece3]">
+                                {Array.from({ length: maxRows }).map((_, i) => {
+                                  const d = drRows[i];
+                                  const c = crRows[i];
+                                  return (
+                                    <tr key={i} className="hover:bg-[#faf8f2]">
+                                      <td className="px-4 py-2.5 text-xs text-[#5c4033] font-serif">
+                                        {d?.date || ""}
+                                      </td>
+                                      <td
+                                        className="px-4 py-2.5 text-[#3e2723] truncate max-w-[150px] font-medium"
+                                        title={d?.particulars}
+                                      >
+                                        {d?.particulars || ""}
+                                      </td>
+                                      <td className="px-4 py-2.5 text-center text-xs text-[#a68b7c]">
+                                        {d ? d.jf || "-" : ""}
+                                      </td>
+                                      <td className="px-4 py-2.5 text-right font-mono text-[#2e4a2e] border-r-2 border-[#f0ece3] bg-[#f1f8e9]/30">
+                                        {d ? paiseToStr(d.debit) : ""}
+                                      </td>
+
+                                      <td className="px-4 py-2.5 text-xs text-[#5c4033] font-serif pl-6">
+                                        {c?.date || ""}
+                                      </td>
+                                      <td
+                                        className="px-4 py-2.5 text-[#3e2723] truncate max-w-[150px] font-medium"
+                                        title={c?.particulars}
+                                      >
+                                        {c?.particulars || ""}
+                                      </td>
+                                      <td className="px-4 py-2.5 text-center text-xs text-[#a68b7c]">
+                                        {c ? c.jf || "-" : ""}
+                                      </td>
+                                      <td className="px-4 py-2.5 text-right font-mono text-[#5c3a2e] bg-[#fff3e0]/30">
+                                        {c ? paiseToStr(c.credit) : ""}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+
+                              <tfoot className="bg-[#f0ece3] border-t-2 border-[#d4c5b0] font-bold text-[#3e2723]">
+                                <tr>
+                                  <td
+                                    colSpan="3"
+                                    className="px-4 py-3 text-right text-xs uppercase text-[#8d7b68] tracking-widest font-serif"
+                                  >
+                                    Total Dr.
+                                  </td>
+                                  <td className="px-4 py-3 text-right font-mono border-r-2 border-[#d4c5b0] text-base">
+                                    ₹{paiseToStr(drTotal)}
+                                  </td>
+                                  <td
+                                    colSpan="3"
+                                    className="px-4 py-3 text-right text-xs uppercase text-[#8d7b68] tracking-widest font-serif"
+                                  >
+                                    Total Cr.
+                                  </td>
+                                  <td className="px-4 py-3 text-right font-mono text-base">
+                                    ₹{paiseToStr(crTotal)}
+                                  </td>
+                                </tr>
+                              </tfoot>
+                            </table>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </main>
           </div>
-        )}
-      </main>
-    </div>
-  );
-}
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<AccountingApp />);
+    </script>
+  </body>
+</html>
