@@ -33,41 +33,18 @@
     }
 
     @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes shimmer {
-      0% {
-        background-position: -1000px 0;
-      }
-      100% {
-        background-position: 1000px 0;
-      }
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
     }
 
     @keyframes float {
-      0%, 100% {
-        transform: translateY(0px);
-      }
-      50% {
-        transform: translateY(-8px);
-      }
-    }
-
-    @keyframes goldGlow {
-      0%, 100% {
-        box-shadow: 0 0 20px rgba(212, 175, 55, 0.3), 0 0 40px rgba(212, 175, 55, 0.1);
-      }
-      50% {
-        box-shadow: 0 0 30px rgba(212, 175, 55, 0.5), 0 0 60px rgba(212, 175, 55, 0.2);
-      }
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
     }
 
     body {
@@ -81,7 +58,6 @@
       position: relative;
     }
 
-    /* Elegant Background Pattern */
     body::before {
       content: '';
       position: fixed;
@@ -96,7 +72,6 @@
       pointer-events: none;
     }
 
-    /* Subtle Texture Overlay */
     body::after {
       content: '';
       position: fixed;
@@ -110,7 +85,6 @@
       opacity: 0.5;
     }
 
-    /* Header */
     header {
       background: linear-gradient(135deg, rgba(26, 29, 46, 0.95) 0%, rgba(43, 45, 66, 0.95) 100%);
       backdrop-filter: blur(20px);
@@ -176,7 +150,6 @@
       box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
     }
 
-    /* Navigation */
     nav {
       background: rgba(26, 29, 46, 0.9);
       backdrop-filter: blur(10px);
@@ -211,9 +184,7 @@
       border-right: 1px solid rgba(212, 175, 55, 0.1);
     }
 
-    nav button:last-child {
-      border-right: none;
-    }
+    nav button:last-child { border-right: none; }
 
     nav button::before {
       content: '';
@@ -238,11 +209,8 @@
       font-weight: 600;
     }
 
-    nav button.active::before {
-      width: 80%;
-    }
+    nav button.active::before { width: 80%; }
 
-    /* Container */
     .container {
       max-width: 1600px;
       margin: 0 auto;
@@ -251,17 +219,9 @@
       z-index: 1;
     }
 
-    /* Pages */
-    .page {
-      display: none;
-    }
+    .page { display: none; }
+    .page.active { display: block; animation: fadeInUp 0.6s ease; }
 
-    .page.active {
-      display: block;
-      animation: fadeInUp 0.6s ease;
-    }
-
-    /* Premium Card */
     .card {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
       backdrop-filter: blur(10px);
@@ -270,34 +230,26 @@
       padding: 45px;
       margin-bottom: 35px;
       position: relative;
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
       transition: all 0.4s ease;
     }
 
     .card:hover {
       border-color: var(--gold);
-      box-shadow: 
-        0 12px 40px rgba(0, 0, 0, 0.4),
-        0 0 30px rgba(212, 175, 55, 0.1),
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(212, 175, 55, 0.1),
         inset 0 1px 0 rgba(255, 255, 255, 0.15);
       transform: translateY(-4px);
     }
 
-    /* Gold Accent Line */
     .card::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
+      top: 0; left: 0;
+      width: 100%; height: 4px;
       background: linear-gradient(90deg, transparent, var(--gold), transparent);
       border-radius: 20px 20px 0 0;
     }
 
-    /* Section Headers */
     .subhead {
       font-family: 'Playfair Display', serif;
       font-weight: 700;
@@ -314,19 +266,13 @@
     .subhead::after {
       content: '';
       position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 80px;
-      height: 2px;
+      bottom: 0; left: 0;
+      width: 80px; height: 2px;
       background: var(--gold);
     }
 
-    .subhead .icon {
-      font-size: 32px;
-      filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
-    }
+    .subhead .icon { font-size: 32px; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5)); }
 
-    /* Forms */
     .row {
       display: flex;
       gap: 25px;
@@ -363,24 +309,17 @@
     input:focus, textarea:focus, select:focus {
       border-color: var(--gold);
       background: rgba(26, 29, 46, 0.8);
-      box-shadow: 
-        inset 0 2px 4px rgba(0, 0, 0, 0.3),
-        0 0 20px rgba(212, 175, 55, 0.2);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 20px rgba(212, 175, 55, 0.2);
       transform: translateY(-2px);
     }
 
-    textarea {
-      min-width: 320px;
-      resize: vertical;
-      min-height: 100px;
-    }
+    textarea { min-width: 320px; resize: vertical; min-height: 100px; }
 
     input::placeholder, textarea::placeholder, select::placeholder {
       color: rgba(248, 245, 240, 0.4);
       font-style: italic;
     }
 
-    /* Premium Buttons */
     .btn {
       border: 1px solid var(--gold);
       background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%);
@@ -405,17 +344,13 @@
     .btn::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
       transition: left 0.5s ease;
     }
 
-    .btn:hover::before {
-      left: 100%;
-    }
+    .btn:hover::before { left: 100%; }
 
     .btn:hover {
       transform: translateY(-3px);
@@ -424,9 +359,7 @@
       background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.15) 100%);
     }
 
-    .btn:active {
-      transform: translateY(-1px);
-    }
+    .btn:active { transform: translateY(-1px); }
 
     .btn.primary {
       background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
@@ -462,7 +395,6 @@
       background: rgba(220, 53, 69, 0.2);
     }
 
-    /* Grid Layout */
     .grid2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -470,7 +402,6 @@
       margin-top: 35px;
     }
 
-    /* Entry Rows */
     .entry-row {
       display: grid;
       grid-template-columns: 1.6fr 1fr 1.6fr;
@@ -484,65 +415,14 @@
       position: relative;
     }
 
-    .entry-row::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 3px;
-      height: 100%;
-      background: linear-gradient(180deg, var(--gold), transparent);
-      border-radius: 10px 0 0 10px;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
     .entry-row:hover {
       background: rgba(255, 255, 255, 0.04);
       border-color: var(--gold);
       box-shadow: 0 4px 20px rgba(212, 175, 55, 0.1);
     }
 
-    .entry-row:hover::before {
-      opacity: 1;
-    }
+    .entry-row input { min-width: unset; width: 100%; }
 
-    .entry-row input {
-      min-width: unset;
-      width: 100%;
-    }
-
-    /* Entry Card */
-    .entry-card {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
-      border: 1px solid rgba(212, 175, 55, 0.25);
-      border-radius: 15px;
-      padding: 30px;
-      margin: 25px 0;
-      position: relative;
-      transition: all 0.4s ease;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .entry-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 5px;
-      height: 100%;
-      background: linear-gradient(180deg, var(--gold), var(--gold-dark));
-      border-radius: 15px 0 0 15px;
-    }
-
-    .entry-card:hover {
-      border-color: var(--gold);
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
-      box-shadow: 0 8px 30px rgba(212, 175, 55, 0.2);
-      transform: translateX(5px);
-    }
-
-    /* Ledger Card */
     .ledger-card {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
       border: 1px solid rgba(212, 175, 55, 0.3);
@@ -557,18 +437,10 @@
     .ledger-card::after {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
+      top: 0; left: 0;
+      width: 100%; height: 4px;
       background: linear-gradient(90deg, var(--gold), transparent);
       border-radius: 15px 15px 0 0;
-    }
-
-    .ledger-card:hover {
-      border-color: var(--gold);
-      box-shadow: 0 12px 40px rgba(212, 175, 55, 0.2);
-      transform: translateY(-4px);
     }
 
     .ledger-card h3 {
@@ -582,57 +454,6 @@
       letter-spacing: 1px;
     }
 
-    /* Elegant Table */
-    .ledger-table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 900px;
-      font-size: 14px;
-    }
-
-    .ledger-table th,
-    .ledger-table td {
-      border-bottom: 1px solid rgba(212, 175, 55, 0.15);
-      padding: 16px 14px;
-      vertical-align: top;
-      text-align: left;
-    }
-
-    .ledger-table th {
-      background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0.05) 100%);
-      font-family: 'Poppins', sans-serif;
-      font-weight: 600;
-      color: var(--gold);
-      text-transform: uppercase;
-      font-size: 11px;
-      letter-spacing: 1.5px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .ledger-table tbody tr {
-      transition: all 0.2s ease;
-    }
-
-    .ledger-table tbody tr:hover {
-      background: rgba(212, 175, 55, 0.05);
-    }
-
-    .ledger-table tfoot {
-      background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.08) 100%);
-      font-weight: 700;
-      color: var(--gold);
-    }
-
-    .ledger-table tfoot td {
-      border-top: 2px solid var(--gold);
-      border-bottom: 2px solid var(--gold);
-      font-family: 'Poppins', sans-serif;
-      font-size: 15px;
-    }
-
-    /* Utilities */
     .badge {
       display: inline-flex;
       align-items: center;
@@ -672,7 +493,6 @@
       filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.5));
     }
 
-    /* Search Section */
     .search-section {
       background: rgba(212, 175, 55, 0.05);
       padding: 28px;
@@ -681,7 +501,6 @@
       margin-bottom: 35px;
     }
 
-    /* Empty State */
     .empty-state {
       text-align: center;
       padding: 100px 40px;
@@ -703,34 +522,17 @@
       color: var(--gold);
     }
 
-    .empty-state p {
-      font-size: 15px;
-      font-weight: 400;
-      letter-spacing: 0.5px;
-    }
+    .empty-state p { font-size: 15px; font-weight: 400; letter-spacing: 0.5px; }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 12px;
-      height: 12px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: rgba(26, 29, 46, 0.6);
-      border-radius: 10px;
-    }
-
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track { background: rgba(26, 29, 46, 0.6); border-radius: 10px; }
     ::-webkit-scrollbar-thumb {
       background: linear-gradient(180deg, var(--gold), var(--gold-dark));
       border-radius: 10px;
       border: 2px solid rgba(26, 29, 46, 0.6);
     }
+    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--gold-light), var(--gold)); }
 
-    ::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(180deg, var(--gold-light), var(--gold));
-    }
-
-    /* Amount Display */
     .amount-display {
       font-family: 'Poppins', sans-serif;
       font-variant-numeric: tabular-nums;
@@ -738,69 +540,35 @@
       font-weight: 600;
     }
 
-    /* Responsive */
     @media(max-width: 1200px) {
-      .container {
-        padding: 40px 30px;
-      }
-      .nav-container {
-        padding: 0 30px;
-      }
-      .header-content {
-        padding: 0 30px;
-      }
+      .container { padding: 40px 30px; }
+      .nav-container { padding: 0 30px; }
+      .header-content { padding: 0 30px; }
     }
 
     @media(max-width: 900px) {
-      .grid2 {
-        grid-template-columns: 1fr;
-      }
-      .entry-row {
-        grid-template-columns: 1fr;
-      }
-      input, textarea {
-        width: 100%;
-        min-width: unset;
-      }
-      .logo-section h1 {
-        font-size: 32px;
-      }
-      .container {
-        padding: 30px 20px;
-      }
-      .nav-container {
-        padding: 0 20px;
-      }
-      .header-content {
-        flex-direction: column;
-        gap: 20px;
-        align-items: flex-start;
-      }
-      nav button {
-        font-size: 12px;
-        padding: 16px 20px;
-      }
+      .grid2 { grid-template-columns: 1fr; }
+      .entry-row { grid-template-columns: 1fr; }
+      input, textarea { width: 100%; min-width: unset; }
+      .logo-section h1 { font-size: 32px; }
+      .container { padding: 30px 20px; }
+      .nav-container { padding: 0 20px; }
+      .header-content { flex-direction: column; gap: 20px; align-items: flex-start; }
+      nav button { font-size: 12px; padding: 16px 20px; }
     }
 
-    /* Luxury Hover Effects */
-    .luxury-hover {
-      transition: all 0.3s ease;
-    }
+    .luxury-hover { transition: all 0.3s ease; }
+    .luxury-hover:hover { animation: float 2s ease-in-out infinite; }
 
-    .luxury-hover:hover {
-      animation: float 2s ease-in-out infinite;
-    }
-
-    /* NEW: Journal table layout (CBSE style) */
+    /* Journal table */
     .journal-table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 950px;
+      min-width: 1050px;
       font-size: 14px;
       margin-top: 10px;
     }
-    .journal-table th,
-    .journal-table td {
+    .journal-table th, .journal-table td {
       border-bottom: 1px solid rgba(212, 175, 55, 0.15);
       padding: 16px 14px;
       vertical-align: top;
@@ -808,7 +576,6 @@
     }
     .journal-table th {
       background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0.05) 100%);
-      font-family: 'Poppins', sans-serif;
       font-weight: 600;
       color: var(--gold);
       text-transform: uppercase;
@@ -818,11 +585,9 @@
       top: 0;
       z-index: 10;
     }
-    .journal-table tbody tr:hover {
-      background: rgba(212, 175, 55, 0.05);
-    }
+    .journal-table tbody tr:hover { background: rgba(212, 175, 55, 0.05); }
 
-    /* NEW: Split ledger layout */
+    /* Split ledger */
     .split-ledger-wrap {
       overflow: auto;
       margin-top: 25px;
@@ -835,8 +600,7 @@
       min-width: 1050px;
       font-size: 14px;
     }
-    .split-ledger th,
-    .split-ledger td {
+    .split-ledger th, .split-ledger td {
       border-bottom: 1px solid rgba(212, 175, 55, 0.12);
       padding: 14px 12px;
       vertical-align: top;
@@ -844,7 +608,6 @@
     }
     .split-ledger thead th {
       background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0.05) 100%);
-      font-family: 'Poppins', sans-serif;
       font-weight: 700;
       color: var(--gold);
       text-transform: uppercase;
@@ -865,15 +628,14 @@
       border-bottom: 1px solid rgba(212, 175, 55, 0.2);
       text-align: center;
     }
-    .split-ledger tbody tr:hover {
-      background: rgba(212, 175, 55, 0.05);
-    }
+    .split-ledger tbody tr:hover { background: rgba(212, 175, 55, 0.05); }
     .split-ledger tfoot td {
       background: rgba(212, 175, 55, 0.08);
       font-weight: 800;
       border-top: 2px solid rgba(212, 175, 55, 0.6);
       border-bottom: 2px solid rgba(212, 175, 55, 0.6);
     }
+
     .align-right { text-align: right; }
     .align-center { text-align: center; }
   </style>
@@ -886,9 +648,7 @@
         <h1>✦ ELITE LEDGER ✦</h1>
         <div class="tagline">Premium Accounting Excellence</div>
       </div>
-      <div class="header-badge">
-        Prestige Edition
-      </div>
+      <div class="header-badge">Prestige Edition</div>
     </div>
   </header>
 
@@ -904,10 +664,7 @@
     <!-- PAGE 1: JOURNAL ENTRY -->
     <section class="page active">
       <div class="card luxury-hover">
-        <div class="subhead">
-          <span class="icon">📝</span>
-          Create Transaction Entry
-        </div>
+        <div class="subhead"><span class="icon">📝</span>Create Transaction Entry</div>
 
         <div class="row">
           <div>
@@ -925,10 +682,7 @@
 
         <div class="grid2">
           <div class="card" style="margin: 0; border-color: rgba(16, 185, 129, 0.5);">
-            <div class="subhead" style="color: #10b981; font-size: 22px;">
-              <span class="icon">💰</span>
-              Debit Accounts
-            </div>
+            <div class="subhead" style="color: #10b981; font-size: 22px;"><span class="icon">💰</span>Debit Accounts</div>
             <div id="debitContainer"></div>
             <div class="row" style="margin-top: 25px;">
               <button class="btn" style="border-color: #10b981; color: #10b981; background: rgba(16, 185, 129, 0.1);" onclick="addDebit()">
@@ -938,10 +692,7 @@
           </div>
 
           <div class="card" style="margin: 0; border-color: rgba(239, 68, 68, 0.5);">
-            <div class="subhead" style="color: #ef4444; font-size: 22px;">
-              <span class="icon">📤</span>
-              Credit Accounts
-            </div>
+            <div class="subhead" style="color: #ef4444; font-size: 22px;"><span class="icon">📤</span>Credit Accounts</div>
             <div id="creditContainer"></div>
             <div class="row" style="margin-top: 25px;">
               <button class="btn" style="border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.1);" onclick="addCredit()">
@@ -952,20 +703,14 @@
         </div>
 
         <div class="row" style="margin-top: 40px; gap: 18px;">
-          <button class="btn primary" onclick="addEntry()">
-            💎 Save Transaction
-          </button>
-          <button class="btn secondary" onclick="resetEntryForm()">
-            🔄 Reset Form
-          </button>
-          <button class="btn danger" onclick="undoLast()">
-            ↶ Undo Last Action
-          </button>
+          <button class="btn primary" onclick="addEntry()">💎 Save Transaction</button>
+          <button class="btn secondary" onclick="resetEntryForm()">🔄 Reset Form</button>
+          <button class="btn danger" onclick="undoLast()">↶ Undo Last Action</button>
         </div>
 
         <div class="info-box">
           <span class="icon">💡</span>
-          <div><strong>Pro Tip:</strong> Press <strong>Enter</strong> to seamlessly navigate between fields and automatically create new entry rows</div>
+          <div><strong>Pro Tip:</strong> Press <strong>Enter</strong> to navigate fields and auto-create new entry rows</div>
         </div>
       </div>
     </section>
@@ -973,10 +718,7 @@
     <!-- PAGE 2: JOURNAL VIEW -->
     <section class="page">
       <div class="card luxury-hover">
-        <div class="subhead">
-          <span class="icon">📊</span>
-          Transaction Journal
-        </div>
+        <div class="subhead"><span class="icon">📊</span>Transaction Journal</div>
 
         <div class="search-section">
           <div class="row" style="margin: 0;">
@@ -1007,10 +749,7 @@
     <!-- PAGE 3: LEDGER -->
     <section class="page">
       <div class="card luxury-hover">
-        <div class="subhead">
-          <span class="icon">📖</span>
-          Account Ledger
-        </div>
+        <div class="subhead"><span class="icon">📖</span>Account Ledger</div>
 
         <div class="search-section">
           <div class="row" style="margin: 0;">
@@ -1033,8 +772,10 @@
   <script>
   /* ==========================================================
      COMPOUND JOURNAL → AUTO LEDGER (ELITE EDITION)
-     Ledger format redesigned: Dr side & Cr side split (T-Format)
-     Journal format redesigned: Date | Particulars | L.F. | Dr | Cr
+     Added:
+     - Delete Entry button in Journal
+     - Auto Ledger Folio numbering (L.F.) CBSE style
+     - Fixed broken ledger HTML render
      ========================================================== */
 
   (function () {
@@ -1307,7 +1048,26 @@
       if (!ledger[name]) ledger[name] = [];
     }
 
-    function postToLedger(entry, entryIndex) {
+    /* ===== NEW: Assign Ledger Folios (CBSE L.F.) ===== */
+    function assignLedgerFolios() {
+      var accSet = {};
+      journal.forEach(function(entry){
+        (entry.debits||[]).forEach(function(d){ if (d.acc) accSet[d.acc]=true; });
+        (entry.credits||[]).forEach(function(c){ if (c.acc) accSet[c.acc]=true; });
+      });
+
+      var names = Object.keys(accSet).sort(function(a,b){ return a.localeCompare(b); });
+
+      var folioMap = {};
+      names.forEach(function(name, i){
+        folioMap[name] = "L" + (i + 1);
+      });
+
+      return folioMap;
+    }
+
+    function postToLedger(entry, entryIndex, folioMap) {
+      folioMap = folioMap || {};
       var jf = entry.jf || "-";
 
       entry.debits.forEach(function (d) {
@@ -1318,7 +1078,8 @@
           particulars: "To " + entry.credits.map(function(c){ return c.acc; }).join(", "),
           debit: d.amt,
           credit: 0,
-          jf: jf
+          jf: jf,
+          lf: folioMap[d.acc] || "-"
         });
       });
 
@@ -1330,15 +1091,17 @@
           particulars: "By " + entry.debits.map(function(d){ return d.acc; }).join(", "),
           debit: 0,
           credit: c.amt,
-          jf: jf
+          jf: jf,
+          lf: folioMap[c.acc] || "-"
         });
       });
     }
 
     function rebuildLedgerFromJournal() {
       ledger = {};
+      var folioMap = assignLedgerFolios();
       journal.forEach(function(entry, idx){
-        postToLedger(entry, idx);
+        postToLedger(entry, idx, folioMap);
       });
     }
 
@@ -1376,6 +1139,27 @@
       renderAll();
     }
     window.addEntry = addEntry;
+
+    /* ===== NEW: Delete Entry ===== */
+    function deleteEntry(index) {
+      index = Number(index);
+      if (!isFinite(index) || index < 0 || index >= journal.length) {
+        alert("Invalid entry index.");
+        return;
+      }
+
+      var ok = confirm("Delete Entry #" + (index + 1) + "?\n\nThis will also update Ledger automatically.");
+      if (!ok) return;
+
+      var oldCopy = JSON.parse(JSON.stringify(journal[index]));
+      undoStack.push({ type: "delete", index: index, oldEntry: oldCopy });
+
+      journal.splice(index, 1);
+      rebuildLedgerFromJournal();
+      persist();
+      renderAll();
+    }
+    window.deleteEntry = deleteEntry;
 
     function editEntry(index) {
       index = Number(index);
@@ -1470,6 +1254,10 @@
         if (last.oldEntry && journal[last.index]) {
           journal[last.index] = last.oldEntry;
         }
+      } else if (last.type === "delete") {
+        if (last.oldEntry) {
+          journal.splice(last.index, 0, last.oldEntry);
+        }
       }
 
       rebuildLedgerFromJournal();
@@ -1547,15 +1335,15 @@
     window.clearLedgerSearch = clearLedgerSearch;
 
     /* ===========================
-       NEW: JOURNAL TABLE FORMAT
-       Date | Particulars | L.F. | Dr Amount | Cr Amount
+       JOURNAL TABLE FORMAT (CBSE)
+       Date | Particulars | L.F. | Dr | Cr
        =========================== */
     function renderJournal() {
       var out = document.getElementById("journalOutput");
       if (!out) return;
 
       if (!journal.length) {
-        out.innerHTML = 
+        out.innerHTML =
           '<div class="empty-state">' +
             '<div class="icon">📋</div>' +
             '<h3>No Entries Yet</h3>' +
@@ -1566,6 +1354,7 @@
 
       var q = getJournalSearchQuery();
       var mode = getJournalSearchMode();
+      var folioMap = assignLedgerFolios();
 
       var rowsHtml = "";
       var shown = 0;
@@ -1575,22 +1364,32 @@
 
         shown++;
 
-        // Each debit line shown as a separate row (CBSE journal style)
+        var actionBtns =
+          "<div style='display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;'>" +
+            "<button class='btn secondary' style='padding:10px 14px; font-size:11px;' onclick='editEntry(" + idx + ")'>✎ Edit</button>" +
+            "<button class='btn danger' style='padding:10px 14px; font-size:11px;' onclick='deleteEntry(" + idx + ")'>🗑 Delete</button>" +
+          "</div>";
+
         (e.debits || []).forEach(function(d, di){
           rowsHtml +=
             "<tr>" +
               "<td>" + escapeHtml(e.date) + "</td>" +
               "<td>" +
                 "<strong style='color:#10b981;'>Dr.</strong> " + escapeHtml(d.acc) +
-                (di === 0 && e.narration ? "<div style='margin-top:8px; opacity:0.9; font-size:12px; color:rgba(248,245,240,0.7);'><em>Narration:</em> " + escapeHtml(e.narration) + "</div>" : "") +
+                (di === 0
+                  ? (
+                      (e.narration ? "<div style='margin-top:8px; opacity:0.9; font-size:12px; color:rgba(248,245,240,0.7);'><em>Narration:</em> " + escapeHtml(e.narration) + "</div>" : "") +
+                      actionBtns
+                    )
+                  : ""
+                ) +
               "</td>" +
-              "<td class='align-center'>-</td>" +
+              "<td class='align-center'>" + escapeHtml(folioMap[d.acc] || "-") + "</td>" +
               "<td class='align-right'><span class='amount-display' style='color:#10b981;'>₹" + paiseToStr(d.amt) + "</span></td>" +
               "<td class='align-right'></td>" +
             "</tr>";
         });
 
-        // Each credit line shown as a separate row
         (e.credits || []).forEach(function(c){
           rowsHtml +=
             "<tr>" +
@@ -1598,13 +1397,12 @@
               "<td style='padding-left:28px;'>" +
                 "<strong style='color:#ef4444;'>To</strong> " + escapeHtml(c.acc) +
               "</td>" +
-              "<td class='align-center'>-</td>" +
+              "<td class='align-center'>" + escapeHtml(folioMap[c.acc] || "-") + "</td>" +
               "<td class='align-right'></td>" +
               "<td class='align-right'><span class='amount-display' style='color:#ef4444;'>₹" + paiseToStr(c.amt) + "</span></td>" +
             "</tr>";
         });
 
-        // Divider row between entries
         rowsHtml +=
           "<tr>" +
             "<td colspan='5' style='padding:0; border-bottom:none;'>" +
@@ -1614,7 +1412,7 @@
       });
 
       if (!shown) {
-        out.innerHTML = 
+        out.innerHTML =
           '<div class="empty-state">' +
             '<div class="icon">🔍</div>' +
             '<h3>No Matching Entries</h3>' +
@@ -1629,7 +1427,7 @@
             "<thead>" +
               "<tr>" +
                 "<th style='min-width:120px;'>Date</th>" +
-                "<th style='min-width:420px;'>Particulars</th>" +
+                "<th style='min-width:520px;'>Particulars</th>" +
                 "<th class='align-center' style='min-width:80px;'>L.F.</th>" +
                 "<th class='align-right' style='min-width:150px;'>Debit Amount</th>" +
                 "<th class='align-right' style='min-width:150px;'>Credit Amount</th>" +
@@ -1641,8 +1439,8 @@
     }
 
     /* ===========================
-       NEW: LEDGER T-FORMAT
-       Dr.(Date, Particulars, J.F., Amount) | Cr.(Date, Particulars, J.F., Amount)
+       LEDGER T-FORMAT (CBSE)
+       Dr | Cr
        =========================== */
     function renderLedger() {
       var out = document.getElementById("ledgerOutput");
@@ -1661,7 +1459,7 @@
       }
 
       if (!accNames.length) {
-        out.innerHTML = 
+        out.innerHTML =
           '<div class="empty-state">' +
             '<div class="icon">📖</div>' +
             '<h3>No Ledger Accounts</h3>' +
@@ -1674,7 +1472,6 @@
       accNames.forEach(function (acc) {
         var rows = ledger[acc] || [];
 
-        // Separate Dr and Cr sides
         var drRows = rows.filter(function(r){ return (r.debit || 0) > 0; });
         var crRows = rows.filter(function(r){ return (r.credit || 0) > 0; });
 
@@ -1690,16 +1487,14 @@
 
           body +=
             "<tr>" +
-              // DR SIDE
               "<td>" + (d ? escapeHtml(d.date) : "") + "</td>" +
               "<td>" + (d ? escapeHtml(d.particulars) : "") + "</td>" +
-              "<td class='align-center'>" + (d ? escapeHtml(d.jf || "-") : "") + "</td>" +
+              "<td class='align-center'>" + (d ? escapeHtml(d.lf || "-") : "") + "</td>" +
               "<td class='align-right'>" + (d ? ("<span class='amount-display' style='color:#10b981;'>₹" + paiseToStr(d.debit) + "</span>") : "") + "</td>" +
 
-              // CR SIDE
               "<td>" + (c ? escapeHtml(c.date) : "") + "</td>" +
               "<td>" + (c ? escapeHtml(c.particulars) : "") + "</td>" +
-              "<td class='align-center'>" + (c ? escapeHtml(c.jf || "-") : "") + "</td>" +
+              "<td class='align-center'>" + (c ? escapeHtml(c.lf || "-") : "") + "</td>" +
               "<td class='align-right'>" + (c ? ("<span class='amount-display' style='color:#ef4444;'>₹" + paiseToStr(c.credit) + "</span>") : "") + "</td>" +
             "</tr>";
         }
@@ -1710,7 +1505,7 @@
 
         html +=
           "<div class='ledger-card'>" +
-            "<div style='display:flex; justify-content:space-between; align-items:center;'>" +
+            "<div style='display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;'>" +
               "<h3>✦ " + escapeHtml(acc) + "</h3>" +
               "<div style='display:flex; gap:15px; flex-wrap:wrap; justify-content:flex-end;'>" +
                 "<span class='badge'>" + rows.length + " Entries</span>" +
@@ -1724,27 +1519,28 @@
               "<table class='split-ledger'>" +
                 "<thead>" +
                   "<tr>" +
-                    "<th class='sidehead' colspan='4'>Dr.</th>" +
-                    "<th class='sidehead' colspan='4'>Cr.</th>" +
+                    "<th colspan='4' class='sidehead'>Dr.</th>" +
+                    "<th colspan='4' class='sidehead'>Cr.</th>" +
                   "</tr>" +
                   "<tr>" +
-                    "<th style='min-width:110px;'>Date</th>" +
+                    "<th style='min-width:120px;'>Date</th>" +
                     "<th style='min-width:260px;'>Particulars</th>" +
-                    "<th class='align-center' style='min-width:70px;'>J.F.</th>" +
-                    "<th class='align-right' style='min-width:130px;'>Amount</th>" +
-                    "<th style='min-width:110px;'>Date</th>" +
+                    "<th class='align-center' style='min-width:80px;'>L.F.</th>" +
+                    "<th class='align-right' style='min-width:140px;'>Amount</th>" +
+
+                    "<th style='min-width:120px;'>Date</th>" +
                     "<th style='min-width:260px;'>Particulars</th>" +
-                    "<th class='align-center' style='min-width:70px;'>J.F.</th>" +
-                    "<th class='align-right' style='min-width:130px;'>Amount</th>" +
+                    "<th class='align-center' style='min-width:80px;'>L.F.</th>" +
+                    "<th class='align-right' style='min-width:140px;'>Amount</th>" +
                   "</tr>" +
                 "</thead>" +
                 "<tbody>" + body + "</tbody>" +
                 "<tfoot>" +
                   "<tr>" +
-                    "<td colspan='3'><strong>Total</strong></td>" +
-                    "<td class='align-right'><span class='amount-display'>₹" + paiseToStr(drTotal) + "</span></td>" +
-                    "<td colspan='3'><strong>Total</strong></td>" +
-                    "<td class='align-right'><span class='amount-display'>₹" + paiseToStr(crTotal) + "</span></td>" +
+                    "<td colspan='3' class='align-right'>Total</td>" +
+                    "<td class='align-right'>₹" + paiseToStr(drTotal) + "</td>" +
+                    "<td colspan='3' class='align-right'>Total</td>" +
+                    "<td class='align-right'>₹" + paiseToStr(crTotal) + "</td>" +
                   "</tr>" +
                 "</tfoot>" +
               "</table>" +
@@ -1761,42 +1557,23 @@
     }
     window.renderAll = renderAll;
 
-    function attachSearchListeners(){
-      var js = $("#journalSearchInput");
-      var jm = $("#journalSearchMode");
-      var ls = $("#ledgerSearchInput");
-
-      if (js) js.addEventListener("input", function(){ renderJournal(); });
-      if (jm) jm.addEventListener("change", function(){ renderJournal(); });
-      if (ls) ls.addEventListener("input", function(){ renderLedger(); });
-    }
-
-    function init() {
-      restore();
-      rebuildLedgerFromJournal();
-
-      var dateInput = document.getElementById("dateInput");
-      if (dateInput && !dateInput.value) {
-        dateInput.value = new Date().toISOString().slice(0, 10);
-      }
-
-      if (!document.querySelector(".debit-row")) addDebit();
-      if (!document.querySelector(".credit-row")) addCredit();
-
-      autoFillParticularsInForm();
-      attachSearchListeners();
-      renderAll();
-    }
-
-    window.addEventListener("error", function(e){
-      console.error("Runtime error:", e.message, e.error);
+    // Live search re-render
+    document.addEventListener("input", function(e){
+      if (!e.target) return;
+      if (e.target.id === "journalSearchInput" || e.target.id === "journalSearchMode") renderJournal();
+      if (e.target.id === "ledgerSearchInput") renderLedger();
     });
 
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", init);
-    } else {
-      init();
-    }
+    // Boot
+    restore();
+    rebuildLedgerFromJournal();
+
+    // Ensure at least 1 row each
+    if (!document.querySelector(".debit-row")) addDebit();
+    if (!document.querySelector(".credit-row")) addCredit();
+
+    autoFillParticularsInForm();
+    renderAll();
 
   })();
   </script>
