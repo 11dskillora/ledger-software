@@ -586,14 +586,14 @@
     .ledger-table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 750px;
+      min-width: 900px;
       font-size: 14px;
     }
 
     .ledger-table th,
     .ledger-table td {
       border-bottom: 1px solid rgba(212, 175, 55, 0.15);
-      padding: 18px 16px;
+      padding: 16px 14px;
       vertical-align: top;
       text-align: left;
     }
@@ -790,6 +790,92 @@
     .luxury-hover:hover {
       animation: float 2s ease-in-out infinite;
     }
+
+    /* NEW: Journal table layout (CBSE style) */
+    .journal-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 950px;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    .journal-table th,
+    .journal-table td {
+      border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+      padding: 16px 14px;
+      vertical-align: top;
+      text-align: left;
+    }
+    .journal-table th {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0.05) 100%);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      color: var(--gold);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .journal-table tbody tr:hover {
+      background: rgba(212, 175, 55, 0.05);
+    }
+
+    /* NEW: Split ledger layout */
+    .split-ledger-wrap {
+      overflow: auto;
+      margin-top: 25px;
+      border-radius: 14px;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+    }
+    .split-ledger {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1050px;
+      font-size: 14px;
+    }
+    .split-ledger th,
+    .split-ledger td {
+      border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+      padding: 14px 12px;
+      vertical-align: top;
+      text-align: left;
+    }
+    .split-ledger thead th {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0.05) 100%);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      color: var(--gold);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .split-ledger .sidehead {
+      font-family: 'Playfair Display', serif;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      background: rgba(212, 175, 55, 0.08);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+      text-align: center;
+    }
+    .split-ledger tbody tr:hover {
+      background: rgba(212, 175, 55, 0.05);
+    }
+    .split-ledger tfoot td {
+      background: rgba(212, 175, 55, 0.08);
+      font-weight: 800;
+      border-top: 2px solid rgba(212, 175, 55, 0.6);
+      border-bottom: 2px solid rgba(212, 175, 55, 0.6);
+    }
+    .align-right { text-align: right; }
+    .align-center { text-align: center; }
   </style>
 </head>
 
@@ -947,7 +1033,8 @@
   <script>
   /* ==========================================================
      COMPOUND JOURNAL → AUTO LEDGER (ELITE EDITION)
-     All original functionality preserved with premium styling
+     Ledger format redesigned: Dr side & Cr side split (T-Format)
+     Journal format redesigned: Date | Particulars | L.F. | Dr | Cr
      ========================================================== */
 
   (function () {
@@ -1459,6 +1546,10 @@
     }
     window.clearLedgerSearch = clearLedgerSearch;
 
+    /* ===========================
+       NEW: JOURNAL TABLE FORMAT
+       Date | Particulars | L.F. | Dr Amount | Cr Amount
+       =========================== */
     function renderJournal() {
       var out = document.getElementById("journalOutput");
       if (!out) return;
@@ -1476,7 +1567,7 @@
       var q = getJournalSearchQuery();
       var mode = getJournalSearchMode();
 
-      var html = "";
+      var rowsHtml = "";
       var shown = 0;
 
       journal.forEach(function (e, idx) {
@@ -1484,31 +1575,42 @@
 
         shown++;
 
-        var debitLines = (e.debits || []).map(function(d){
-          return "<div style='padding:10px; margin:6px 0; background:rgba(16, 185, 129, 0.08); border-left:3px solid #10b981; border-radius:8px;'>" +
-                 "<strong style='color:#10b981;'>Dr.</strong> " + escapeHtml(d.acc) + 
-                 " <span class='amount-display' style='color:#10b981; font-size:16px; float:right;'>₹" + paiseToStr(d.amt) + "</span></div>";
-        }).join("");
+        // Each debit line shown as a separate row (CBSE journal style)
+        (e.debits || []).forEach(function(d, di){
+          rowsHtml +=
+            "<tr>" +
+              "<td>" + escapeHtml(e.date) + "</td>" +
+              "<td>" +
+                "<strong style='color:#10b981;'>Dr.</strong> " + escapeHtml(d.acc) +
+                (di === 0 && e.narration ? "<div style='margin-top:8px; opacity:0.9; font-size:12px; color:rgba(248,245,240,0.7);'><em>Narration:</em> " + escapeHtml(e.narration) + "</div>" : "") +
+              "</td>" +
+              "<td class='align-center'>-</td>" +
+              "<td class='align-right'><span class='amount-display' style='color:#10b981;'>₹" + paiseToStr(d.amt) + "</span></td>" +
+              "<td class='align-right'></td>" +
+            "</tr>";
+        });
 
-        var creditLines = (e.credits || []).map(function(c){
-          return "<div style='padding:10px; margin:6px 0; background:rgba(239, 68, 68, 0.08); border-left:3px solid #ef4444; border-radius:8px;'>" +
-                 "<strong style='color:#ef4444;'>Cr.</strong> " + escapeHtml(c.acc) + 
-                 " <span class='amount-display' style='color:#ef4444; font-size:16px; float:right;'>₹" + paiseToStr(c.amt) + "</span></div>";
-        }).join("");
+        // Each credit line shown as a separate row
+        (e.credits || []).forEach(function(c){
+          rowsHtml +=
+            "<tr>" +
+              "<td>" + escapeHtml(e.date) + "</td>" +
+              "<td style='padding-left:28px;'>" +
+                "<strong style='color:#ef4444;'>To</strong> " + escapeHtml(c.acc) +
+              "</td>" +
+              "<td class='align-center'>-</td>" +
+              "<td class='align-right'></td>" +
+              "<td class='align-right'><span class='amount-display' style='color:#ef4444;'>₹" + paiseToStr(c.amt) + "</span></td>" +
+            "</tr>";
+        });
 
-        html +=
-          "<div class='entry-card'>" +
-            "<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;'>" +
-              "<div><strong style='font-size:18px; color:var(--gold); font-family:Playfair Display, serif;'>Entry #" + (idx + 1) + "</strong> " +
-              "<span class='badge' style='margin-left:10px;'>📅 " + escapeHtml(e.date) + "</span></div>" +
-              "<button class='btn' style='padding:10px 20px;' onclick='editEntry(" + idx + ")'>✏️ Edit</button>" +
-            "</div>" +
-            "<div>" + debitLines + "</div>" +
-            "<div style='margin-top:10px;'>" + creditLines + "</div>" +
-            "<div style='margin-top:15px; padding:12px; background:rgba(212, 175, 55, 0.08); border-left:3px solid var(--gold); border-radius:8px;'>" +
-              "<strong style='color:var(--gold);'>Narration:</strong> <span style='color:var(--cream);'>" + escapeHtml(e.narration || "-") + "</span>" +
-            "</div>" +
-          "</div>";
+        // Divider row between entries
+        rowsHtml +=
+          "<tr>" +
+            "<td colspan='5' style='padding:0; border-bottom:none;'>" +
+              "<div style='height:1px; background:linear-gradient(90deg, transparent, rgba(212,175,55,0.35), transparent); margin:6px 0;'></div>" +
+            "</td>" +
+          "</tr>";
       });
 
       if (!shown) {
@@ -1521,9 +1623,27 @@
         return;
       }
 
-      out.innerHTML = html;
+      out.innerHTML =
+        "<div style='overflow:auto;'>" +
+          "<table class='journal-table'>" +
+            "<thead>" +
+              "<tr>" +
+                "<th style='min-width:120px;'>Date</th>" +
+                "<th style='min-width:420px;'>Particulars</th>" +
+                "<th class='align-center' style='min-width:80px;'>L.F.</th>" +
+                "<th class='align-right' style='min-width:150px;'>Debit Amount</th>" +
+                "<th class='align-right' style='min-width:150px;'>Credit Amount</th>" +
+              "</tr>" +
+            "</thead>" +
+            "<tbody>" + rowsHtml + "</tbody>" +
+          "</table>" +
+        "</div>";
     }
 
+    /* ===========================
+       NEW: LEDGER T-FORMAT
+       Dr.(Date, Particulars, J.F., Amount) | Cr.(Date, Particulars, J.F., Amount)
+       =========================== */
     function renderLedger() {
       var out = document.getElementById("ledgerOutput");
       if (!out) return;
@@ -1553,25 +1673,38 @@
       var html = "";
       accNames.forEach(function (acc) {
         var rows = ledger[acc] || [];
-        var debitTotal = 0, creditTotal = 0;
 
-        var rowHtml = rows.map(function (r) {
-          debitTotal += r.debit || 0;
-          creditTotal += r.credit || 0;
-          return (
+        // Separate Dr and Cr sides
+        var drRows = rows.filter(function(r){ return (r.debit || 0) > 0; });
+        var crRows = rows.filter(function(r){ return (r.credit || 0) > 0; });
+
+        var drTotal = drRows.reduce(function(s,r){ return s + (r.debit||0); }, 0);
+        var crTotal = crRows.reduce(function(s,r){ return s + (r.credit||0); }, 0);
+
+        var maxLen = Math.max(drRows.length, crRows.length);
+
+        var body = "";
+        for (var i = 0; i < maxLen; i++) {
+          var d = drRows[i] || null;
+          var c = crRows[i] || null;
+
+          body +=
             "<tr>" +
-              "<td>" + escapeHtml(r.date) + "</td>" +
-              "<td>" + escapeHtml(r.particulars) + "</td>" +
-              "<td style='text-align:center;'>" + escapeHtml(r.jf || "-") + "</td>" +
-              "<td style='text-align:right;'><span class='amount-display' style='color:#10b981;'>" + 
-                (r.debit ? "₹" + paiseToStr(r.debit) : "") + "</span></td>" +
-              "<td style='text-align:right;'><span class='amount-display' style='color:#ef4444;'>" + 
-                (r.credit ? "₹" + paiseToStr(r.credit) : "") + "</span></td>" +
-            "</tr>"
-          );
-        }).join("");
+              // DR SIDE
+              "<td>" + (d ? escapeHtml(d.date) : "") + "</td>" +
+              "<td>" + (d ? escapeHtml(d.particulars) : "") + "</td>" +
+              "<td class='align-center'>" + (d ? escapeHtml(d.jf || "-") : "") + "</td>" +
+              "<td class='align-right'>" + (d ? ("<span class='amount-display' style='color:#10b981;'>₹" + paiseToStr(d.debit) + "</span>") : "") + "</td>" +
 
-        var balance = debitTotal - creditTotal;
+              // CR SIDE
+              "<td>" + (c ? escapeHtml(c.date) : "") + "</td>" +
+              "<td>" + (c ? escapeHtml(c.particulars) : "") + "</td>" +
+              "<td class='align-center'>" + (c ? escapeHtml(c.jf || "-") : "") + "</td>" +
+              "<td class='align-right'>" + (c ? ("<span class='amount-display' style='color:#ef4444;'>₹" + paiseToStr(c.credit) + "</span>") : "") + "</td>" +
+            "</tr>";
+        }
+
+        var balance = drTotal - crTotal;
         var balanceType = balance >= 0 ? "Dr." : "Cr.";
         var balanceAbs = Math.abs(balance);
 
@@ -1579,28 +1712,39 @@
           "<div class='ledger-card'>" +
             "<div style='display:flex; justify-content:space-between; align-items:center;'>" +
               "<h3>✦ " + escapeHtml(acc) + "</h3>" +
-              "<div style='display:flex; gap:15px;'>" +
+              "<div style='display:flex; gap:15px; flex-wrap:wrap; justify-content:flex-end;'>" +
                 "<span class='badge'>" + rows.length + " Entries</span>" +
                 "<span class='badge' style='background:rgba(212, 175, 55, 0.15);'>" +
                   "Balance: ₹" + paiseToStr(balanceAbs) + " " + balanceType +
                 "</span>" +
               "</div>" +
             "</div>" +
-            "<div style='overflow:auto; margin-top:25px;'>" +
-              "<table class='ledger-table'>" +
-                "<thead><tr>" +
-                  "<th>Date</th>" +
-                  "<th>Particulars</th>" +
-                  "<th style='text-align:center;'>J/F</th>" +
-                  "<th style='text-align:right;'>Debit</th>" +
-                  "<th style='text-align:right;'>Credit</th>" +
-                "</tr></thead>" +
-                "<tbody>" + rowHtml + "</tbody>" +
+
+            "<div class='split-ledger-wrap'>" +
+              "<table class='split-ledger'>" +
+                "<thead>" +
+                  "<tr>" +
+                    "<th class='sidehead' colspan='4'>Dr.</th>" +
+                    "<th class='sidehead' colspan='4'>Cr.</th>" +
+                  "</tr>" +
+                  "<tr>" +
+                    "<th style='min-width:110px;'>Date</th>" +
+                    "<th style='min-width:260px;'>Particulars</th>" +
+                    "<th class='align-center' style='min-width:70px;'>J.F.</th>" +
+                    "<th class='align-right' style='min-width:130px;'>Amount</th>" +
+                    "<th style='min-width:110px;'>Date</th>" +
+                    "<th style='min-width:260px;'>Particulars</th>" +
+                    "<th class='align-center' style='min-width:70px;'>J.F.</th>" +
+                    "<th class='align-right' style='min-width:130px;'>Amount</th>" +
+                  "</tr>" +
+                "</thead>" +
+                "<tbody>" + body + "</tbody>" +
                 "<tfoot>" +
                   "<tr>" +
                     "<td colspan='3'><strong>Total</strong></td>" +
-                    "<td style='text-align:right;'><span class='amount-display'>₹" + paiseToStr(debitTotal) + "</span></td>" +
-                    "<td style='text-align:right;'><span class='amount-display'>₹" + paiseToStr(creditTotal) + "</span></td>" +
+                    "<td class='align-right'><span class='amount-display'>₹" + paiseToStr(drTotal) + "</span></td>" +
+                    "<td colspan='3'><strong>Total</strong></td>" +
+                    "<td class='align-right'><span class='amount-display'>₹" + paiseToStr(crTotal) + "</span></td>" +
                   "</tr>" +
                 "</tfoot>" +
               "</table>" +
