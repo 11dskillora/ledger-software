@@ -7,7 +7,7 @@
 
     <!-- Google Fonts -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
@@ -25,6 +25,188 @@
       html,
       body {
         height: 100%;
+        background: #2a1f18;
+      }
+
+      /* Wood grain texture overlay */
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+          repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 2px,
+            rgba(139, 90, 43, 0.03) 2px,
+            rgba(139, 90, 43, 0.03) 4px
+          ),
+          repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 1px,
+            rgba(92, 64, 51, 0.02) 1px,
+            rgba(92, 64, 51, 0.02) 2px
+          );
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      /* Scrollbar styling */
+      ::-webkit-scrollbar {
+        width: 14px;
+        height: 14px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #3a2f28;
+        border-left: 1px solid #5c4033;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #8b6f47 0%, #5c4033 100%);
+        border: 2px solid #3a2f28;
+        border-radius: 8px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, #a68256 0%, #6d4c37 100%);
+      }
+
+      /* Parchment paper texture */
+      .parchment {
+        background: linear-gradient(135deg, #f5e6d3 0%, #e8dcc8 50%, #f0e4d0 100%);
+        position: relative;
+      }
+
+      .parchment::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+          radial-gradient(circle at 20% 30%, rgba(139, 90, 43, 0.02) 0%, transparent 50%),
+          radial-gradient(circle at 80% 70%, rgba(92, 64, 51, 0.03) 0%, transparent 50%);
+        pointer-events: none;
+      }
+
+      /* Wood panel effect */
+      .wood-panel {
+        background: linear-gradient(135deg, #5c4033 0%, #3e2a1f 100%);
+        position: relative;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .wood-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+          repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 3px,
+            rgba(0, 0, 0, 0.1) 3px,
+            rgba(0, 0, 0, 0.1) 6px
+          );
+        pointer-events: none;
+      }
+
+      /* Leather texture */
+      .leather {
+        background: linear-gradient(135deg, #4a3428 0%, #3a2820 100%);
+        position: relative;
+      }
+
+      .leather::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+          radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+          radial-gradient(circle at 75% 75%, rgba(0, 0, 0, 0.05) 0%, transparent 50%);
+        pointer-events: none;
+      }
+
+      /* Embossed text effect */
+      .embossed {
+        text-shadow: 
+          1px 1px 2px rgba(255, 255, 255, 0.3),
+          -1px -1px 2px rgba(0, 0, 0, 0.5);
+      }
+
+      /* Gold foil effect */
+      .gold-foil {
+        background: linear-gradient(135deg, #d4af37 0%, #c9a961 25%, #f4e4bc 50%, #c9a961 75%, #b8941f 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        position: relative;
+      }
+
+      /* Brass accent */
+      .brass {
+        background: linear-gradient(135deg, #b5a642 0%, #8b7335 100%);
+        box-shadow: 
+          inset 0 1px 0 rgba(255, 255, 255, 0.3),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+          0 2px 4px rgba(0, 0, 0, 0.4);
+      }
+
+      /* Aged paper edge effect */
+      .torn-edge {
+        position: relative;
+      }
+
+      .torn-edge::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, 
+          transparent 0%, 
+          rgba(139, 90, 43, 0.2) 10%, 
+          transparent 20%,
+          rgba(139, 90, 43, 0.2) 30%, 
+          transparent 40%,
+          rgba(139, 90, 43, 0.2) 50%, 
+          transparent 60%,
+          rgba(139, 90, 43, 0.2) 70%, 
+          transparent 80%,
+          rgba(139, 90, 43, 0.2) 90%, 
+          transparent 100%
+        );
+      }
+
+      /* Wax seal effect */
+      .wax-seal {
+        background: radial-gradient(circle, #8b1a1a 0%, #5c0f0f 100%);
+        box-shadow: 
+          0 2px 8px rgba(139, 26, 26, 0.6),
+          inset 0 1px 2px rgba(255, 255, 255, 0.2);
+      }
+
+      /* Stop number input wheel changing value (strong CSS fix) */
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
       }
     </style>
   </head>
@@ -35,10 +217,9 @@
     <script type="text/babel">
       const { useState, useEffect, useMemo } = React;
 
-      // --- Inline Icon Component (Lucide-like SVGs) ---
+      // --- Inline Icon Component ---
       function Icon({ name, className }) {
-        const base =
-          "w-5 h-5 stroke-current fill-none stroke-[2] stroke-linecap-round stroke-linejoin-round";
+        const base = "w-5 h-5 stroke-current fill-none stroke-[2] stroke-linecap-round stroke-linejoin-round";
         const cls = className ? className : base;
 
         const icons = {
@@ -142,15 +323,22 @@
               <path d="M9 12l2 2 4-4" />
             </svg>
           ),
-          ClipboardList: (
+          Feather: (
             <svg className={cls} viewBox="0 0 24 24">
-              <path d="M9 5h6" />
-              <path d="M9 3h6v4H9z" />
-              <path d="M6 7h12v14H6z" />
-              <path d="M9 11h6" />
-              <path d="M9 15h6" />
+              <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
+              <line x1="16" y1="8" x2="2" y2="22" />
+              <line x1="17.5" y1="15" x2="9" y2="15" />
             </svg>
           ),
+          Scale: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M12 3v18" />
+              <path d="M3 7h18" />
+              <path d="M7 7l-4 8h8l-4-8Z" />
+              <path d="M17 7l-4 8h8l-4-8Z" />
+              <path d="M8 21h8" />
+            </svg>
+          )
         };
 
         return icons[name] || null;
@@ -217,7 +405,6 @@
           if (Array.isArray(j)) setJournal(j);
           if (Array.isArray(u)) setUndoStack(u);
           resetFormState();
-          // eslint-disable-next-line
         }, []);
 
         useEffect(() => {
@@ -227,6 +414,19 @@
         useEffect(() => {
           localStorage.setItem("undoStack", JSON.stringify(undoStack));
         }, [undoStack]);
+
+        // Stop scroll wheel changing number input values globally
+        useEffect(() => {
+          const handler = (e) => {
+            const t = e.target;
+            if (t && t.tagName === "INPUT" && t.type === "number") {
+              t.blur();
+              e.preventDefault();
+            }
+          };
+          window.addEventListener("wheel", handler, { passive: false });
+          return () => window.removeEventListener("wheel", handler);
+        }, []);
 
         const addDebitRow = () =>
           setDebits((prev) => [...prev, { id: crypto.randomUUID(), acc: "", amtStr: "", amt: 0 }]);
@@ -406,7 +606,7 @@
           }
         };
 
-        // Ledger generation (L.F.)
+        // Ledger generation + CBSE Folio numbering
         const ledgerData = useMemo(() => {
           const ledger = {};
           const accSet = new Set();
@@ -459,7 +659,7 @@
           return { ledger, folioMap };
         }, [journal]);
 
-        // Trial Balance auto generation
+        // Trial Balance generation (CBSE style)
         const trialBalance = useMemo(() => {
           const accounts = Object.keys(ledgerData.ledger || {}).sort();
           const rows = accounts.map((acc) => {
@@ -471,6 +671,7 @@
               acc,
               debit: bal > 0 ? bal : 0,
               credit: bal < 0 ? Math.abs(bal) : 0,
+              lf: ledgerData.folioMap?.[acc] || "-"
             };
           });
 
@@ -505,49 +706,63 @@
 
         return (
           <div
-            className="min-h-screen bg-[#f4f1ea] text-[#4a3b32] font-serif selection:bg-[#d4b483] selection:text-[#2c1810]"
-            style={{ fontFamily: '"Crimson Text", serif' }}
+            className="min-h-screen relative z-10"
+            style={{ 
+              fontFamily: '"EB Garamond", "Crimson Text", serif',
+              background: 'linear-gradient(135deg, #2a1f18 0%, #1a1410 100%)'
+            }}
           >
-            {/* Header */}
-            <header className="relative bg-gradient-to-r from-[#5c4033] via-[#704214] to-[#5c4033] border-b-4 border-[#8b5e3c] sticky top-0 z-50 shadow-xl">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-                <div className="flex justify-between h-20 items-center">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-gradient-to-br from-[#d4af37] to-[#8b6c42] p-2 rounded-lg text-[#2c1810] shadow-lg ring-1 ring-[#f4e4bc]/30">
-                      <Icon name="Building2" className="w-7 h-7" />
+            {/* Ornate Header - Deep Wood Panel */}
+            <header className="wood-panel sticky top-0 z-50 border-b-4 border-[#d4af37] shadow-2xl">
+              {/* Decorative brass corner pieces */}
+              <div className="absolute top-0 left-0 w-16 h-16 brass" style={{
+                clipPath: 'polygon(0 0, 100% 0, 0 100%)'
+              }}></div>
+              <div className="absolute top-0 right-0 w-16 h-16 brass" style={{
+                clipPath: 'polygon(100% 0, 100% 100%, 0 0)'
+              }}></div>
+
+              <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+                <div className="flex justify-between items-center h-24">
+                  {/* Logo with wax seal */}
+                  <div className="flex items-center gap-5">
+                    <div className="wax-seal p-3 rounded-full relative">
+                      <Icon name="Feather" className="w-8 h-8 text-[#d4af37]" />
+                      <div className="absolute inset-0 rounded-full border-2 border-[#d4af37]/30"></div>
                     </div>
                     <div>
                       <h1
-                        className="text-2xl font-bold tracking-wide text-[#f4e4bc] leading-none"
+                        className="text-4xl font-bold tracking-[0.2em] gold-foil embossed"
                         style={{ fontFamily: '"Playfair Display", serif' }}
                       >
                         ELITE LEDGER
                       </h1>
-                      <p className="text-xs text-[#d4af37] font-semibold tracking-[0.2em] uppercase mt-1">
-                        Premium Accounting
+                      <p className="text-xs text-[#c9a961] font-semibold tracking-[0.3em] uppercase mt-1.5 ml-0.5">
+                        Est. 1847 · Premium Accounting
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center bg-[#4a3228] rounded-full p-1 border border-[#6d4c3d] shadow-inner">
+                  {/* Navigation - Brass buttons */}
+                  <div className="flex items-center gap-2 leather rounded-lg p-1.5 border-2 border-[#8b5a2b] shadow-inner">
                     {[
-                      { id: "new", label: "Transaction", icon: "Plus" },
+                      { id: "new", label: "New Entry", icon: "Pencil" },
                       { id: "journal", label: "Journal", icon: "ScrollText" },
-                      { id: "ledger", label: "LedgerBook", icon: "BookOpen" },
-                      { id: "trial", label: "Trial Balance", icon: "ClipboardList" },
+                      { id: "ledger", label: "Ledger", icon: "BookOpen" },
+                      { id: "trial", label: "Trial Balance", icon: "Scale" },
                     ].map((tab) => (
                       <button
                         key={tab.id}
                         onClick={() => setView(tab.id)}
                         className={`
-                          flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all duration-300
+                          flex items-center gap-2.5 px-6 py-3 rounded-md text-sm font-bold transition-all duration-300 border-2
                           ${
                             view === tab.id
-                              ? "bg-gradient-to-b from-[#f4e4bc] to-[#d4af37] text-[#3e2723] shadow-md transform scale-105"
-                              : "text-[#a68b7c] hover:text-[#d4af37] hover:bg-[#5c4033]"
+                              ? "brass text-[#2c1810] shadow-lg transform scale-105 border-[#d4af37]"
+                              : "bg-[#2a1f18] text-[#c9a961] hover:bg-[#3a2820] border-[#5c4033] hover:border-[#8b6f47]"
                           }
                         `}
-                        style={{ fontFamily: '"Playfair Display", serif' }}
+                        style={{ fontFamily: '"Playfair Display", serif', letterSpacing: '0.1em' }}
                       >
                         <Icon name={tab.icon} className="w-4 h-4" />
                         {tab.label}
@@ -558,97 +773,118 @@
               </div>
             </header>
 
-            {/* Main */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
-              {/* NEW */}
+            {/* Main Content - Parchment Paper */}
+            <main className="max-w-7xl mx-auto px-6 lg:px-8 py-12 relative z-10">
+              {/* NEW ENTRY VIEW */}
               {view === "new" && (
-                <div className="max-w-4xl mx-auto space-y-8">
-                  <div className="bg-[#fdfbf7] rounded-xl shadow-[0_4px_20px_-4px_rgba(62,39,35,0.15)] border border-[#dcd0b9] overflow-hidden relative">
-                    <div className="px-8 py-6 border-b border-[#e8dfcf] bg-[#faf8f2] flex items-center justify-between">
+                <div className="max-w-5xl mx-auto space-y-8">
+                  <div className="parchment rounded-lg shadow-2xl border-4 border-[#8b6f47] overflow-hidden torn-edge relative">
+                    {/* Ornate header */}
+                    <div className="wood-panel px-10 py-6 border-b-4 border-[#d4af37] flex items-center justify-between">
                       <h2
-                        className="text-2xl font-bold flex items-center gap-3 text-[#5c4033]"
-                        style={{ fontFamily: '"Playfair Display", serif' }}
+                        className="text-3xl font-bold flex items-center gap-4 text-[#f4e4bc] embossed"
+                        style={{ fontFamily: '"Playfair Display", serif', letterSpacing: '0.15em' }}
                       >
-                        <Icon name="Pencil" className="w-6 h-6 text-[#d4af37]" />
-                        {editingIndex !== null ? "Edit Transaction" : "New Transaction Entry"}
+                        <div className="brass p-2 rounded">
+                          <Icon name="Pencil" className="w-6 h-6 text-[#2c1810]" />
+                        </div>
+                        {editingIndex !== null ? "Amend Entry" : "New Transaction Entry"}
                       </h2>
 
                       <div className="flex gap-3">
                         <button
                           onClick={handleDeleteAll}
-                          className="px-5 py-2 bg-[#fff5f5] border-2 border-[#e6c8c8] text-[#a0522d] hover:bg-[#ffebeb] rounded-lg font-bold text-xs tracking-widest uppercase flex items-center gap-2 transition-colors"
+                          className="px-6 py-2.5 bg-[#3a2820] border-2 border-[#5c4033] text-[#d4af37] hover:bg-[#2a1f18] hover:border-[#8b6f47] rounded-md font-bold text-xs tracking-widest uppercase flex items-center gap-2 transition-all shadow-lg"
+                          style={{ fontFamily: '"EB Garamond", serif' }}
                         >
-                          <Icon name="Trash2" className="w-4 h-4" /> Delete All
+                          <Icon name="Trash2" className="w-4 h-4" /> Purge All
                         </button>
                       </div>
                     </div>
 
-                    <div className="p-8 space-y-10">
-                      {/* Date + narration */}
+                    <div className="p-10 space-y-10 relative z-10">
+                      {/* Date + Narration */}
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
                         <div className="md:col-span-4">
-                          <label className="block text-xs font-bold text-[#8d7b68] uppercase tracking-widest mb-2 font-sans">
-                            Transaction Date
+                          <label className="block text-sm font-bold text-[#5c4033] uppercase tracking-[0.15em] mb-3" style={{ fontFamily: '"Crimson Text", serif' }}>
+                            Date of Transaction
                           </label>
                           <input
                             type="date"
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
-                            className="w-full px-4 py-3 bg-[#fffefc] border-2 border-[#e6dec8] rounded-lg text-[#5c4033] focus:border-[#d4af37] focus:ring-4 focus:ring-[#d4af37]/10 transition-all outline-none font-medium"
+                            className="w-full px-4 py-3.5 bg-[#faf8f3] border-2 border-[#b8956a] rounded-md text-[#3e2a1f] focus:border-[#8b6f47] focus:ring-4 focus:ring-[#d4af37]/20 transition-all outline-none font-semibold shadow-inner"
+                            style={{ fontFamily: '"EB Garamond", serif', fontSize: '16px' }}
                           />
                         </div>
                         <div className="md:col-span-8">
-                          <label className="block text-xs font-bold text-[#8d7b68] uppercase tracking-widest mb-2 font-sans">
-                            Narration
+                          <label className="block text-sm font-bold text-[#5c4033] uppercase tracking-[0.15em] mb-3" style={{ fontFamily: '"Crimson Text", serif' }}>
+                            Narration & Description
                           </label>
                           <input
                             type="text"
                             value={narration}
                             onChange={(e) => setNarration(e.target.value)}
-                            placeholder="Description of the transaction..."
-                            className="w-full px-4 py-3 bg-[#fffefc] border-2 border-[#e6dec8] rounded-lg text-[#5c4033] placeholder-[#d0c4b4] focus:border-[#d4af37] focus:ring-4 focus:ring-[#d4af37]/10 transition-all outline-none"
+                            placeholder="Enter detailed description of the transaction..."
+                            className="w-full px-4 py-3.5 bg-[#faf8f3] border-2 border-[#b8956a] rounded-md text-[#3e2a1f] placeholder-[#b8956a] focus:border-[#8b6f47] focus:ring-4 focus:ring-[#d4af37]/20 transition-all outline-none shadow-inner"
+                            style={{ fontFamily: '"EB Garamond", serif', fontSize: '16px' }}
                           />
                         </div>
                       </div>
 
-                      {/* Debits & Credits */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 relative">
-                        <div className="space-y-4">
+                      {/* Decorative divider */}
+                      <div className="h-px bg-gradient-to-r from-transparent via-[#8b6f47] to-transparent relative">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 brass px-4 py-1 text-xs text-[#2c1810] font-bold tracking-widest">
+                          DR & CR
+                        </div>
+                      </div>
+
+                      {/* Debit & Credit Columns */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        {/* DEBIT */}
+                        <div className="space-y-5 bg-[#f0ece3] border-4 border-[#8b6f47] rounded-lg p-6 shadow-xl relative">
+                          <div className="absolute -top-4 left-6 brass px-4 py-1 rounded text-[#2c1810] font-bold text-sm tracking-widest">
+                            DEBIT SIDE
+                          </div>
+                          
                           <h3
-                            className="text-lg font-bold text-[#556b2f] border-b-2 border-[#556b2f]/20 pb-2 mb-4 flex items-center gap-2"
+                            className="text-xl font-bold text-[#2e4a2e] pt-2 pb-3 border-b-2 border-[#556b2f]/30 flex items-center gap-2"
                             style={{ fontFamily: '"Playfair Display", serif' }}
                           >
-                            <Icon name="TrendingDown" className="w-5 h-5" /> Debit Accounts
+                            <Icon name="TrendingDown" className="w-5 h-5 text-[#556b2f]" /> Debit Accounts
                           </h3>
 
                           <div className="space-y-4">
                             {debits.map((row, i) => (
-                              <div key={row.id} className="flex gap-3 items-start">
-                                <div className="flex-1 space-y-1">
+                              <div key={row.id} className="flex gap-3 items-start bg-[#faf8f3] p-3 rounded border border-[#d4c5b0]">
+                                <div className="flex-1 space-y-2">
                                   <input
                                     placeholder="Account Name"
                                     value={row.acc}
                                     onChange={(e) => updateRow("debit", i, "acc", e.target.value)}
-                                    className="w-full px-3 py-2.5 bg-[#f9fcf8] border border-[#d5e0d5] rounded-md text-[#2c3e2c] focus:border-[#556b2f] focus:ring-2 focus:ring-[#556b2f]/20 outline-none shadow-sm placeholder-[#b0c4b0]"
+                                    className="w-full px-3 py-2.5 bg-white border-2 border-[#c9b896] rounded text-[#2c1810] focus:border-[#556b2f] focus:ring-2 focus:ring-[#556b2f]/20 outline-none shadow-sm placeholder-[#a68b7c] font-semibold"
+                                    style={{ fontFamily: '"EB Garamond", serif' }}
                                   />
-                                  <div className="text-[11px] text-[#8a9a8a] px-1 italic font-serif">
-                                    {creditParticulars
-                                      ? `To ${creditParticulars.replace(/^To /, "")}`
-                                      : "Particulars..."}
+                                  <div className="text-xs text-[#5c4033] px-2 italic" style={{ fontFamily: '"Crimson Text", serif' }}>
+                                    {creditParticulars || "Particulars will appear here..."}
                                   </div>
                                 </div>
 
                                 <input
                                   type="number"
+                                  step="1"
+                                  min="0"
+                                  onWheel={(e) => e.target.blur()}
                                   placeholder="0.00"
                                   value={row.amtStr}
                                   onChange={(e) => updateRow("debit", i, "amtStr", e.target.value)}
-                                  className="w-28 px-3 py-2.5 bg-[#f9fcf8] border border-[#d5e0d5] rounded-md text-right font-mono text-[#2c3e2c] focus:border-[#556b2f] focus:ring-2 focus:ring-[#556b2f]/20 outline-none shadow-sm"
+                                  className="w-32 px-3 py-2.5 bg-white border-2 border-[#c9b896] rounded text-right font-mono text-[#2e4a2e] font-bold focus:border-[#556b2f] focus:ring-2 focus:ring-[#556b2f]/20 outline-none shadow-sm"
+                                  style={{ fontSize: '15px' }}
                                 />
 
                                 <button
                                   onClick={() => removeRow("debit", i)}
-                                  className="p-2.5 text-[#b0b0b0] hover:text-[#a0522d] hover:bg-[#faf0f0] rounded-md transition-colors"
+                                  className="p-2.5 text-[#8b6f47] hover:text-[#a0522d] hover:bg-[#faf0f0] rounded transition-colors"
                                   title="Remove row"
                                 >
                                   <Icon name="Trash2" className="w-4 h-4" />
@@ -659,48 +895,57 @@
 
                           <button
                             onClick={addDebitRow}
-                            className="mt-2 w-full py-2.5 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-[#556b2f] bg-[#f0f5ee] hover:bg-[#e6efe4] rounded-lg transition-colors border border-[#dcebdc] font-sans"
+                            className="w-full py-3 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#2e4a2e] bg-[#e8f5e9] hover:bg-[#c8e6c9] rounded border-2 border-[#556b2f]/30 transition-all shadow-sm"
+                            style={{ fontFamily: '"EB Garamond", serif' }}
                           >
-                            <Icon name="Plus" className="w-3 h-3" /> Add Debit Line
+                            <Icon name="Plus" className="w-4 h-4" /> Add Debit Line
                           </button>
                         </div>
 
-                        <div className="space-y-4">
+                        {/* CREDIT */}
+                        <div className="space-y-5 bg-[#f0ece3] border-4 border-[#8b6f47] rounded-lg p-6 shadow-xl relative">
+                          <div className="absolute -top-4 left-6 brass px-4 py-1 rounded text-[#2c1810] font-bold text-sm tracking-widest">
+                            CREDIT SIDE
+                          </div>
+
                           <h3
-                            className="text-lg font-bold text-[#8b4513] border-b-2 border-[#8b4513]/20 pb-2 mb-4 flex items-center gap-2"
+                            className="text-xl font-bold text-[#5c3a2e] pt-2 pb-3 border-b-2 border-[#8b4513]/30 flex items-center gap-2"
                             style={{ fontFamily: '"Playfair Display", serif' }}
                           >
-                            <Icon name="TrendingUp" className="w-5 h-5" /> Credit Accounts
+                            <Icon name="TrendingUp" className="w-5 h-5 text-[#8b4513]" /> Credit Accounts
                           </h3>
 
                           <div className="space-y-4">
                             {credits.map((row, i) => (
-                              <div key={row.id} className="flex gap-3 items-start">
-                                <div className="flex-1 space-y-1">
+                              <div key={row.id} className="flex gap-3 items-start bg-[#faf8f3] p-3 rounded border border-[#d4c5b0]">
+                                <div className="flex-1 space-y-2">
                                   <input
                                     placeholder="Account Name"
                                     value={row.acc}
                                     onChange={(e) => updateRow("credit", i, "acc", e.target.value)}
-                                    className="w-full px-3 py-2.5 bg-[#fffaf8] border border-[#e6d8d0] rounded-md text-[#5c3a2e] focus:border-[#8b4513] focus:ring-2 focus:ring-[#8b4513]/20 outline-none shadow-sm placeholder-[#d6c4bc]"
+                                    className="w-full px-3 py-2.5 bg-white border-2 border-[#c9b896] rounded text-[#2c1810] focus:border-[#8b4513] focus:ring-2 focus:ring-[#8b4513]/20 outline-none shadow-sm placeholder-[#a68b7c] font-semibold"
+                                    style={{ fontFamily: '"EB Garamond", serif' }}
                                   />
-                                  <div className="text-[11px] text-[#a89088] px-1 italic font-serif">
-                                    {debitParticulars
-                                      ? `By ${debitParticulars.replace(/^By /, "")}`
-                                      : "Particulars..."}
+                                  <div className="text-xs text-[#5c4033] px-2 italic" style={{ fontFamily: '"Crimson Text", serif' }}>
+                                    {debitParticulars || "Particulars will appear here..."}
                                   </div>
                                 </div>
 
                                 <input
                                   type="number"
+                                  step="1"
+                                  min="0"
+                                  onWheel={(e) => e.target.blur()}
                                   placeholder="0.00"
                                   value={row.amtStr}
                                   onChange={(e) => updateRow("credit", i, "amtStr", e.target.value)}
-                                  className="w-28 px-3 py-2.5 bg-[#fffaf8] border border-[#e6d8d0] rounded-md text-right font-mono text-[#5c3a2e] focus:border-[#8b4513] focus:ring-2 focus:ring-[#8b4513]/20 outline-none shadow-sm"
+                                  className="w-32 px-3 py-2.5 bg-white border-2 border-[#c9b896] rounded text-right font-mono text-[#5c3a2e] font-bold focus:border-[#8b4513] focus:ring-2 focus:ring-[#8b4513]/20 outline-none shadow-sm"
+                                  style={{ fontSize: '15px' }}
                                 />
 
                                 <button
                                   onClick={() => removeRow("credit", i)}
-                                  className="p-2.5 text-[#b0b0b0] hover:text-[#a0522d] hover:bg-[#faf0f0] rounded-md transition-colors"
+                                  className="p-2.5 text-[#8b6f47] hover:text-[#a0522d] hover:bg-[#faf0f0] rounded transition-colors"
                                   title="Remove row"
                                 >
                                   <Icon name="Trash2" className="w-4 h-4" />
@@ -711,126 +956,143 @@
 
                           <button
                             onClick={addCreditRow}
-                            className="mt-2 w-full py-2.5 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-[#8b4513] bg-[#fbf5f2] hover:bg-[#f6ede8] rounded-lg transition-colors border border-[#efe0d8] font-sans"
+                            className="w-full py-3 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#5c3a2e] bg-[#fff3e0] hover:bg-[#ffe0b2] rounded border-2 border-[#8b4513]/30 transition-all shadow-sm"
+                            style={{ fontFamily: '"EB Garamond", serif' }}
                           >
-                            <Icon name="Plus" className="w-3 h-3" /> Add Credit Line
+                            <Icon name="Plus" className="w-4 h-4" /> Add Credit Line
                           </button>
                         </div>
                       </div>
 
-                      {/* Actions */}
-                      <div className="pt-8 border-t border-[#e8dfcf] flex flex-wrap gap-4">
+                      {/* Action Buttons */}
+                      <div className="pt-8 border-t-2 border-[#8b6f47] flex flex-wrap gap-4">
                         <button
                           onClick={handleSaveEntry}
-                          className="flex-1 bg-gradient-to-br from-[#5c4033] to-[#3e2723] text-[#f4e4bc] hover:shadow-lg hover:shadow-[#5c4033]/20 px-8 py-4 rounded-lg font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-3 transition-all active:scale-[0.98] border border-[#3e2723]"
+                          className="flex-1 wood-panel text-[#f4e4bc] hover:shadow-2xl px-10 py-5 rounded-lg font-bold text-base tracking-[0.2em] uppercase flex items-center justify-center gap-4 transition-all active:scale-[0.98] border-4 border-[#d4af37] shadow-xl"
+                          style={{ fontFamily: '"Playfair Display", serif' }}
                         >
-                          <Icon name="Save" className="w-5 h-5" />
+                          <Icon name="Save" className="w-6 h-6" />
                           {editingIndex !== null ? "Update Entry" : "Post to Ledger"}
                         </button>
 
                         <button
                           onClick={resetFormState}
-                          className="px-6 py-4 bg-[#fdfbf7] border-2 border-[#dcd0b9] text-[#8d7b68] hover:bg-[#f4f1ea] hover:border-[#cfc0a6] rounded-lg font-bold text-sm tracking-widest uppercase flex items-center gap-2 transition-colors"
+                          className="px-8 py-5 bg-[#e8dcc8] border-4 border-[#b8956a] text-[#3e2a1f] hover:bg-[#f0e4d0] hover:border-[#8b6f47] rounded-lg font-bold text-sm tracking-[0.15em] uppercase flex items-center gap-3 transition-all shadow-lg"
+                          style={{ fontFamily: '"EB Garamond", serif' }}
                         >
-                          <Icon name="RotateCcw" className="w-4 h-4" /> Reset
+                          <Icon name="RotateCcw" className="w-5 h-5" /> Reset
                         </button>
 
                         <button
                           onClick={handleUndo}
-                          className="px-6 py-4 bg-[#fff5f5] border-2 border-[#e6c8c8] text-[#a0522d] hover:bg-[#ffebeb] rounded-lg font-bold text-sm tracking-widest uppercase flex items-center gap-2 transition-colors"
+                          className="px-8 py-5 bg-[#3a2820] border-4 border-[#5c4033] text-[#d4af37] hover:bg-[#2a1f18] hover:border-[#8b6f47] rounded-lg font-bold text-sm tracking-[0.15em] uppercase flex items-center gap-3 transition-all shadow-lg"
+                          style={{ fontFamily: '"EB Garamond", serif' }}
                         >
-                          <Icon name="Undo2" className="w-4 h-4" /> Undo
+                          <Icon name="Undo2" className="w-5 h-5" /> Undo
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-[#eef2f5] border-l-4 border-[#78909c] rounded-r-lg p-4 flex gap-4 shadow-sm">
-                    <Icon name="Info" className="w-6 h-6 text-[#546e7a] flex-shrink-0" />
-                    <p className="text-[#455a64] italic">
-                      Pro Tip: Amounts are auto-rounded. Debit must equal Credit.
+                  {/* Info Box */}
+                  <div className="leather border-2 border-[#8b6f47] rounded-lg p-5 flex gap-4 shadow-xl">
+                    <div className="brass p-2 rounded flex-shrink-0">
+                      <Icon name="Info" className="w-5 h-5 text-[#2c1810]" />
+                    </div>
+                    <p className="text-[#c9a961] italic text-sm leading-relaxed" style={{ fontFamily: '"Crimson Text", serif' }}>
+                      <strong>Accountant's Note:</strong> All monetary values are automatically rounded to paise. 
+                      Debit and Credit totals must balance precisely for the entry to be recorded.
                     </p>
                   </div>
                 </div>
               )}
 
-              {/* JOURNAL */}
+              {/* JOURNAL VIEW */}
               {view === "journal" && (
                 <div className="space-y-8">
-                  <div className="bg-[#fdfbf7] p-5 rounded-xl border border-[#dcd0b9] shadow-sm flex flex-col sm:flex-row gap-5 justify-between items-center">
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
-                      <div className="relative flex-1 sm:w-80">
-                        <Icon
-                          name="Search"
-                          className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a68b7c]"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Search ledger entries..."
-                          value={journalSearch}
-                          onChange={(e) => setJournalSearch(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2.5 bg-[#f4f1ea] border border-[#d4c5b0] rounded-lg text-sm text-[#5c4033] focus:bg-[#fffefc] focus:border-[#8b5e3c] focus:ring-2 focus:ring-[#8b5e3c]/10 outline-none transition-all placeholder-[#a68b7c]"
-                        />
+                  {/* Search Bar */}
+                  <div className="parchment p-6 rounded-lg border-4 border-[#8b6f47] shadow-xl flex flex-col gap-5">
+                    <div className="flex flex-col sm:flex-row gap-5 justify-between items-center">
+                      <div className="flex items-center gap-4 w-full sm:w-auto">
+                        <div className="brass p-2 rounded">
+                          <Icon name="Search" className="w-5 h-5 text-[#2c1810]" />
+                        </div>
+                        <div className="relative flex-1 sm:w-96">
+                          <input
+                            type="text"
+                            placeholder="Search journal entries..."
+                            value={journalSearch}
+                            onChange={(e) => setJournalSearch(e.target.value)}
+                            className="w-full pl-4 pr-4 py-3 bg-[#faf8f3] border-2 border-[#b8956a] rounded-md text-sm text-[#3e2a1f] focus:bg-white focus:border-[#8b6f47] focus:ring-2 focus:ring-[#d4af37]/20 outline-none transition-all placeholder-[#a68b7c] shadow-inner font-semibold"
+                            style={{ fontFamily: '"EB Garamond", serif' }}
+                          />
+                        </div>
+
+                        <select
+                          value={journalSearchMode}
+                          onChange={(e) => setJournalSearchMode(e.target.value)}
+                          className="bg-[#faf8f3] border-2 border-[#b8956a] text-sm text-[#3e2a1f] rounded-md px-4 py-3 outline-none focus:border-[#8b6f47] shadow-inner font-semibold"
+                          style={{ fontFamily: '"EB Garamond", serif' }}
+                        >
+                          <option value="all">All Fields</option>
+                          <option value="account">Account</option>
+                          <option value="narration">Narration</option>
+                          <option value="date">Date</option>
+                        </select>
                       </div>
 
-                      <select
-                        value={journalSearchMode}
-                        onChange={(e) => setJournalSearchMode(e.target.value)}
-                        className="bg-[#f4f1ea] border border-[#d4c5b0] text-sm text-[#5c4033] rounded-lg px-4 py-2.5 outline-none focus:border-[#8b5e3c]"
-                      >
-                        <option value="all">All Fields</option>
-                        <option value="account">Account</option>
-                        <option value="narration">Narration</option>
-                        <option value="date">Date</option>
-                      </select>
+                      <div className="text-sm text-[#5c4033] italic font-semibold" style={{ fontFamily: '"Crimson Text", serif' }}>
+                        Displaying <span className="brass px-3 py-1 rounded text-[#2c1810] not-italic">{getFilteredJournal().length}</span> records
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <div className="text-sm font-serif text-[#8d7b68] italic">
-                        Showing <strong>{getFilteredJournal().length}</strong> records
-                      </div>
-
+                    {/* Journal Delete All Button (requested) */}
+                    <div className="flex justify-end">
                       <button
                         onClick={handleDeleteAll}
-                        className="px-5 py-2 bg-[#fff5f5] border-2 border-[#e6c8c8] text-[#a0522d] hover:bg-[#ffebeb] rounded-lg font-bold text-xs tracking-widest uppercase flex items-center gap-2 transition-colors"
+                        className="px-6 py-2.5 bg-[#3a2820] border-2 border-[#5c4033] text-[#d4af37] hover:bg-[#2a1f18] hover:border-[#8b6f47] rounded-md font-bold text-xs tracking-widest uppercase flex items-center gap-2 transition-all shadow-lg"
+                        style={{ fontFamily: '"EB Garamond", serif' }}
                       >
-                        <Icon name="Trash2" className="w-4 h-4" /> Delete All
+                        <Icon name="Trash2" className="w-4 h-4" /> Delete All (Journal)
                       </button>
                     </div>
                   </div>
 
-                  <div className="bg-[#fffefc] rounded-xl border border-[#dcd0b9] shadow-lg overflow-hidden">
+                  {/* Journal Table */}
+                  <div className="parchment rounded-lg border-4 border-[#8b6f47] shadow-2xl overflow-hidden torn-edge">
                     {getFilteredJournal().length === 0 ? (
-                      <div className="p-20 text-center text-[#d4c5b0]">
-                        <Icon name="ScrollText" className="w-20 h-20 mx-auto mb-6 opacity-30" />
+                      <div className="p-28 text-center">
+                        <div className="brass w-24 h-24 rounded-full mx-auto mb-8 flex items-center justify-center">
+                          <Icon name="ScrollText" className="w-12 h-12 text-[#2c1810]" />
+                        </div>
                         <h3
-                          className="text-2xl font-serif text-[#8d7b68] mb-2"
+                          className="text-3xl text-[#5c4033] mb-3 font-bold"
                           style={{ fontFamily: '"Playfair Display", serif' }}
                         >
-                          The Journal is Empty
+                          The Journal Awaits
                         </h3>
-                        <p className="font-serif italic text-[#a68b7c]">
-                          Create a transaction to begin recording history.
+                        <p className="text-[#8b6f47] italic" style={{ fontFamily: '"Crimson Text", serif' }}>
+                          Begin your accounting journey by creating the first transaction entry.
                         </p>
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="bg-[#f0ece3] border-b-2 border-[#d4af37]">
-                              <th className="px-6 py-4 text-left font-bold text-[#5c4033] uppercase tracking-wider w-32 font-serif border-r border-[#e0d8c8]">
+                            <tr className="wood-panel border-b-4 border-[#d4af37]">
+                              <th className="px-6 py-5 text-left font-bold text-[#f4e4bc] uppercase tracking-[0.2em] w-32 border-r border-[#5c4033]/50" style={{ fontFamily: '"Playfair Display", serif', fontSize: '11px' }}>
                                 Date
                               </th>
-                              <th className="px-6 py-4 text-left font-bold text-[#5c4033] uppercase tracking-wider font-serif">
+                              <th className="px-6 py-5 text-left font-bold text-[#f4e4bc] uppercase tracking-[0.2em]" style={{ fontFamily: '"Playfair Display", serif', fontSize: '11px' }}>
                                 Particulars
                               </th>
-                              <th className="px-6 py-4 text-center font-bold text-[#5c4033] uppercase tracking-wider w-24 font-serif border-l border-r border-[#e0d8c8]">
+                              <th className="px-6 py-5 text-center font-bold text-[#f4e4bc] uppercase tracking-[0.2em] w-24 border-l border-r border-[#5c4033]/50" style={{ fontFamily: '"Playfair Display", serif', fontSize: '11px' }}>
                                 L.F.
                               </th>
-                              <th className="px-6 py-4 text-right font-bold text-[#5c4033] uppercase tracking-wider w-40 font-serif border-r border-[#e0d8c8]">
+                              <th className="px-6 py-5 text-right font-bold text-[#f4e4bc] uppercase tracking-[0.2em] w-40 border-r border-[#5c4033]/50" style={{ fontFamily: '"Playfair Display", serif', fontSize: '11px' }}>
                                 Debit (₹)
                               </th>
-                              <th className="px-6 py-4 text-right font-bold text-[#5c4033] uppercase tracking-wider w-40 font-serif">
+                              <th className="px-6 py-5 text-right font-bold text-[#f4e4bc] uppercase tracking-[0.2em] w-40" style={{ fontFamily: '"Playfair Display", serif', fontSize: '11px' }}>
                                 Credit (₹)
                               </th>
                             </tr>
@@ -839,73 +1101,75 @@
                           {getFilteredJournal().map((entry, idx) => (
                             <tbody
                               key={idx}
-                              className="divide-y divide-[#f0ece3] border-b border-[#e0d8c8]"
+                              className="divide-y divide-[#d4c5b0] border-b-2 border-[#8b6f47]"
                             >
                               {entry.debits.map((d, di) => (
                                 <tr
                                   key={`d-${idx}-${di}`}
-                                  className="group hover:bg-[#faf8f2] transition-colors"
+                                  className="group hover:bg-[#f5ede0] transition-colors"
                                 >
-                                  <td className="px-6 py-3 text-[#5c4033] font-serif border-r border-[#f4f1ea]">
+                                  <td className="px-6 py-4 text-[#3e2a1f] font-semibold border-r border-[#e8dcc8]" style={{ fontFamily: '"EB Garamond", serif' }}>
                                     {di === 0 ? entry.date : ""}
                                   </td>
-                                  <td className="px-6 py-3">
-                                    <span className="font-bold text-[#2c1810] text-base">
-                                      {d.acc}
-                                    </span>{" "}
-                                    <span className="text-[#a68b7c] text-xs font-serif italic ml-1">
-                                      Dr.
-                                    </span>
+                                  <td className="px-6 py-4">
+                                    <div className="flex items-baseline gap-2">
+                                      <span className="font-bold text-[#2c1810] text-base" style={{ fontFamily: '"EB Garamond", serif' }}>
+                                        {d.acc}
+                                      </span>
+                                      <span className="text-[#8b6f47] text-xs italic" style={{ fontFamily: '"Crimson Text", serif' }}>
+                                        Dr.
+                                      </span>
+                                    </div>
 
                                     {di === 0 && (
-                                      <div className="flex gap-3 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <div className="flex gap-4 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
                                           onClick={() => handleEditEntry(idx)}
-                                          className="text-[#8b5e3c] text-xs font-bold uppercase tracking-wide hover:underline"
+                                          className="brass px-3 py-1 rounded text-[#2c1810] text-xs font-bold uppercase tracking-wide hover:shadow-lg transition-shadow"
                                         >
                                           Edit
                                         </button>
                                         <button
                                           onClick={() => handleDeleteEntry(idx)}
-                                          className="text-[#a0522d] text-xs font-bold uppercase tracking-wide hover:underline"
+                                          className="bg-[#3a2820] border border-[#5c4033] px-3 py-1 rounded text-[#d4af37] text-xs font-bold uppercase tracking-wide hover:bg-[#2a1f18] transition-colors"
                                         >
                                           Delete
                                         </button>
                                         {entry.narration !== "-" && (
-                                          <span className="text-[#8d7b68] text-sm italic font-serif ml-2 border-l border-[#dcd0b9] pl-3">
+                                          <span className="text-[#5c4033] text-sm italic ml-3 border-l-2 border-[#d4c5b0] pl-4" style={{ fontFamily: '"Crimson Text", serif' }}>
                                             "{entry.narration}"
                                           </span>
                                         )}
                                       </div>
                                     )}
                                   </td>
-                                  <td className="px-6 py-3 text-center text-[#8d7b68] font-serif border-l border-r border-[#f4f1ea]">
+                                  <td className="px-6 py-4 text-center text-[#5c4033] font-semibold border-l border-r border-[#e8dcc8]" style={{ fontFamily: '"EB Garamond", serif' }}>
                                     {ledgerData.folioMap[d.acc]}
                                   </td>
-                                  <td className="px-6 py-3 text-right font-mono text-[#2e4a2e] font-medium text-base bg-[#f4f8f4]/50 border-r border-[#f4f1ea]">
+                                  <td className="px-6 py-4 text-right font-mono text-[#2e4a2e] font-bold text-base bg-[#e8f5e9]/40 border-r border-[#e8dcc8]">
                                     {paiseToStr(d.amt)}
                                   </td>
-                                  <td className="px-6 py-3 text-right font-mono text-[#a68b7c]"></td>
+                                  <td className="px-6 py-4"></td>
                                 </tr>
                               ))}
 
                               {entry.credits.map((c, ci) => (
                                 <tr
                                   key={`c-${idx}-${ci}`}
-                                  className="hover:bg-[#faf8f2] transition-colors"
+                                  className="hover:bg-[#f5ede0] transition-colors"
                                 >
-                                  <td className="px-6 py-3 border-r border-[#f4f1ea]"></td>
-                                  <td className="px-6 py-3 pl-12">
-                                    <span className="text-[#8d7b68] text-xs font-serif italic mr-2">
+                                  <td className="px-6 py-4 border-r border-[#e8dcc8]"></td>
+                                  <td className="px-6 py-4 pl-16">
+                                    <span className="text-[#8b6f47] text-xs italic mr-3" style={{ fontFamily: '"Crimson Text", serif' }}>
                                       To
                                     </span>
-                                    <span className="text-[#4a3b32]">{c.acc}</span>
+                                    <span className="text-[#3e2a1f] font-semibold" style={{ fontFamily: '"EB Garamond", serif' }}>{c.acc}</span>
                                   </td>
-                                  <td className="px-6 py-3 text-center text-[#8d7b68] font-serif border-l border-r border-[#f4f1ea]">
+                                  <td className="px-6 py-4 text-center text-[#5c4033] font-semibold border-l border-r border-[#e8dcc8]" style={{ fontFamily: '"EB Garamond", serif' }}>
                                     {ledgerData.folioMap[c.acc]}
                                   </td>
-                                  <td className="px-6 py-3 text-right font-mono text-[#a68b7c] border-r border-[#f4f1ea]"></td>
-                                  <td className="px-6 py-3 text-right font-mono text-[#5c3a2e] font-medium text-base bg-[#fcf6f4]/50">
+                                  <td className="px-6 py-4 border-r border-[#e8dcc8]"></td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#5c3a2e] font-bold text-base bg-[#fff3e0]/40">
                                     {paiseToStr(c.amt)}
                                   </td>
                                 </tr>
@@ -919,103 +1183,28 @@
                 </div>
               )}
 
-              {/* TRIAL BALANCE */}
-              {view === "trial" && (
-                <div className="space-y-8">
-                  <div className="bg-[#fffefc] rounded-xl border border-[#dcd0b9] shadow-lg overflow-hidden">
-                    <div className="px-8 py-6 border-b border-[#e8dfcf] bg-[#faf8f2] flex items-center justify-between">
-                      <h2
-                        className="text-2xl font-bold flex items-center gap-3 text-[#5c4033]"
-                        style={{ fontFamily: '"Playfair Display", serif' }}
-                      >
-                        <Icon name="ClipboardList" className="w-6 h-6 text-[#d4af37]" />
-                        Trial Balance (Auto)
-                      </h2>
-
-                      <div className="text-sm font-serif text-[#8d7b68] italic">
-                        Total Dr: ₹{paiseToStr(trialBalance.totalDr)} | Total Cr: ₹
-                        {paiseToStr(trialBalance.totalCr)}
-                      </div>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="bg-[#f0ece3] border-b-2 border-[#d4af37]">
-                            <th className="px-6 py-4 text-left font-bold text-[#5c4033] uppercase tracking-wider font-serif">
-                              Particulars
-                            </th>
-                            <th className="px-6 py-4 text-right font-bold text-[#5c4033] uppercase tracking-wider w-48 font-serif border-l border-[#e0d8c8]">
-                              Debit (₹)
-                            </th>
-                            <th className="px-6 py-4 text-right font-bold text-[#5c4033] uppercase tracking-wider w-48 font-serif border-l border-[#e0d8c8]">
-                              Credit (₹)
-                            </th>
-                          </tr>
-                        </thead>
-
-                        <tbody className="divide-y divide-[#f0ece3]">
-                          {trialBalance.rows.map((r, i) => (
-                            <tr key={i} className="hover:bg-[#faf8f2] transition-colors">
-                              <td className="px-6 py-3 text-[#3e2723] font-serif font-bold">
-                                {r.acc}
-                              </td>
-                              <td className="px-6 py-3 text-right font-mono text-[#2e4a2e] bg-[#f4f8f4]/50 border-l border-[#f4f1ea]">
-                                {r.debit ? paiseToStr(r.debit) : ""}
-                              </td>
-                              <td className="px-6 py-3 text-right font-mono text-[#5c3a2e] bg-[#fcf6f4]/50 border-l border-[#f4f1ea]">
-                                {r.credit ? paiseToStr(r.credit) : ""}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-
-                        <tfoot className="bg-[#f0ece3] border-t-2 border-[#d4c5b0] font-bold text-[#3e2723]">
-                          <tr>
-                            <td className="px-6 py-4 text-right text-xs uppercase text-[#8d7b68] tracking-widest font-serif">
-                              Total
-                            </td>
-                            <td className="px-6 py-4 text-right font-mono text-base border-l border-[#e0d8c8]">
-                              ₹{paiseToStr(trialBalance.totalDr)}
-                            </td>
-                            <td className="px-6 py-4 text-right font-mono text-base border-l border-[#e0d8c8]">
-                              ₹{paiseToStr(trialBalance.totalCr)}
-                            </td>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    </div>
-
-                    {trialBalance.totalDr !== trialBalance.totalCr && (
-                      <div className="p-4 bg-[#fff5f5] border-t border-[#e6c8c8] text-[#a0522d] font-bold text-sm">
-                        ⚠️ Warning: Trial Balance does not match. Check entries (Debit must equal
-                        Credit).
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* LEDGER */}
+              {/* LEDGER VIEW */}
               {view === "ledger" && (
-                <div className="space-y-8">
-                  <div className="bg-[#fdfbf7] p-5 rounded-xl border border-[#dcd0b9] shadow-sm">
-                    <div className="relative max-w-md">
-                      <Icon
-                        name="Search"
-                        className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a68b7c]"
-                      />
+                <div className="space-y-10">
+                  {/* Search */}
+                  <div className="parchment p-6 rounded-lg border-4 border-[#8b6f47] shadow-xl">
+                    <div className="flex items-center gap-4 max-w-md">
+                      <div className="brass p-2 rounded">
+                        <Icon name="Search" className="w-5 h-5 text-[#2c1810]" />
+                      </div>
                       <input
                         type="text"
-                        placeholder="Filter accounts..."
+                        placeholder="Filter ledger accounts..."
                         value={ledgerSearch}
                         onChange={(e) => setLedgerSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-[#f4f1ea] border border-[#d4c5b0] rounded-lg text-sm text-[#5c4033] focus:bg-[#fffefc] focus:border-[#8b5e3c] outline-none transition-all placeholder-[#a68b7c]"
+                        className="flex-1 px-4 py-3 bg-[#faf8f3] border-2 border-[#b8956a] rounded-md text-sm text-[#3e2a1f] focus:bg-white focus:border-[#8b6f47] outline-none transition-all placeholder-[#a68b7c] shadow-inner font-semibold"
+                        style={{ fontFamily: '"EB Garamond", serif' }}
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-10">
+                  {/* Ledger Accounts */}
+                  <div className="space-y-12">
                     {getFilteredLedgerAccounts().map((accName) => {
                       const entries = ledgerData.ledger[accName];
                       const drTotal = entries.reduce((sum, e) => sum + e.debit, 0);
@@ -1031,131 +1220,114 @@
                       return (
                         <div
                           key={accName}
-                          className="bg-[#fffefc] rounded-xl border-2 border-[#d4c5b0] shadow-lg overflow-hidden"
+                          className="parchment rounded-lg border-4 border-[#8b6f47] shadow-2xl overflow-hidden torn-edge"
                         >
-                          <div className="bg-[#f0ece3] px-8 py-5 border-b-2 border-[#d4c5b0] flex flex-wrap justify-between items-center gap-4">
+                          {/* Account Header */}
+                          <div className="wood-panel px-10 py-6 border-b-4 border-[#d4af37] flex flex-wrap justify-between items-center gap-4">
                             <h3
-                              className="text-xl font-bold text-[#3e2723] flex items-center gap-3"
-                              style={{ fontFamily: '"Playfair Display", serif' }}
+                              className="text-2xl font-bold text-[#f4e4bc] flex items-center gap-4 embossed"
+                              style={{ fontFamily: '"Playfair Display", serif', letterSpacing: '0.1em' }}
                             >
-                              <Icon name="BadgeCheck" className="w-6 h-6 text-[#d4af37]" />{" "}
+                              <div className="wax-seal p-2 rounded-full">
+                                <Icon name="BadgeCheck" className="w-6 h-6 text-[#d4af37]" />
+                              </div>
                               {accName}
                             </h3>
 
                             <div className="flex gap-4">
-                              <span className="px-4 py-1.5 bg-[#fffefc] border border-[#dcd0b9] rounded-full text-xs font-bold text-[#8d7b68] shadow-sm uppercase tracking-wide">
+                              <span className="brass px-5 py-2 rounded-full text-xs font-bold text-[#2c1810] uppercase tracking-widest">
                                 {entries.length} Records
                               </span>
                               <span
-                                className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-sm border uppercase tracking-wide ${
+                                className={`px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border-2 ${
                                   balance >= 0
-                                    ? "bg-[#e8f5e9] text-[#2e7d32] border-[#c8e6c9]"
-                                    : "bg-[#ffebee] text-[#c62828] border-[#ffcdd2]"
+                                    ? "bg-[#e8f5e9] text-[#2e4a2e] border-[#556b2f]"
+                                    : "bg-[#fff3e0] text-[#5c3a2e] border-[#8b4513]"
                                 }`}
                               >
-                                Bal: ₹{balStr} {balType}
+                                Balance: ₹{balStr} {balType}
                               </span>
                             </div>
                           </div>
 
+                          {/* T-Account Table */}
                           <div className="overflow-x-auto">
                             <table className="w-full text-sm border-collapse">
                               <thead>
-                                <tr className="bg-[#e0d8c8] border-b border-[#d4c5b0] text-xs uppercase tracking-widest text-[#5c4033] font-bold">
+                                <tr className="leather border-b-2 border-[#8b6f47]">
                                   <th
                                     colSpan="4"
-                                    className="py-3 text-center border-r-2 border-[#d4c5b0] bg-[#dcedc8]/50 text-[#33691e]"
+                                    className="py-4 text-center border-r-4 border-[#8b6f47] bg-[#e8f5e9]/30 text-[#2e4a2e] font-bold uppercase tracking-[0.25em]"
+                                    style={{ fontFamily: '"Playfair Display", serif', fontSize: '13px' }}
                                   >
-                                    Debit Side
+                                    Dr. Debit Side
                                   </th>
                                   <th
                                     colSpan="4"
-                                    className="py-3 text-center bg-[#ffe0b2]/50 text-[#e65100]"
+                                    className="py-4 text-center bg-[#fff3e0]/30 text-[#5c3a2e] font-bold uppercase tracking-[0.25em]"
+                                    style={{ fontFamily: '"Playfair Display", serif', fontSize: '13px' }}
                                   >
-                                    Credit Side
+                                    Cr. Credit Side
                                   </th>
                                 </tr>
-                                <tr className="bg-[#f9f7f2] border-b border-[#e0d8c8] text-xs font-bold text-[#8d7b68] uppercase">
-                                  <th className="px-4 py-3 text-left w-28 font-serif">Date</th>
-                                  <th className="px-4 py-3 text-left font-serif">Particulars</th>
-                                  <th className="px-4 py-3 text-center w-16 font-serif">JF</th>
-                                  <th className="px-4 py-3 text-right w-28 border-r-2 border-[#e0d8c8] font-serif">
+                                <tr className="bg-[#f0ece3] border-b border-[#d4c5b0]">
+                                  <th className="px-5 py-4 text-left font-bold text-[#5c4033] uppercase tracking-widest w-32" style={{ fontFamily: '"EB Garamond", serif', fontSize: '11px' }}>Date</th>
+                                  <th className="px-5 py-4 text-left font-bold text-[#5c4033] uppercase tracking-widest" style={{ fontFamily: '"EB Garamond", serif', fontSize: '11px' }}>Particulars</th>
+                                  <th className="px-5 py-4 text-center font-bold text-[#5c4033] uppercase tracking-widest w-20" style={{ fontFamily: '"EB Garamond", serif', fontSize: '11px' }}>JF</th>
+                                  <th className="px-5 py-4 text-right font-bold text-[#5c4033] uppercase tracking-widest w-32 border-r-4 border-[#d4c5b0]" style={{ fontFamily: '"EB Garamond", serif', fontSize: '11px' }}>
                                     Amount
                                   </th>
 
-                                  <th className="px-4 py-3 text-left w-28 font-serif pl-6">
-                                    Date
-                                  </th>
-                                  <th className="px-4 py-3 text-left font-serif">Particulars</th>
-                                  <th className="px-4 py-3 text-center w-16 font-serif">JF</th>
-                                  <th className="px-4 py-3 text-right w-28 font-serif">Amount</th>
+                                  <th className="px-5 py-4 text-left font-bold text-[#5c4033] uppercase tracking-widest w-32 pl-8" style={{ fontFamily: '"EB Garamond", serif', fontSize: '11px' }}>Date</th>
+                                  <th className="px-5 py-4 text-left font-bold text-[#5c4033] uppercase tracking-widest" style={{ fontFamily: '"EB Garamond", serif', fontSize: '11px' }}>Particulars</th>
+                                  <th className="px-5 py-4 text-center font-bold text-[#5c4033] uppercase tracking-widest w-20" style={{ fontFamily: '"EB Garamond", serif', fontSize: '11px' }}>JF</th>
+                                  <th className="px-5 py-4 text-right font-bold text-[#5c4033] uppercase tracking-widest w-32" style={{ fontFamily: '"EB Garamond", serif', fontSize: '11px' }}>Amount</th>
                                 </tr>
                               </thead>
 
-                              <tbody className="divide-y divide-[#f0ece3]">
+                              <tbody className="divide-y divide-[#e8dcc8]">
                                 {Array.from({ length: maxRows }).map((_, i) => {
                                   const d = drRows[i];
                                   const c = crRows[i];
                                   return (
-                                    <tr key={i} className="hover:bg-[#faf8f2]">
-                                      <td className="px-4 py-2.5 text-xs text-[#5c4033] font-serif">
+                                    <tr key={i} className="hover:bg-[#f5ede0]">
+                                      <td className="px-5 py-3 text-[#3e2a1f] font-semibold" style={{ fontFamily: '"EB Garamond", serif' }}>
                                         {d?.date || ""}
                                       </td>
                                       <td
-                                        className="px-4 py-2.5 text-[#3e2723] truncate max-w-[150px] font-medium"
+                                        className="px-5 py-3 text-[#2c1810] font-medium truncate max-w-[200px]"
                                         title={d?.particulars}
+                                        style={{ fontFamily: '"EB Garamond", serif' }}
                                       >
                                         {d?.particulars || ""}
                                       </td>
-                                      <td className="px-4 py-2.5 text-center text-xs text-[#a68b7c]">
+                                      <td className="px-5 py-3 text-center text-[#8b6f47] font-semibold" style={{ fontFamily: '"EB Garamond", serif' }}>
                                         {d ? d.jf || "-" : ""}
                                       </td>
-                                      <td className="px-4 py-2.5 text-right font-mono text-[#2e4a2e] border-r-2 border-[#f0ece3] bg-[#f1f8e9]/30">
+                                      <td className="px-5 py-3 text-right font-mono text-[#2e4a2e] font-bold border-r-4 border-[#e8dcc8] bg-[#e8f5e9]/20">
                                         {d ? paiseToStr(d.debit) : ""}
                                       </td>
 
-                                      <td className="px-4 py-2.5 text-xs text-[#5c4033] font-serif pl-6">
+                                      <td className="px-5 py-3 text-[#3e2a1f] font-semibold pl-8" style={{ fontFamily: '"EB Garamond", serif' }}>
                                         {c?.date || ""}
                                       </td>
                                       <td
-                                        className="px-4 py-2.5 text-[#3e2723] truncate max-w-[150px] font-medium"
+                                        className="px-5 py-3 text-[#2c1810] font-medium truncate max-w-[200px]"
                                         title={c?.particulars}
+                                        style={{ fontFamily: '"EB Garamond", serif' }}
                                       >
                                         {c?.particulars || ""}
                                       </td>
-                                      <td className="px-4 py-2.5 text-center text-xs text-[#a68b7c]">
+                                      <td className="px-5 py-3 text-center text-[#8b6f47] font-semibold" style={{ fontFamily: '"EB Garamond", serif' }}>
                                         {c ? c.jf || "-" : ""}
                                       </td>
-                                      <td className="px-4 py-2.5 text-right font-mono text-[#5c3a2e] bg-[#fff3e0]/30">
+                                      <td className="px-5 py-3 text-right font-mono text-[#5c3a2e] font-bold bg-[#fff3e0]/20">
                                         {c ? paiseToStr(c.credit) : ""}
                                       </td>
                                     </tr>
                                   );
                                 })}
                               </tbody>
-
-                              <tfoot className="bg-[#f0ece3] border-t-2 border-[#d4c5b0] font-bold text-[#3e2723]">
-                                <tr>
-                                  <td
-                                    colSpan="3"
-                                    className="px-4 py-3 text-right text-xs uppercase text-[#8d7b68] tracking-widest font-serif"
-                                  >
-                                    Total Dr.
-                                  </td>
-                                  <td className="px-4 py-3 text-right font-mono border-r-2 border-[#d4c5b0] text-base">
-                                    ₹{paiseToStr(drTotal)}
-                                  </td>
-                                  <td
-                                    colSpan="3"
-                                    className="px-4 py-3 text-right text-xs uppercase text-[#8d7b68] tracking-widest font-serif"
-                                  >
-                                    Total Cr.
-                                  </td>
-                                  <td className="px-4 py-3 text-right font-mono text-base">
-                                    ₹{paiseToStr(crTotal)}
-                                  </td>
-                                </tr>
-                              </tfoot>
                             </table>
                           </div>
                         </div>
@@ -1164,12 +1336,120 @@
                   </div>
                 </div>
               )}
+
+              {/* TRIAL BALANCE VIEW */}
+              {view === "trial" && (
+                <div className="space-y-8">
+                  <div className="parchment rounded-lg border-4 border-[#8b6f47] shadow-2xl overflow-hidden torn-edge">
+                    <div className="wood-panel px-10 py-6 border-b-4 border-[#d4af37] flex items-center justify-between">
+                      <h2
+                        className="text-3xl font-bold flex items-center gap-4 text-[#f4e4bc] embossed"
+                        style={{ fontFamily: '"Playfair Display", serif', letterSpacing: '0.15em' }}
+                      >
+                        <div className="brass p-2 rounded">
+                          <Icon name="Scale" className="w-6 h-6 text-[#2c1810]" />
+                        </div>
+                        Trial Balance
+                      </h2>
+
+                      <span className="brass px-5 py-2 rounded-full text-xs font-bold text-[#2c1810] uppercase tracking-widest">
+                        Auto Generated
+                      </span>
+                    </div>
+
+                    <div className="p-8">
+                      {trialBalance.rows.length === 0 ? (
+                        <div className="p-20 text-center">
+                          <div className="brass w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center">
+                            <Icon name="Scale" className="w-10 h-10 text-[#2c1810]" />
+                          </div>
+                          <h3 className="text-2xl text-[#5c4033] font-bold mb-2" style={{ fontFamily: '"Playfair Display", serif' }}>
+                            No Data Yet
+                          </h3>
+                          <p className="text-[#8b6f47] italic" style={{ fontFamily: '"Crimson Text", serif' }}>
+                            Create journal entries to generate Trial Balance automatically.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="leather border-b-2 border-[#8b6f47]">
+                                <th className="px-6 py-4 text-left font-bold text-[#f4e4bc] uppercase tracking-[0.2em]" style={{ fontFamily: '"Playfair Display", serif', fontSize: '11px' }}>
+                                  Particulars
+                                </th>
+                                <th className="px-6 py-4 text-center font-bold text-[#f4e4bc] uppercase tracking-[0.2em] w-24 border-l border-r border-[#5c4033]/50" style={{ fontFamily: '"Playfair Display", serif', fontSize: '11px' }}>
+                                  L.F.
+                                </th>
+                                <th className="px-6 py-4 text-right font-bold text-[#f4e4bc] uppercase tracking-[0.2em] w-40 border-r border-[#5c4033]/50" style={{ fontFamily: '"Playfair Display", serif', fontSize: '11px' }}>
+                                  Debit (₹)
+                                </th>
+                                <th className="px-6 py-4 text-right font-bold text-[#f4e4bc] uppercase tracking-[0.2em] w-40" style={{ fontFamily: '"Playfair Display", serif', fontSize: '11px' }}>
+                                  Credit (₹)
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-[#d4c5b0]">
+                              {trialBalance.rows.map((r, i) => (
+                                <tr key={i} className="hover:bg-[#f5ede0]">
+                                  <td className="px-6 py-4 text-[#2c1810] font-semibold" style={{ fontFamily: '"EB Garamond", serif' }}>
+                                    {r.acc}
+                                  </td>
+                                  <td className="px-6 py-4 text-center text-[#5c4033] font-semibold border-l border-r border-[#e8dcc8]" style={{ fontFamily: '"EB Garamond", serif' }}>
+                                    {r.lf}
+                                  </td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#2e4a2e] font-bold bg-[#e8f5e9]/40 border-r border-[#e8dcc8]">
+                                    {r.debit ? paiseToStr(r.debit) : ""}
+                                  </td>
+                                  <td className="px-6 py-4 text-right font-mono text-[#5c3a2e] font-bold bg-[#fff3e0]/40">
+                                    {r.credit ? paiseToStr(r.credit) : ""}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                            <tfoot>
+                              <tr className="wood-panel border-t-4 border-[#d4af37]">
+                                <td className="px-6 py-5 text-[#f4e4bc] font-bold uppercase tracking-[0.2em]" style={{ fontFamily: '"Playfair Display", serif', fontSize: '11px' }}>
+                                  Total
+                                </td>
+                                <td className="px-6 py-5 border-l border-r border-[#5c4033]/50"></td>
+                                <td className="px-6 py-5 text-right font-mono text-[#f4e4bc] font-bold">
+                                  {paiseToStr(trialBalance.totalDr)}
+                                </td>
+                                <td className="px-6 py-5 text-right font-mono text-[#f4e4bc] font-bold">
+                                  {paiseToStr(trialBalance.totalCr)}
+                                </td>
+                              </tr>
+                            </tfoot>
+                          </table>
+
+                          <div className="mt-6 text-center">
+                            <span
+                              className={`inline-block px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest border-2 ${
+                                trialBalance.totalDr === trialBalance.totalCr
+                                  ? "bg-[#e8f5e9] text-[#2e4a2e] border-[#556b2f]"
+                                  : "bg-[#fff3e0] text-[#5c3a2e] border-[#8b4513]"
+                              }`}
+                            >
+                              {trialBalance.totalDr === trialBalance.totalCr
+                                ? "✓ Trial Balance Matched"
+                                : "⚠ Trial Balance Not Matched"}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </main>
           </div>
         );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<AccountingApp />);
+      // Render
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<AccountingApp />);
     </script>
   </body>
 </html>
