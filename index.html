@@ -142,6 +142,15 @@
               <path d="M9 12l2 2 4-4" />
             </svg>
           ),
+          ClipboardList: (
+            <svg className={cls} viewBox="0 0 24 24">
+              <path d="M9 5h6" />
+              <path d="M9 3h6v4H9z" />
+              <path d="M6 7h12v14H6z" />
+              <path d="M9 11h6" />
+              <path d="M9 15h6" />
+            </svg>
+          ),
         };
 
         return icons[name] || null;
@@ -525,6 +534,7 @@
                       { id: "new", label: "Transaction", icon: "Plus" },
                       { id: "journal", label: "Journal", icon: "ScrollText" },
                       { id: "ledger", label: "LedgerBook", icon: "BookOpen" },
+                      { id: "trial", label: "Trial Balance", icon: "ClipboardList" },
                     ].map((tab) => (
                       <button
                         key={tab.id}
@@ -906,15 +916,19 @@
                       </div>
                     )}
                   </div>
+                </div>
+              )}
 
-                  {/* Trial Balance Section */}
+              {/* TRIAL BALANCE */}
+              {view === "trial" && (
+                <div className="space-y-8">
                   <div className="bg-[#fffefc] rounded-xl border border-[#dcd0b9] shadow-lg overflow-hidden">
                     <div className="px-8 py-6 border-b border-[#e8dfcf] bg-[#faf8f2] flex items-center justify-between">
                       <h2
                         className="text-2xl font-bold flex items-center gap-3 text-[#5c4033]"
                         style={{ fontFamily: '"Playfair Display", serif' }}
                       >
-                        <Icon name="BookOpen" className="w-6 h-6 text-[#d4af37]" />
+                        <Icon name="ClipboardList" className="w-6 h-6 text-[#d4af37]" />
                         Trial Balance (Auto)
                       </h2>
 
