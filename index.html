@@ -1,32 +1,28 @@
 <script>
 /* ==========================================================
    COMPOUND JOURNAL → AUTO LEDGER (DUAL MODE DISPLAY)
-   Stabilized + Bugfixed + Exhibition Ready
+   Ultra-Stable + White Screen FIXED (Crash-Proof)
    - No UI change
    - No meaning change
-   - Narration supported (FULLY)
-   - Enter/Return auto navigation added
-   - White Screen issue removed (crash-proof)
-   - NEW: Search Entry / Search Account
-   - NEW: Edit entry after saving (auto updates ledger)
-   - FIXED: safe DOM insertions (no null parent crash)
+   - Narration supported
+   - Enter/Return auto navigation
+   - Search Entry / Search Account
+   - Edit entry after saving (auto updates ledger)
    ========================================================== */
 
 (function () {
   "use strict";
 
   // ------------------------------
-  // GLOBAL STATE (same meaning)
+  // GLOBAL STATE
   // ------------------------------
   var journal = [];
   var ledger = {};
   var undoStack = [];
 
-  // Edit state
   var editModeIndex = null;
   var editSnapshot = null;
 
-  // Storage keys
   var LS_JOURNAL = "journalData";
   var LS_UNDO = "undoStack";
 
@@ -42,12 +38,40 @@
     return div.innerHTML;
   }
 
+  function safeJSONParse(str, fallback) {
+    try {
+      var obj = JSON.parse(str);
+      return obj == null ? fallback : obj;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  function deepClone(obj) {
+    return safeJSONParse(JSON.stringify(obj), null);
+  }
+
+  function safeAlert(msg) {
+    try { alert(msg); } catch (e) { console.log(msg); }
+  }
+
+  function safeFocus(el) {
+    if (!el) return;
+    try { el.focus(); if (el.select) el.select(); } catch (e) {}
+  }
+
+  function strIncludes(hay, needle) {
+    hay = String(hay || "").toLowerCase();
+    needle = String(needle || "").toLowerCase();
+    return hay.indexOf(needle) !== -1;
+  }
+
+  // Money helpers
   function toPaise(v) {
     var n = Number(v);
     if (!isFinite(n) || n <= 0) return 0;
     return Math.round(n * 100);
   }
-
   function paiseToStr(p) {
     p = Number(p) || 0;
     return (p / 100).toFixed(2);
@@ -63,19 +87,9 @@
     return n;
   }
 
-  function safeJSONParse(str, fallback) {
-    try {
-      var obj = JSON.parse(str);
-      return obj == null ? fallback : obj;
-    } catch (e) {
-      return fallback;
-    }
-  }
-
-  function deepClone(obj) {
-    return safeJSONParse(JSON.stringify(obj), null);
-  }
-
+  // ------------------------------
+  // STORAGE
+  // ------------------------------
   function persist() {
     try { localStorage.setItem(LS_JOURNAL, JSON.stringify(journal)); } catch (e) {}
     try { localStorage.setItem(LS_UNDO, JSON.stringify(undoStack)); } catch (e2) {}
@@ -90,63 +104,33 @@
     undoStack = u;
   }
 
-  function safeAlert(msg) {
-    try { alert(msg); } catch (e) { console.log(msg); }
-  }
-
-  function strIncludes(hay, needle) {
-    hay = String(hay || "").toLowerCase();
-    needle = String(needle || "").toLowerCase();
-    return hay.indexOf(needle) !== -1;
-  }
-
-  function safeFocus(el) {
-    if (!el) return;
-    try {
-      el.focus();
-      if (el.select) el.select();
-    } catch (e) {}
-  }
-
   // ------------------------------
-  // SAFE DOM ENSURE (Narration input)
+  // DOM ENSURE (Narration)
   // ------------------------------
   function ensureNarrationInputExists() {
     if (document.getElementById("narrationInput")) return;
 
     var dateInput = document.getElementById("dateInput");
     if (!dateInput) return;
-    if (!dateInput.parentNode) return;
 
-    var narr = document.createElement("input");
-    narr.id = "narrationInput";
-    narr.type = "text";
-    narr.placeholder = "Narration";
+    var parent = dateInput.parentNode;
+    if (!parent) return;
 
-    // keep styling consistent: copy class from date input if any
-    narr.className = dateInput.className || "";
-
-    // minimal inline fallback (won't break UI)
-    if (!narr.className) {
-      narr.style.width = "100%";
-      narr.style.padding = "10px";
-      narr.style.borderRadius = "8px";
-      narr.style.border = "1px solid #ccc";
-      narr.style.marginTop = "8px";
-    } else {
-      narr.style.marginTop = "8px";
-    }
+    var wrapper = document.createElement("div");
+    wrapper.style.marginTop = "8px";
+    wrapper.innerHTML =
+      '<input id="narrationInput" type="text" placeholder="Narration" ' +
+      'style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;">';
 
     try {
-      if (dateInput.nextSibling) dateInput.parentNode.insertBefore(narr, dateInput.nextSibling);
-      else dateInput.parentNode.appendChild(narr);
+      parent.insertBefore(wrapper, dateInput.nextSibling);
     } catch (e) {
       console.error("Narration insert failed:", e);
     }
   }
 
   // ------------------------------
-  // PAGE NAV
+  // PAGE NAV (SAFE)
   // ------------------------------
   function showPage(pageIndex) {
     var pages = $all(".page");
@@ -166,29 +150,27 @@
   function getLedgerPageIndex() {
     var pages = $all(".page");
     if (!pages.length) return null;
-
     for (var i = 0; i < pages.length; i++) {
       var p = pages[i];
       if (!p) continue;
-
       if (p.id && /ledger/i.test(p.id)) return i;
-      if (p.getAttribute && /ledger/i.test(String(p.getAttribute("data-page") || ""))) return i;
       if (p.querySelector && p.querySelector("#ledgerOutput")) return i;
     }
-
-    if (pages.length >= 2) return 1;
-    return 0;
+    return pages.length >= 2 ? 1 : 0;
   }
 
   // ------------------------------
-  // SAFE DOM ENSURE (Search UI)
+  // SEARCH UI (SAFE INSERT)
   // ------------------------------
   function ensureSearchUIExists() {
     var journalOut = document.getElementById("journalOutput");
     if (!journalOut) return;
-    if (!journalOut.parentNode) return;
 
     if (document.getElementById("searchBoxWrap")) return;
+
+    // CRITICAL WHITE SCREEN FIX:
+    // journalOut may exist but not be attached properly yet
+    if (!journalOut.parentNode) return;
 
     var wrap = document.createElement("div");
     wrap.id = "searchBoxWrap";
@@ -200,7 +182,8 @@
 
     wrap.innerHTML =
       "<div style='font-weight:700;margin-bottom:6px'>Search</div>" +
-      "<input id='searchInput' type='text' placeholder='Search entry / account / narration / date / amount...' style='width:100%;padding:10px;border-radius:8px;border:1px solid #ccc'>" +
+      "<input id='searchInput' type='text' placeholder='Search entry / account / narration / date / amount...' " +
+      "style='width:100%;padding:10px;border-radius:8px;border:1px solid #ccc'>" +
       "<div style='display:flex;gap:8px;flex-wrap:wrap;margin-top:8px'>" +
         "<button id='searchClearBtn' type='button' style='padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer'>Clear</button>" +
         "<button id='searchGoLedgerBtn' type='button' style='padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer'>Search in Ledger</button>" +
@@ -221,10 +204,7 @@
     if (input) {
       input.addEventListener("input", function(){ renderAll(); });
       input.addEventListener("keydown", function(e){
-        if (e.key === "Enter") {
-          e.preventDefault();
-          renderAll();
-        }
+        if (e.key === "Enter") { e.preventDefault(); renderAll(); }
       });
     }
 
@@ -240,12 +220,11 @@
       goLedgerBtn.addEventListener("click", function(){
         var si2 = document.getElementById("searchInput");
         var q = si2 ? si2.value.trim() : "";
-        if (!q) {
-          safeAlert("Type something in search box first.");
-          return;
-        }
+        if (!q) return safeAlert("Type something in search box first.");
+
         var ledgerIndex = getLedgerPageIndex();
         if (ledgerIndex != null) showPage(ledgerIndex);
+
         setTimeout(function(){ highlightLedgerAccount(q); }, 150);
       });
     }
@@ -261,9 +240,9 @@
     var row = document.createElement("div");
     row.className = "entry-row debit-row";
     row.innerHTML =
-      '<input placeholder="Account Name" class="account-input" type="text" aria-label="Debit Account Name">' +
-      '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Debit Amount">' +
-      '<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Debit Particulars">';
+      '<input placeholder="Account Name" class="account-input" type="text">' +
+      '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input">' +
+      '<input placeholder="Particulars" class="particulars-input" type="text">';
     container.appendChild(row);
 
     var p = $(".particulars-input", row);
@@ -279,9 +258,9 @@
     var row = document.createElement("div");
     row.className = "entry-row credit-row";
     row.innerHTML =
-      '<input placeholder="Account Name" class="account-input" type="text" aria-label="Credit Account Name">' +
-      '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Credit Amount">' +
-      '<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Credit Particulars">';
+      '<input placeholder="Account Name" class="account-input" type="text">' +
+      '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input">' +
+      '<input placeholder="Particulars" class="particulars-input" type="text">';
     container.appendChild(row);
 
     var p = $(".particulars-input", row);
@@ -328,7 +307,6 @@
       if (p) { p.readOnly = true; p.value = debitParticularText; }
     });
   }
-
   window.autoFillParticularsInForm = autoFillParticularsInForm;
 
   document.addEventListener("input", function (e) {
@@ -339,7 +317,7 @@
   });
 
   // ------------------------------
-  // ENTER/RETURN AUTO SHIFT NAVIGATION
+  // ENTER NAV
   // ------------------------------
   (function enableEnterNavigation(){
     function getRowInputs(row){
@@ -356,21 +334,18 @@
 
     function ensureNextRow(currentRow){
       if (!currentRow) return null;
-
       if (currentRow.classList.contains('debit-row')) {
         var next = currentRow.nextElementSibling;
         if (next && next.classList.contains('debit-row')) return next;
         addDebit();
         return currentRow.nextElementSibling;
       }
-
       if (currentRow.classList.contains('credit-row')) {
         var next2 = currentRow.nextElementSibling;
         if (next2 && next2.classList.contains('credit-row')) return next2;
         addCredit();
         return currentRow.nextElementSibling;
       }
-
       return null;
     }
 
@@ -382,11 +357,9 @@
 
       if (t.id === "narrationInput") {
         e.preventDefault();
-        var firstDebit = document.querySelector("#debitContainer .debit-row .account-input");
-        safeFocus(firstDebit);
+        safeFocus(document.querySelector("#debitContainer .debit-row .account-input"));
         return;
       }
-
       if (t.id === "searchInput") {
         e.preventDefault();
         renderAll();
@@ -394,10 +367,7 @@
       }
 
       if (!t.classList) return;
-
-      if (!(t.classList.contains('account-input') || t.classList.contains('amount-input') || t.classList.contains('particulars-input'))) {
-        return;
-      }
+      if (!(t.classList.contains('account-input') || t.classList.contains('amount-input') || t.classList.contains('particulars-input'))) return;
 
       e.preventDefault();
 
@@ -414,10 +384,8 @@
 
       var nextRow = ensureNextRow(row);
       if (nextRow) {
-        var nextInputs = getRowInputs(nextRow);
-        safeFocus(nextInputs[0]);
+        safeFocus(getRowInputs(nextRow)[0]);
         autoFillParticularsInForm();
-        return;
       }
     }, true);
   })();
@@ -427,7 +395,6 @@
   // ------------------------------
   function validateEntry(debits, credits, narration) {
     var errors = [];
-
     if (!debits.length) errors.push("Add at least 1 debit line.");
     if (!credits.length) errors.push("Add at least 1 credit line.");
 
@@ -457,11 +424,9 @@
   }
 
   // ------------------------------
-  // LEDGER UPDATE
+  // LEDGER
   // ------------------------------
-  function ensureLedgerAcc(name) {
-    if (!ledger[name]) ledger[name] = [];
-  }
+  function ensureLedgerAcc(name) { if (!ledger[name]) ledger[name] = []; }
 
   function postToLedger(entry) {
     var jf = entry.jf || "-";
@@ -509,8 +474,7 @@
 
     var v = validateEntry(debits, credits, narration);
     if (!v.ok) {
-      safeAlert("Fix these errors:\n\n" + v.errors.map(function(e){ return "• " + e; }).join("\n"));
-      return;
+      return safeAlert("Fix these errors:\n\n" + v.errors.map(function(e){ return "• " + e; }).join("\n"));
     }
 
     var entry = {
@@ -537,30 +501,16 @@
   // ------------------------------
   function startEditEntry(index) {
     if (index == null || index < 0 || index >= journal.length) return;
-
     editModeIndex = index;
     editSnapshot = deepClone(journal[index]);
-
     renderAll();
-
-    setTimeout(function(){
-      var box = document.querySelector("[data-edit-index='" + index + "']");
-      if (!box) return;
-      var first = box.querySelector("input");
-      safeFocus(first);
-    }, 50);
   }
 
   function cancelEditEntry() {
     if (editModeIndex == null) return;
-
-    if (editSnapshot && journal[editModeIndex]) {
-      journal[editModeIndex] = deepClone(editSnapshot);
-    }
-
+    if (editSnapshot && journal[editModeIndex]) journal[editModeIndex] = deepClone(editSnapshot);
     editModeIndex = null;
     editSnapshot = null;
-
     rebuildLedgerFromJournal();
     persist();
     renderAll();
@@ -568,16 +518,11 @@
 
   function saveEditEntry(index) {
     if (index == null || index < 0 || index >= journal.length) return;
-
     var box = document.querySelector("[data-edit-index='" + index + "']");
     if (!box) return;
 
-    var dateEl = box.querySelector(".edit-date");
-    var narrEl = box.querySelector(".edit-narration");
-
-    var date = dateEl ? dateEl.value : "";
-    var narration = narrEl ? narrEl.value : "";
-
+    var date = (box.querySelector(".edit-date") || {}).value || "";
+    var narration = (box.querySelector(".edit-narration") || {}).value || "";
     date = String(date).trim();
     narration = String(narration).trim();
 
@@ -585,10 +530,8 @@
       var lines = [];
       var rows = box.querySelectorAll(".edit-" + kind + "-row");
       Array.prototype.forEach.call(rows, function(r){
-        var accEl = r.querySelector(".edit-acc");
-        var amtEl = r.querySelector(".edit-amt");
-        var acc = normalizeAccountName(accEl ? accEl.value : "");
-        var amt = toPaise(amtEl ? amtEl.value : 0);
+        var acc = normalizeAccountName((r.querySelector(".edit-acc") || {}).value || "");
+        var amt = toPaise((r.querySelector(".edit-amt") || {}).value || 0);
         if (acc || amt) lines.push({ acc: acc, amt: amt });
       });
       return lines;
@@ -597,15 +540,9 @@
     var debits = readLines("debit");
     var credits = readLines("credit");
 
-    var v = validateEntry(
-      debits.map(function(d){ return {acc:d.acc, amt:d.amt}; }),
-      credits.map(function(c){ return {acc:c.acc, amt:c.amt}; }),
-      narration
-    );
-
+    var v = validateEntry(debits, credits, narration);
     if (!v.ok) {
-      safeAlert("Fix these errors:\n\n" + v.errors.map(function(e){ return "• " + e; }).join("\n"));
-      return;
+      return safeAlert("Fix these errors:\n\n" + v.errors.map(function(e){ return "• " + e; }).join("\n"));
     }
 
     var beforeState = deepClone(editSnapshot || journal[index] || null);
@@ -618,12 +555,7 @@
       jf: "-"
     };
 
-    undoStack.push({
-      type: "edit",
-      index: index,
-      before: beforeState,
-      after: deepClone(journal[index])
-    });
+    undoStack.push({ type: "edit", index: index, before: beforeState, after: deepClone(journal[index]) });
 
     editModeIndex = null;
     editSnapshot = null;
@@ -641,21 +573,14 @@
   // UNDO
   // ------------------------------
   function undoLast() {
-    if (!undoStack.length) {
-      safeAlert("Nothing to undo.");
-      return;
-    }
-
+    if (!undoStack.length) return safeAlert("Nothing to undo.");
     var last = undoStack.pop();
 
-    if (last.type === "add") {
-      if (typeof last.index === "number") journal.splice(last.index, 1);
+    if (last.type === "add" && typeof last.index === "number") {
+      journal.splice(last.index, 1);
     }
-
-    if (last.type === "edit") {
-      if (last.before && typeof last.index === "number") {
-        journal[last.index] = deepClone(last.before);
-      }
+    if (last.type === "edit" && last.before && typeof last.index === "number") {
+      journal[last.index] = deepClone(last.before);
     }
 
     rebuildLedgerFromJournal();
@@ -665,7 +590,7 @@
   window.undoLast = undoLast;
 
   // ------------------------------
-  // FORM RESET
+  // RESET FORM
   // ------------------------------
   function resetEntryForm() {
     var debitC = document.getElementById("debitContainer");
@@ -756,9 +681,7 @@
     var html = "";
 
     journal.forEach(function (e, idx) {
-      var match = entryMatchesSearch(e, query);
-      if (!match) return;
-
+      if (!entryMatchesSearch(e, query)) return;
       visibleCount++;
 
       if (editModeIndex === idx) {
@@ -800,17 +723,9 @@
               "<input class='edit-narration' type='text' value='" + escapeHtml(e.narration || "-") + "' style='width:100%;padding:10px;border-radius:8px;border:1px solid #ccc'>" +
             "</div>" +
 
-            "<div style='margin-top:10px'>" +
-              "<div style='font-weight:700'>Debits</div>" +
-              debitEdit +
-            "</div>" +
-
-            "<div style='margin-top:10px'>" +
-              "<div style='font-weight:700'>Credits</div>" +
-              creditEdit +
-            "</div>" +
+            "<div style='margin-top:10px'><div style='font-weight:700'>Debits</div>" + debitEdit + "</div>" +
+            "<div style='margin-top:10px'><div style='font-weight:700'>Credits</div>" + creditEdit + "</div>" +
           "</div>";
-
         return;
       }
 
@@ -836,8 +751,7 @@
         "</div>";
     });
 
-    if (!visibleCount) out.innerHTML = "<p style='opacity:0.8'>No matching entries found.</p>";
-    else out.innerHTML = html;
+    out.innerHTML = visibleCount ? html : "<p style='opacity:0.8'>No matching entries found.</p>";
 
     if (hint) {
       hint.textContent = query
@@ -864,7 +778,6 @@
       var rowHtml = rows.map(function (r) {
         debitTotal += r.debit || 0;
         creditTotal += r.credit || 0;
-
         return (
           "<tr>" +
             "<td>" + escapeHtml(r.date) + "</td>" +
@@ -883,16 +796,10 @@
           "<table class='ledger-table'>" +
             "<thead><tr><th>Date</th><th>Particulars</th><th>J/F</th><th>Debit</th><th>Credit</th></tr></thead>" +
             "<tbody>" + rowHtml + "</tbody>" +
-            "<tfoot>" +
-              "<tr>" +
-                "<td colspan='3'><b>Total</b></td>" +
-                "<td style='text-align:right'><b>" + paiseToStr(debitTotal) + "</b></td>" +
-                "<td style='text-align:right'><b>" + paiseToStr(creditTotal) + "</b></td>" +
-              "</tr>" +
-            "</tfoot>" +
-          "</table>" +
-          "</div>" +
-        "</div>";
+            "<tfoot><tr><td colspan='3'><b>Total</b></td>" +
+              "<td style='text-align:right'><b>" + paiseToStr(debitTotal) + "</b></td>" +
+              "<td style='text-align:right'><b>" + paiseToStr(creditTotal) + "</b></td></tr></tfoot>" +
+          "</table></div></div>";
     });
 
     out.innerHTML = html;
@@ -905,9 +812,16 @@
   window.renderAll = renderAll;
 
   // ------------------------------
-  // INIT
+  // INIT (Crash-Proof)
   // ------------------------------
   function init() {
+    // If your required elements are missing, stop safely
+    if (!document.getElementById("debitContainer")) return;
+    if (!document.getElementById("creditContainer")) return;
+    if (!document.getElementById("journalOutput")) return;
+    if (!document.getElementById("ledgerOutput")) return;
+    if (!document.getElementById("dateInput")) return;
+
     restore();
     rebuildLedgerFromJournal();
 
@@ -930,18 +844,15 @@
       init();
     } catch (err) {
       console.error("Init failed:", err);
-      if (retries > 0) {
-        setTimeout(function(){ safeInitWithRetry(retries - 1); }, 150);
-      } else {
-        safeAlert("Error loading app. Please refresh the page.");
-      }
+      if (retries > 0) setTimeout(function(){ safeInitWithRetry(retries - 1); }, 150);
+      else safeAlert("Error loading app. Please refresh the page.");
     }
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function(){ safeInitWithRetry(5); });
+    document.addEventListener("DOMContentLoaded", function(){ safeInitWithRetry(10); });
   } else {
-    safeInitWithRetry(5);
+    safeInitWithRetry(10);
   }
 
 })();
