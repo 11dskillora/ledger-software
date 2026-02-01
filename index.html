@@ -1,859 +1,1020 @@
-<script>
-/* ==========================================================
-   COMPOUND JOURNAL → AUTO LEDGER (DUAL MODE DISPLAY)
-   Ultra-Stable + White Screen FIXED (Crash-Proof)
-   - No UI change
-   - No meaning change
-   - Narration supported
-   - Enter/Return auto navigation
-   - Search Entry / Search Account
-   - Edit entry after saving (auto updates ledger)
-   ========================================================== */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Compound Journal → Auto Ledger</title>
 
-(function () {
-  "use strict";
-
-  // ------------------------------
-  // GLOBAL STATE
-  // ------------------------------
-  var journal = [];
-  var ledger = {};
-  var undoStack = [];
-
-  var editModeIndex = null;
-  var editSnapshot = null;
-
-  var LS_JOURNAL = "journalData";
-  var LS_UNDO = "undoStack";
-
-  // ------------------------------
-  // HELPERS
-  // ------------------------------
-  function $(sel, root) { return (root || document).querySelector(sel); }
-  function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-
-  function escapeHtml(text) {
-    var div = document.createElement("div");
-    div.textContent = String(text == null ? "" : text);
-    return div.innerHTML;
-  }
-
-  function safeJSONParse(str, fallback) {
-    try {
-      var obj = JSON.parse(str);
-      return obj == null ? fallback : obj;
-    } catch (e) {
-      return fallback;
+  <style>
+    /* ==========================================================
+       BASIC UI (kept simple + stable)
+       ========================================================== */
+    body{
+      font-family: Arial, sans-serif;
+      margin:0;
+      padding:0;
+      background:#f5f7fb;
+      color:#111;
     }
-  }
-
-  function deepClone(obj) {
-    return safeJSONParse(JSON.stringify(obj), null);
-  }
-
-  function safeAlert(msg) {
-    try { alert(msg); } catch (e) { console.log(msg); }
-  }
-
-  function safeFocus(el) {
-    if (!el) return;
-    try { el.focus(); if (el.select) el.select(); } catch (e) {}
-  }
-
-  function strIncludes(hay, needle) {
-    hay = String(hay || "").toLowerCase();
-    needle = String(needle || "").toLowerCase();
-    return hay.indexOf(needle) !== -1;
-  }
-
-  // Money helpers
-  function toPaise(v) {
-    var n = Number(v);
-    if (!isFinite(n) || n <= 0) return 0;
-    return Math.round(n * 100);
-  }
-  function paiseToStr(p) {
-    p = Number(p) || 0;
-    return (p / 100).toFixed(2);
-  }
-
-  function normalizeAccountName(name) {
-    var n = String(name || "").trim();
-    if (!n) return "";
-    n = n.replace(/\s+/g, " ");
-    if (!/a\/c$/i.test(n)) n = n + " A/c";
-    n = n.replace(/A\/c\s*A\/c$/i, "A/c");
-    n = n.charAt(0).toUpperCase() + n.slice(1);
-    return n;
-  }
-
-  // ------------------------------
-  // STORAGE
-  // ------------------------------
-  function persist() {
-    try { localStorage.setItem(LS_JOURNAL, JSON.stringify(journal)); } catch (e) {}
-    try { localStorage.setItem(LS_UNDO, JSON.stringify(undoStack)); } catch (e2) {}
-  }
-
-  function restore() {
-    var j = safeJSONParse(localStorage.getItem(LS_JOURNAL), []);
-    var u = safeJSONParse(localStorage.getItem(LS_UNDO), []);
-    if (!Array.isArray(j)) j = [];
-    if (!Array.isArray(u)) u = [];
-    journal = j;
-    undoStack = u;
-  }
-
-  // ------------------------------
-  // DOM ENSURE (Narration)
-  // ------------------------------
-  function ensureNarrationInputExists() {
-    if (document.getElementById("narrationInput")) return;
-
-    var dateInput = document.getElementById("dateInput");
-    if (!dateInput) return;
-
-    var parent = dateInput.parentNode;
-    if (!parent) return;
-
-    var wrapper = document.createElement("div");
-    wrapper.style.marginTop = "8px";
-    wrapper.innerHTML =
-      '<input id="narrationInput" type="text" placeholder="Narration" ' +
-      'style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;">';
-
-    try {
-      parent.insertBefore(wrapper, dateInput.nextSibling);
-    } catch (e) {
-      console.error("Narration insert failed:", e);
+    header{
+      padding:14px 16px;
+      background:#111827;
+      color:#fff;
+      font-weight:700;
+      letter-spacing:.3px;
     }
-  }
-
-  // ------------------------------
-  // PAGE NAV (SAFE)
-  // ------------------------------
-  function showPage(pageIndex) {
-    var pages = $all(".page");
-    var navBtns = $all("nav button");
-
-    if (!pages.length) return;
-    if (pageIndex < 0 || pageIndex >= pages.length) return;
-
-    pages.forEach(function (p) { p.classList.remove("active"); });
-    if (navBtns.length) navBtns.forEach(function (b) { b.classList.remove("active"); });
-
-    pages[pageIndex].classList.add("active");
-    if (navBtns.length && navBtns[pageIndex]) navBtns[pageIndex].classList.add("active");
-  }
-  window.showPage = showPage;
-
-  function getLedgerPageIndex() {
-    var pages = $all(".page");
-    if (!pages.length) return null;
-    for (var i = 0; i < pages.length; i++) {
-      var p = pages[i];
-      if (!p) continue;
-      if (p.id && /ledger/i.test(p.id)) return i;
-      if (p.querySelector && p.querySelector("#ledgerOutput")) return i;
+    nav{
+      display:flex;
+      gap:10px;
+      padding:10px 12px;
+      background:#0f172a;
+      position:sticky;
+      top:0;
+      z-index:10;
     }
-    return pages.length >= 2 ? 1 : 0;
-  }
+    nav button{
+      border:0;
+      padding:10px 14px;
+      border-radius:10px;
+      background:#1f2937;
+      color:#fff;
+      cursor:pointer;
+      font-weight:600;
+    }
+    nav button.active{ background:#2563eb; }
+    .page{ display:none; padding:14px 12px 60px; }
+    .page.active{ display:block; }
 
-  // ------------------------------
-  // SEARCH UI (SAFE INSERT)
-  // ------------------------------
-  function ensureSearchUIExists() {
-    var journalOut = document.getElementById("journalOutput");
-    if (!journalOut) return;
-
-    if (document.getElementById("searchBoxWrap")) return;
-
-    // CRITICAL WHITE SCREEN FIX:
-    // journalOut may exist but not be attached properly yet
-    if (!journalOut.parentNode) return;
-
-    var wrap = document.createElement("div");
-    wrap.id = "searchBoxWrap";
-    wrap.style.margin = "10px 0";
-    wrap.style.padding = "10px";
-    wrap.style.borderRadius = "10px";
-    wrap.style.border = "1px solid rgba(0,0,0,0.15)";
-    wrap.style.background = "rgba(255,255,255,0.85)";
-
-    wrap.innerHTML =
-      "<div style='font-weight:700;margin-bottom:6px'>Search</div>" +
-      "<input id='searchInput' type='text' placeholder='Search entry / account / narration / date / amount...' " +
-      "style='width:100%;padding:10px;border-radius:8px;border:1px solid #ccc'>" +
-      "<div style='display:flex;gap:8px;flex-wrap:wrap;margin-top:8px'>" +
-        "<button id='searchClearBtn' type='button' style='padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer'>Clear</button>" +
-        "<button id='searchGoLedgerBtn' type='button' style='padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer'>Search in Ledger</button>" +
-      "</div>" +
-      "<div id='searchHint' style='margin-top:8px;font-size:12px;opacity:0.8'></div>";
-
-    try {
-      journalOut.parentNode.insertBefore(wrap, journalOut);
-    } catch (e) {
-      console.error("Search UI insert failed:", e);
-      return;
+    .card{
+      background:#fff;
+      border-radius:16px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.08);
+      padding:14px;
+      margin:12px 0;
     }
 
-    var input = document.getElementById("searchInput");
-    var clearBtn = document.getElementById("searchClearBtn");
-    var goLedgerBtn = document.getElementById("searchGoLedgerBtn");
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    label{ font-size:13px; font-weight:700; opacity:.85; }
+    input, textarea, select{
+      border:1px solid #d7dce5;
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:14px;
+      outline:none;
+      background:#fff;
+      min-width: 180px;
+    }
+    textarea{ min-width: 260px; }
+    input:focus, textarea:focus{ border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.15); }
 
-    if (input) {
-      input.addEventListener("input", function(){ renderAll(); });
-      input.addEventListener("keydown", function(e){
-        if (e.key === "Enter") { e.preventDefault(); renderAll(); }
-      });
+    .btn{
+      border:0;
+      border-radius:12px;
+      padding:10px 14px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .btn.primary{ background:#2563eb; color:#fff; }
+    .btn.gray{ background:#e5e7eb; }
+    .btn.red{ background:#ef4444; color:#fff; }
+    .btn.green{ background:#10b981; color:#fff; }
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media(max-width:900px){
+      .grid2{ grid-template-columns:1fr; }
+      input, textarea{ width:100%; min-width:unset; }
     }
 
-    if (clearBtn) {
-      clearBtn.addEventListener("click", function(){
-        var si = document.getElementById("searchInput");
-        if (si) si.value = "";
-        renderAll();
-      });
+    .entry-row{
+      display:grid;
+      grid-template-columns: 1.4fr 0.7fr 1.4fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    @media(max-width:900px){
+      .entry-row{ grid-template-columns:1fr; }
     }
 
-    if (goLedgerBtn) {
-      goLedgerBtn.addEventListener("click", function(){
-        var si2 = document.getElementById("searchInput");
-        var q = si2 ? si2.value.trim() : "";
-        if (!q) return safeAlert("Type something in search box first.");
-
-        var ledgerIndex = getLedgerPageIndex();
-        if (ledgerIndex != null) showPage(ledgerIndex);
-
-        setTimeout(function(){ highlightLedgerAccount(q); }, 150);
-      });
+    .subhead{
+      font-weight:800;
+      font-size:15px;
+      margin-bottom:6px;
     }
-  }
 
-  // ------------------------------
-  // FORM ROWS
-  // ------------------------------
-  function addDebit() {
-    var container = document.getElementById("debitContainer");
-    if (!container) return;
+    .entry-card{
+      background:#fff;
+      border:1px solid #e6e9f0;
+      border-radius:16px;
+      padding:12px;
+      margin:10px 0;
+    }
 
-    var row = document.createElement("div");
-    row.className = "entry-row debit-row";
-    row.innerHTML =
-      '<input placeholder="Account Name" class="account-input" type="text">' +
-      '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input">' +
-      '<input placeholder="Particulars" class="particulars-input" type="text">';
-    container.appendChild(row);
+    .ledger-card{
+      background:#fff;
+      border:1px solid #e6e9f0;
+      border-radius:16px;
+      padding:12px;
+      margin:12px 0;
+    }
 
-    var p = $(".particulars-input", row);
-    if (p) { p.readOnly = true; p.value = ""; }
+    .ledger-table{
+      width:100%;
+      border-collapse:collapse;
+      min-width: 650px;
+    }
+    .ledger-table th, .ledger-table td{
+      border-bottom:1px solid #edf0f6;
+      padding:10px 8px;
+      font-size:14px;
+      vertical-align:top;
+    }
+    .ledger-table th{
+      text-align:left;
+      background:#f8fafc;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
 
-    autoFillParticularsInForm();
-  }
+    .muted{ opacity:.75; font-size:13px; }
+    .pill{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      background:#f1f5f9;
+      font-size:12px;
+      font-weight:700;
+    }
 
-  function addCredit() {
-    var container = document.getElementById("creditContainer");
-    if (!container) return;
+    .hr{ height:1px; background:#edf0f6; margin:12px 0; }
 
-    var row = document.createElement("div");
-    row.className = "entry-row credit-row";
-    row.innerHTML =
-      '<input placeholder="Account Name" class="account-input" type="text">' +
-      '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input">' +
-      '<input placeholder="Particulars" class="particulars-input" type="text">';
-    container.appendChild(row);
+    .warn{
+      padding:10px 12px;
+      border-radius:12px;
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      color:#9a3412;
+      font-weight:700;
+      margin-top:10px;
+    }
+  </style>
+</head>
 
-    var p = $(".particulars-input", row);
-    if (p) { p.readOnly = true; p.value = ""; }
+<body>
+  <header>COMPOUND JOURNAL → AUTO LEDGER (Dual Mode)</header>
 
-    autoFillParticularsInForm();
-  }
+  <nav>
+    <button class="active" onclick="showPage(0)">Journal Entry</button>
+    <button onclick="showPage(1)">Journal View</button>
+    <button onclick="showPage(2)">Ledger</button>
+  </nav>
 
-  window.addDebit = addDebit;
-  window.addCredit = addCredit;
+  <!-- PAGE 1 -->
+  <section class="page active">
+    <div class="card">
+      <div class="subhead">Create Entry</div>
 
-  function getRowsData(selector) {
-    var rows = $all(selector);
-    return rows.map(function (row) {
-      var accEl = $(".account-input", row);
-      var amtEl = $(".amount-input", row);
-      var acc = normalizeAccountName(accEl ? accEl.value : "");
-      var amt = toPaise(amtEl ? amtEl.value : 0);
-      return { acc: acc, amt: amt, row: row };
-    });
-  }
+      <div class="row">
+        <div>
+          <label>Date</label><br/>
+          <input id="dateInput" type="date" />
+        </div>
 
-  function autoFillParticularsInForm() {
-    var debitContainer = document.getElementById("debitContainer");
-    var creditContainer = document.getElementById("creditContainer");
-    if (!debitContainer || !creditContainer) return;
+        <div style="flex:1; min-width:260px;">
+          <label>Narration</label><br/>
+          <textarea id="narrationInput" rows="2" placeholder="Narration (optional)"></textarea>
+        </div>
+      </div>
 
-    var debits = getRowsData(".debit-row");
-    var credits = getRowsData(".credit-row");
+      <div class="hr"></div>
 
-    var debitAccounts = debits.map(function(d){ return d.acc; }).filter(Boolean);
-    var creditAccounts = credits.map(function(c){ return c.acc; }).filter(Boolean);
+      <div class="grid2">
+        <div class="card" style="margin:0;">
+          <div class="subhead">Debit</div>
+          <div id="debitContainer"></div>
+          <div class="row" style="margin-top:10px;">
+            <button class="btn gray" onclick="addDebit()">+ Add Debit Row</button>
+          </div>
+        </div>
 
-    var debitParticularText = debitAccounts.length ? ("By " + debitAccounts.join(", ")) : "";
-    var creditParticularText = creditAccounts.length ? ("To " + creditAccounts.join(", ")) : "";
+        <div class="card" style="margin:0;">
+          <div class="subhead">Credit</div>
+          <div id="creditContainer"></div>
+          <div class="row" style="margin-top:10px;">
+            <button class="btn gray" onclick="addCredit()">+ Add Credit Row</button>
+          </div>
+        </div>
+      </div>
 
-    debits.forEach(function (d) {
-      var p = $(".particulars-input", d.row);
-      if (p) { p.readOnly = true; p.value = creditParticularText; }
-    });
+      <div class="row" style="margin-top:14px;">
+        <button class="btn primary" onclick="addEntry()">Save Entry</button>
+        <button class="btn gray" onclick="resetEntryForm()">Reset</button>
+        <button class="btn red" onclick="undoLast()">Undo Last</button>
+      </div>
 
-    credits.forEach(function (c) {
-      var p = $(".particulars-input", c.row);
-      if (p) { p.readOnly = true; p.value = debitParticularText; }
-    });
-  }
-  window.autoFillParticularsInForm = autoFillParticularsInForm;
+      <div class="warn muted">
+        Tip: Press <b>Enter</b> to move to next field / next row automatically.
+      </div>
+    </div>
+  </section>
 
-  document.addEventListener("input", function (e) {
-    if (!e.target || !e.target.classList) return;
-    if (e.target.classList.contains("account-input") || e.target.classList.contains("amount-input")) {
+  <!-- PAGE 2 -->
+  <section class="page">
+    <div class="card">
+      <div class="subhead">Journal Entries</div>
+
+      <!-- SEARCH ENTRY / SEARCH ACCOUNT -->
+      <div class="row" style="margin-top:10px;">
+        <div style="flex:1; min-width:240px;">
+          <label>Search entry / search account</label><br/>
+          <input id="journalSearchInput" type="text" placeholder="Type date / narration / account..." />
+        </div>
+        <div>
+          <label>Filter</label><br/>
+          <select id="journalSearchMode">
+            <option value="all">All</option>
+            <option value="account">Account</option>
+            <option value="narration">Narration</option>
+            <option value="date">Date</option>
+          </select>
+        </div>
+        <div>
+          <label>&nbsp;</label><br/>
+          <button class="btn gray" onclick="clearJournalSearch()">Clear</button>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div id="journalOutput"></div>
+    </div>
+  </section>
+
+  <!-- PAGE 3 -->
+  <section class="page">
+    <div class="card">
+      <div class="subhead">Ledger</div>
+
+      <!-- SEARCH ACCOUNT -->
+      <div class="row" style="margin-top:10px;">
+        <div style="flex:1; min-width:240px;">
+          <label>Search account</label><br/>
+          <input id="ledgerSearchInput" type="text" placeholder="Type account name..." />
+        </div>
+        <div>
+          <label>&nbsp;</label><br/>
+          <button class="btn gray" onclick="clearLedgerSearch()">Clear</button>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div id="ledgerOutput"></div>
+    </div>
+  </section>
+
+  <script>
+  /* ==========================================================
+     COMPOUND JOURNAL → AUTO LEDGER (DUAL MODE DISPLAY)
+     - No white screen: guarded init + safe DOM access
+     - Narration supported
+     - Search entry / search account
+     - Edit entry after saving (auto-updates ledger)
+     ========================================================== */
+
+  (function () {
+    "use strict";
+
+    // ------------------------------
+    // GLOBAL STATE
+    // ------------------------------
+    var journal = [];
+    var ledger = {};
+    var undoStack = [];
+
+    // Storage keys
+    var LS_JOURNAL = "journalData";
+    var LS_UNDO = "undoStack";
+
+    // ------------------------------
+    // HELPERS
+    // ------------------------------
+    function $(sel, root) { return (root || document).querySelector(sel); }
+    function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+    function escapeHtml(text) {
+      var div = document.createElement("div");
+      div.textContent = String(text == null ? "" : text);
+      return div.innerHTML;
+    }
+
+    // Always store money in paise
+    function toPaise(v) {
+      var n = Number(v);
+      if (!isFinite(n) || n <= 0) return 0;
+      return Math.round(n * 100);
+    }
+    function paiseToStr(p) {
+      p = Number(p) || 0;
+      return (p / 100).toFixed(2);
+    }
+
+    function normalizeAccountName(name) {
+      var n = String(name || "").trim();
+      if (!n) return "";
+      n = n.replace(/\s+/g, " ");
+      if (!/a\/c$/i.test(n)) n = n + " A/c";
+      n = n.replace(/A\/c\s*A\/c$/i, "A/c");
+      n = n.charAt(0).toUpperCase() + n.slice(1);
+      return n;
+    }
+
+    function safeJSONParse(str, fallback) {
+      try {
+        var obj = JSON.parse(str);
+        return obj == null ? fallback : obj;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function persist() {
+      try { localStorage.setItem(LS_JOURNAL, JSON.stringify(journal)); } catch (e) {}
+      try { localStorage.setItem(LS_UNDO, JSON.stringify(undoStack)); } catch (e2) {}
+    }
+
+    function restore() {
+      var j = safeJSONParse(localStorage.getItem(LS_JOURNAL), []);
+      var u = safeJSONParse(localStorage.getItem(LS_UNDO), []);
+      if (!Array.isArray(j)) j = [];
+      if (!Array.isArray(u)) u = [];
+      journal = j;
+      undoStack = u;
+    }
+
+    // ------------------------------
+    // PAGE NAV
+    // ------------------------------
+    function showPage(pageIndex) {
+      var pages = $all(".page");
+      var navBtns = $all("nav button");
+      if (pageIndex < 0 || pageIndex >= pages.length) return;
+
+      pages.forEach(function (p) { p.classList.remove("active"); });
+      navBtns.forEach(function (b) { b.classList.remove("active"); });
+
+      pages[pageIndex].classList.add("active");
+      navBtns[pageIndex].classList.add("active");
+    }
+    window.showPage = showPage;
+
+    // ------------------------------
+    // FORM ROWS
+    // ------------------------------
+    function addDebit(prefill) {
+      var container = document.getElementById("debitContainer");
+      if (!container) return;
+
+      var row = document.createElement("div");
+      row.className = "entry-row debit-row";
+      row.innerHTML =
+        '<input placeholder="Account Name" class="account-input" type="text" aria-label="Debit Account Name">' +
+        '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Debit Amount">' +
+        '<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Debit Particulars">';
+      container.appendChild(row);
+
+      var p = $(".particulars-input", row);
+      if (p) { p.readOnly = true; p.value = ""; }
+
+      if (prefill && typeof prefill === "object") {
+        var a = $(".account-input", row);
+        var m = $(".amount-input", row);
+        if (a) a.value = prefill.acc || "";
+        if (m) m.value = prefill.amtStr || "";
+      }
+
       autoFillParticularsInForm();
     }
-  });
 
-  // ------------------------------
-  // ENTER NAV
-  // ------------------------------
-  (function enableEnterNavigation(){
-    function getRowInputs(row){
-      if (!row) return [];
-      var acc = row.querySelector('.account-input');
-      var amt = row.querySelector('.amount-input');
-      var par = row.querySelector('.particulars-input');
-      var arr = [];
-      if (acc) arr.push(acc);
-      if (amt) arr.push(amt);
-      if (par) arr.push(par);
-      return arr;
+    function addCredit(prefill) {
+      var container = document.getElementById("creditContainer");
+      if (!container) return;
+
+      var row = document.createElement("div");
+      row.className = "entry-row credit-row";
+      row.innerHTML =
+        '<input placeholder="Account Name" class="account-input" type="text" aria-label="Credit Account Name">' +
+        '<input placeholder="Amount" type="number" step="0.01" min="0" class="amount-input" aria-label="Credit Amount">' +
+        '<input placeholder="Particulars" class="particulars-input" type="text" aria-label="Credit Particulars">';
+      container.appendChild(row);
+
+      var p = $(".particulars-input", row);
+      if (p) { p.readOnly = true; p.value = ""; }
+
+      if (prefill && typeof prefill === "object") {
+        var a = $(".account-input", row);
+        var m = $(".amount-input", row);
+        if (a) a.value = prefill.acc || "";
+        if (m) m.value = prefill.amtStr || "";
+      }
+
+      autoFillParticularsInForm();
     }
 
-    function ensureNextRow(currentRow){
-      if (!currentRow) return null;
-      if (currentRow.classList.contains('debit-row')) {
-        var next = currentRow.nextElementSibling;
-        if (next && next.classList.contains('debit-row')) return next;
-        addDebit();
-        return currentRow.nextElementSibling;
-      }
-      if (currentRow.classList.contains('credit-row')) {
-        var next2 = currentRow.nextElementSibling;
-        if (next2 && next2.classList.contains('credit-row')) return next2;
-        addCredit();
-        return currentRow.nextElementSibling;
-      }
-      return null;
+    window.addDebit = addDebit;
+    window.addCredit = addCredit;
+
+    function getRowsData(selector) {
+      var rows = $all(selector);
+      return rows.map(function (row) {
+        var accEl = $(".account-input", row);
+        var amtEl = $(".amount-input", row);
+        var acc = normalizeAccountName(accEl ? accEl.value : "");
+        var amt = toPaise(amtEl ? amtEl.value : 0);
+        return { acc: acc, amt: amt, row: row };
+      });
     }
 
-    document.addEventListener('keydown', function(e){
-      if (e.key !== 'Enter') return;
+    function autoFillParticularsInForm() {
+      var debits = getRowsData(".debit-row");
+      var credits = getRowsData(".credit-row");
 
-      var t = e.target;
-      if (!t) return;
+      var debitAccounts = debits.map(function(d){ return d.acc; }).filter(Boolean);
+      var creditAccounts = credits.map(function(c){ return c.acc; }).filter(Boolean);
 
-      if (t.id === "narrationInput") {
-        e.preventDefault();
-        safeFocus(document.querySelector("#debitContainer .debit-row .account-input"));
-        return;
-      }
-      if (t.id === "searchInput") {
-        e.preventDefault();
-        renderAll();
-        return;
-      }
+      var debitParticularText = debitAccounts.length ? ("By " + debitAccounts.join(", ")) : "";
+      var creditParticularText = creditAccounts.length ? ("To " + creditAccounts.join(", ")) : "";
 
-      if (!t.classList) return;
-      if (!(t.classList.contains('account-input') || t.classList.contains('amount-input') || t.classList.contains('particulars-input'))) return;
+      debits.forEach(function (d) {
+        var p = $(".particulars-input", d.row);
+        if (p) { p.readOnly = true; p.value = creditParticularText; }
+      });
 
-      e.preventDefault();
+      credits.forEach(function (c) {
+        var p = $(".particulars-input", c.row);
+        if (p) { p.readOnly = true; p.value = debitParticularText; }
+      });
+    }
+    window.autoFillParticularsInForm = autoFillParticularsInForm;
 
-      var row = t.closest('.entry-row');
-      if (!row) return;
-
-      var inputs = getRowInputs(row);
-      var idx = inputs.indexOf(t);
-
-      if (idx >= 0 && idx < inputs.length - 1) {
-        safeFocus(inputs[idx + 1]);
-        return;
-      }
-
-      var nextRow = ensureNextRow(row);
-      if (nextRow) {
-        safeFocus(getRowInputs(nextRow)[0]);
+    document.addEventListener("input", function (e) {
+      if (!e.target || !e.target.classList) return;
+      if (e.target.classList.contains("account-input") || e.target.classList.contains("amount-input")) {
         autoFillParticularsInForm();
       }
-    }, true);
-  })();
-
-  // ------------------------------
-  // VALIDATION
-  // ------------------------------
-  function validateEntry(debits, credits, narration) {
-    var errors = [];
-    if (!debits.length) errors.push("Add at least 1 debit line.");
-    if (!credits.length) errors.push("Add at least 1 credit line.");
-
-    debits.forEach(function (d, idx) {
-      if (!d.acc) errors.push("Debit row " + (idx + 1) + ": Account name is required.");
-      if (d.amt <= 0) errors.push("Debit row " + (idx + 1) + ": Amount must be > 0.");
     });
 
-    credits.forEach(function (c, idx) {
-      if (!c.acc) errors.push("Credit row " + (idx + 1) + ": Account name is required.");
-      if (c.amt <= 0) errors.push("Credit row " + (idx + 1) + ": Amount must be > 0.");
-    });
+    // ------------------------------
+    // ENTER NAVIGATION
+    // ------------------------------
+    (function enableEnterNavigation(){
+      function focusEl(el){
+        if (!el) return;
+        el.focus();
+        try { if (el.select) el.select(); } catch(e){}
+      }
 
-    if (narration != null) {
-      var n = String(narration).trim();
-      if (n.length > 300) errors.push("Narration is too long (max 300 characters).");
-    }
+      function getRowInputs(row){
+        if (!row) return [];
+        var acc = row.querySelector('.account-input');
+        var amt = row.querySelector('.amount-input');
+        var par = row.querySelector('.particulars-input');
+        var arr = [];
+        if (acc) arr.push(acc);
+        if (amt) arr.push(amt);
+        if (par) arr.push(par);
+        return arr;
+      }
 
-    var debitTotal = debits.reduce(function(s, d){ return s + d.amt; }, 0);
-    var creditTotal = credits.reduce(function(s, c){ return s + c.amt; }, 0);
+      function ensureNextRow(currentRow){
+        if (!currentRow) return null;
 
-    if (debitTotal !== creditTotal) {
-      errors.push("Debit total (" + paiseToStr(debitTotal) + ") must equal Credit total (" + paiseToStr(creditTotal) + ").");
-    }
+        if (currentRow.classList.contains('debit-row')) {
+          var next = currentRow.nextElementSibling;
+          if (next && next.classList.contains('debit-row')) return next;
+          addDebit();
+          return currentRow.nextElementSibling;
+        }
 
-    return { ok: errors.length === 0, errors: errors };
-  }
+        if (currentRow.classList.contains('credit-row')) {
+          var next2 = currentRow.nextElementSibling;
+          if (next2 && next2.classList.contains('credit-row')) return next2;
+          addCredit();
+          return currentRow.nextElementSibling;
+        }
 
-  // ------------------------------
-  // LEDGER
-  // ------------------------------
-  function ensureLedgerAcc(name) { if (!ledger[name]) ledger[name] = []; }
+        return null;
+      }
 
-  function postToLedger(entry) {
-    var jf = entry.jf || "-";
+      document.addEventListener('keydown', function(e){
+        if (e.key !== 'Enter') return;
 
-    (entry.debits || []).forEach(function (d) {
-      ensureLedgerAcc(d.acc);
-      ledger[d.acc].push({
-        date: entry.date,
-        particulars: "To " + (entry.credits || []).map(function(c){ return c.acc; }).join(", "),
-        debit: d.amt,
-        credit: 0,
-        jf: jf
+        var t = e.target;
+        if (!t || !t.classList) return;
+
+        if (!(t.classList.contains('account-input') || t.classList.contains('amount-input') || t.classList.contains('particulars-input'))) {
+          return;
+        }
+
+        e.preventDefault();
+
+        var row = t.closest('.entry-row');
+        if (!row) return;
+
+        var inputs = getRowInputs(row);
+        var idx = inputs.indexOf(t);
+
+        if (idx >= 0 && idx < inputs.length - 1) {
+          focusEl(inputs[idx + 1]);
+          return;
+        }
+
+        var nextRow = ensureNextRow(row);
+        if (nextRow) {
+          var nextInputs = getRowInputs(nextRow);
+          focusEl(nextInputs[0]);
+          autoFillParticularsInForm();
+          return;
+        }
+      }, true);
+    })();
+
+    // ------------------------------
+    // VALIDATION
+    // ------------------------------
+    function validateEntry(debits, credits) {
+      var errors = [];
+
+      if (!debits.length) errors.push("Add at least 1 debit line.");
+      if (!credits.length) errors.push("Add at least 1 credit line.");
+
+      debits.forEach(function (d, idx) {
+        if (!d.acc) errors.push("Debit row " + (idx + 1) + ": Account name is required.");
+        if (d.amt <= 0) errors.push("Debit row " + (idx + 1) + ": Amount must be > 0.");
       });
-    });
 
-    (entry.credits || []).forEach(function (c) {
-      ensureLedgerAcc(c.acc);
-      ledger[c.acc].push({
-        date: entry.date,
-        particulars: "By " + (entry.debits || []).map(function(d){ return d.acc; }).join(", "),
-        debit: 0,
-        credit: c.amt,
-        jf: jf
+      credits.forEach(function (c, idx) {
+        if (!c.acc) errors.push("Credit row " + (idx + 1) + ": Account name is required.");
+        if (c.amt <= 0) errors.push("Credit row " + (idx + 1) + ": Amount must be > 0.");
       });
-    });
-  }
 
-  function rebuildLedgerFromJournal() {
-    ledger = {};
-    journal.forEach(postToLedger);
-  }
+      var debitTotal = debits.reduce(function(s, d){ return s + d.amt; }, 0);
+      var creditTotal = credits.reduce(function(s, c){ return s + c.amt; }, 0);
 
-  // ------------------------------
-  // ADD ENTRY
-  // ------------------------------
-  function addEntry() {
-    var dateEl = $("#dateInput");
-    var narrationEl = $("#narrationInput");
+      if (debitTotal !== creditTotal) {
+        errors.push("Debit total (" + paiseToStr(debitTotal) + ") must equal Credit total (" + paiseToStr(creditTotal) + ").");
+      }
 
-    var date = (dateEl ? dateEl.value : "").trim();
-    var narration = (narrationEl ? narrationEl.value : "").trim();
-
-    var debits = getRowsData(".debit-row").filter(function(d){ return d.acc || d.amt; });
-    var credits = getRowsData(".credit-row").filter(function(c){ return c.acc || c.amt; });
-
-    var v = validateEntry(debits, credits, narration);
-    if (!v.ok) {
-      return safeAlert("Fix these errors:\n\n" + v.errors.map(function(e){ return "• " + e; }).join("\n"));
+      return { ok: errors.length === 0, errors: errors, debitTotal: debitTotal, creditTotal: creditTotal };
     }
 
-    var entry = {
-      date: date || new Date().toISOString().slice(0, 10),
-      narration: narration ? narration : "-",
-      debits: debits.map(function(d){ return { acc: d.acc, amt: d.amt }; }),
-      credits: credits.map(function(c){ return { acc: c.acc, amt: c.amt }; }),
-      jf: "-"
-    };
+    // ------------------------------
+    // LEDGER UPDATE
+    // ------------------------------
+    function ensureLedgerAcc(name) {
+      if (!ledger[name]) ledger[name] = [];
+    }
 
-    undoStack.push({ type: "add", index: journal.length, entry: deepClone(entry) });
+    function postToLedger(entry, entryIndex) {
+      var jf = entry.jf || "-";
+      var idx = entryIndex;
 
-    journal.push(entry);
-    rebuildLedgerFromJournal();
-    persist();
-
-    resetEntryForm();
-    renderAll();
-  }
-  window.addEntry = addEntry;
-
-  // ------------------------------
-  // EDIT ENTRY
-  // ------------------------------
-  function startEditEntry(index) {
-    if (index == null || index < 0 || index >= journal.length) return;
-    editModeIndex = index;
-    editSnapshot = deepClone(journal[index]);
-    renderAll();
-  }
-
-  function cancelEditEntry() {
-    if (editModeIndex == null) return;
-    if (editSnapshot && journal[editModeIndex]) journal[editModeIndex] = deepClone(editSnapshot);
-    editModeIndex = null;
-    editSnapshot = null;
-    rebuildLedgerFromJournal();
-    persist();
-    renderAll();
-  }
-
-  function saveEditEntry(index) {
-    if (index == null || index < 0 || index >= journal.length) return;
-    var box = document.querySelector("[data-edit-index='" + index + "']");
-    if (!box) return;
-
-    var date = (box.querySelector(".edit-date") || {}).value || "";
-    var narration = (box.querySelector(".edit-narration") || {}).value || "";
-    date = String(date).trim();
-    narration = String(narration).trim();
-
-    function readLines(kind) {
-      var lines = [];
-      var rows = box.querySelectorAll(".edit-" + kind + "-row");
-      Array.prototype.forEach.call(rows, function(r){
-        var acc = normalizeAccountName((r.querySelector(".edit-acc") || {}).value || "");
-        var amt = toPaise((r.querySelector(".edit-amt") || {}).value || 0);
-        if (acc || amt) lines.push({ acc: acc, amt: amt });
+      entry.debits.forEach(function (d) {
+        ensureLedgerAcc(d.acc);
+        ledger[d.acc].push({
+          entryIndex: idx,
+          date: entry.date,
+          particulars: "To " + entry.credits.map(function(c){ return c.acc; }).join(", "),
+          debit: d.amt,
+          credit: 0,
+          jf: jf
+        });
       });
-      return lines;
+
+      entry.credits.forEach(function (c) {
+        ensureLedgerAcc(c.acc);
+        ledger[c.acc].push({
+          entryIndex: idx,
+          date: entry.date,
+          particulars: "By " + entry.debits.map(function(d){ return d.acc; }).join(", "),
+          debit: 0,
+          credit: c.amt,
+          jf: jf
+        });
+      });
     }
 
-    var debits = readLines("debit");
-    var credits = readLines("credit");
-
-    var v = validateEntry(debits, credits, narration);
-    if (!v.ok) {
-      return safeAlert("Fix these errors:\n\n" + v.errors.map(function(e){ return "• " + e; }).join("\n"));
+    function rebuildLedgerFromJournal() {
+      ledger = {};
+      journal.forEach(function(entry, idx){
+        postToLedger(entry, idx);
+      });
     }
 
-    var beforeState = deepClone(editSnapshot || journal[index] || null);
+    // ------------------------------
+    // ADD ENTRY
+    // ------------------------------
+    function addEntry() {
+      var dateEl = $("#dateInput");
+      var narrationEl = $("#narrationInput");
 
-    journal[index] = {
-      date: date || new Date().toISOString().slice(0, 10),
-      narration: narration || "-",
-      debits: debits,
-      credits: credits,
-      jf: "-"
-    };
+      var date = (dateEl ? dateEl.value : "").trim();
+      var narration = (narrationEl ? narrationEl.value : "").trim();
 
-    undoStack.push({ type: "edit", index: index, before: beforeState, after: deepClone(journal[index]) });
+      var debits = getRowsData(".debit-row").filter(function(d){ return d.acc || d.amt; });
+      var credits = getRowsData(".credit-row").filter(function(c){ return c.acc || c.amt; });
 
-    editModeIndex = null;
-    editSnapshot = null;
+      var v = validateEntry(debits, credits);
+      if (!v.ok) {
+        alert("Fix these errors:\n\n" + v.errors.map(function(e){ return "• " + e; }).join("\n"));
+        return;
+      }
 
-    rebuildLedgerFromJournal();
-    persist();
-    renderAll();
-  }
+      var entry = {
+        date: date || new Date().toISOString().slice(0, 10),
+        narration: narration || "-",
+        debits: debits.map(function(d){ return { acc: d.acc, amt: d.amt }; }),
+        credits: credits.map(function(c){ return { acc: c.acc, amt: c.amt }; }),
+        jf: "-"
+      };
 
-  window.startEditEntry = startEditEntry;
-  window.saveEditEntry = saveEditEntry;
-  window.cancelEditEntry = cancelEditEntry;
+      undoStack.push({ type: "add", index: journal.length, entry: entry });
 
-  // ------------------------------
-  // UNDO
-  // ------------------------------
-  function undoLast() {
-    if (!undoStack.length) return safeAlert("Nothing to undo.");
-    var last = undoStack.pop();
+      journal.push(entry);
+      rebuildLedgerFromJournal();
+      persist();
 
-    if (last.type === "add" && typeof last.index === "number") {
-      journal.splice(last.index, 1);
+      resetEntryForm();
+      renderAll();
     }
-    if (last.type === "edit" && last.before && typeof last.index === "number") {
-      journal[last.index] = deepClone(last.before);
+    window.addEntry = addEntry;
+
+    // ------------------------------
+    // EDIT ENTRY AFTER SAVING
+    // (auto updates ledger)
+    // ------------------------------
+    function editEntry(index) {
+      index = Number(index);
+      if (!isFinite(index) || index < 0 || index >= journal.length) {
+        alert("Invalid entry index.");
+        return;
+      }
+
+      var e = journal[index];
+
+      // move user to entry page
+      showPage(0);
+
+      // fill date + narration
+      var dateEl = $("#dateInput");
+      var narrationEl = $("#narrationInput");
+      if (dateEl) dateEl.value = e.date || "";
+      if (narrationEl) narrationEl.value = (e.narration && e.narration !== "-") ? e.narration : "";
+
+      // clear rows
+      var debitC = document.getElementById("debitContainer");
+      var creditC = document.getElementById("creditContainer");
+      if (!debitC || !creditC) return;
+
+      debitC.innerHTML = "";
+      creditC.innerHTML = "";
+
+      // recreate rows from entry
+      (e.debits || []).forEach(function(d){
+        addDebit({ acc: d.acc, amtStr: paiseToStr(d.amt) });
+      });
+      (e.credits || []).forEach(function(c){
+        addCredit({ acc: c.acc, amtStr: paiseToStr(c.amt) });
+      });
+
+      if (!document.querySelector(".debit-row")) addDebit();
+      if (!document.querySelector(".credit-row")) addCredit();
+
+      autoFillParticularsInForm();
+
+      // Replace save button behavior temporarily
+      var originalAddEntry = window.addEntry;
+
+      window.addEntry = function saveEditedEntry() {
+        var date2 = ($("#dateInput") ? $("#dateInput").value : "").trim();
+        var narration2 = ($("#narrationInput") ? $("#narrationInput").value : "").trim();
+
+        var deb2 = getRowsData(".debit-row").filter(function(d){ return d.acc || d.amt; });
+        var cre2 = getRowsData(".credit-row").filter(function(c){ return c.acc || c.amt; });
+
+        var v2 = validateEntry(deb2, cre2);
+        if (!v2.ok) {
+          alert("Fix these errors:\n\n" + v2.errors.map(function(x){ return "• " + x; }).join("\n"));
+          return;
+        }
+
+        // store undo snapshot
+        var oldCopy = JSON.parse(JSON.stringify(journal[index]));
+        undoStack.push({ type: "edit", index: index, oldEntry: oldCopy });
+
+        journal[index] = {
+          date: date2 || new Date().toISOString().slice(0, 10),
+          narration: narration2 || "-",
+          debits: deb2.map(function(d){ return { acc: d.acc, amt: d.amt }; }),
+          credits: cre2.map(function(c){ return { acc: c.acc, amt: c.amt }; }),
+          jf: "-"
+        };
+
+        rebuildLedgerFromJournal();
+        persist();
+        resetEntryForm();
+        renderAll();
+
+        // restore normal save behavior
+        window.addEntry = originalAddEntry;
+
+        alert("Entry updated successfully.");
+      };
+
+      alert("Editing Entry " + (index + 1) + ". Make changes and click Save Entry.");
+    }
+    window.editEntry = editEntry;
+
+    // ------------------------------
+    // UNDO
+    // ------------------------------
+    function undoLast() {
+      if (!undoStack.length) {
+        alert("Nothing to undo.");
+        return;
+      }
+
+      var last = undoStack.pop();
+
+      if (last.type === "add") {
+        if (journal[last.index] && journal[last.index] === last.entry) {
+          journal.splice(last.index, 1);
+        } else {
+          var idx = journal.lastIndexOf(last.entry);
+          if (idx >= 0) journal.splice(idx, 1);
+        }
+      } else if (last.type === "edit") {
+        if (last.oldEntry && journal[last.index]) {
+          journal[last.index] = last.oldEntry;
+        }
+      }
+
+      rebuildLedgerFromJournal();
+      persist();
+      renderAll();
+    }
+    window.undoLast = undoLast;
+
+    // ------------------------------
+    // FORM RESET
+    // ------------------------------
+    function resetEntryForm() {
+      var debitC = document.getElementById("debitContainer");
+      var creditC = document.getElementById("creditContainer");
+      if (!debitC || !creditC) return;
+
+      debitC.innerHTML = "";
+      creditC.innerHTML = "";
+
+      addDebit();
+      addCredit();
+
+      var narrationEl = $("#narrationInput");
+      if (narrationEl) narrationEl.value = "";
+
+      autoFillParticularsInForm();
+    }
+    window.resetEntryForm = resetEntryForm;
+
+    // ------------------------------
+    // SEARCH (Journal)
+    // ------------------------------
+    function getJournalSearchQuery() {
+      var q = ($("#journalSearchInput") ? $("#journalSearchInput").value : "");
+      return String(q || "").trim().toLowerCase();
     }
 
-    rebuildLedgerFromJournal();
-    persist();
-    renderAll();
-  }
-  window.undoLast = undoLast;
-
-  // ------------------------------
-  // RESET FORM
-  // ------------------------------
-  function resetEntryForm() {
-    var debitC = document.getElementById("debitContainer");
-    var creditC = document.getElementById("creditContainer");
-    if (!debitC || !creditC) return;
-
-    debitC.innerHTML = "";
-    creditC.innerHTML = "";
-
-    addDebit();
-    addCredit();
-
-    var narrationEl = $("#narrationInput");
-    if (narrationEl) narrationEl.value = "";
-
-    autoFillParticularsInForm();
-  }
-  window.resetEntryForm = resetEntryForm;
-
-  // ------------------------------
-  // SEARCH
-  // ------------------------------
-  function getSearchQuery() {
-    var si = document.getElementById("searchInput");
-    return si ? String(si.value || "").trim() : "";
-  }
-
-  function entryMatchesSearch(entry, query) {
-    if (!query) return true;
-    var q = query.toLowerCase();
-
-    if (strIncludes(entry.date, q)) return true;
-    if (strIncludes(entry.narration, q)) return true;
-
-    var allLines = [].concat(entry.debits || []).concat(entry.credits || []);
-    for (var i = 0; i < allLines.length; i++) {
-      var ln = allLines[i];
-      if (strIncludes(ln.acc, q)) return true;
-      if (strIncludes(paiseToStr(ln.amt), q)) return true;
-    }
-    return false;
-  }
-
-  function highlightLedgerAccount(query) {
-    if (!query) return;
-
-    var q = query.toLowerCase();
-    var cards = document.querySelectorAll(".ledger-card");
-    if (!cards.length) return;
-
-    var found = null;
-
-    Array.prototype.forEach.call(cards, function(card){
-      card.style.outline = "";
-      card.style.boxShadow = "";
-      var h = card.querySelector("h3");
-      if (!h) return;
-      var name = String(h.textContent || "").toLowerCase();
-      if (!found && name.indexOf(q) !== -1) found = card;
-    });
-
-    if (found) {
-      found.scrollIntoView({ behavior: "smooth", block: "start" });
-      found.style.outline = "2px solid #000";
-      found.style.boxShadow = "0 0 0 4px rgba(0,0,0,0.1)";
-    } else {
-      safeAlert("No matching account found in ledger.");
-    }
-  }
-
-  // ------------------------------
-  // RENDERING
-  // ------------------------------
-  function renderJournal() {
-    var out = document.getElementById("journalOutput");
-    if (!out) return;
-
-    var query = getSearchQuery();
-    var hint = document.getElementById("searchHint");
-
-    if (!journal.length) {
-      out.innerHTML = "<p style='opacity:0.8'>No entries yet.</p>";
-      if (hint) hint.textContent = "";
-      return;
+    function getJournalSearchMode() {
+      var m = ($("#journalSearchMode") ? $("#journalSearchMode").value : "all");
+      return m || "all";
     }
 
-    var visibleCount = 0;
-    var html = "";
+    function entryMatchesSearch(entry, q, mode) {
+      if (!q) return true;
 
-    journal.forEach(function (e, idx) {
-      if (!entryMatchesSearch(e, query)) return;
-      visibleCount++;
+      var date = String(entry.date || "").toLowerCase();
+      var narration = String(entry.narration || "").toLowerCase();
 
-      if (editModeIndex === idx) {
-        var debitEdit = (e.debits || []).map(function(d){
-          return (
-            "<div class='edit-debit-row' style='display:flex;gap:8px;margin-top:6px'>" +
-              "<input class='edit-acc' type='text' value='" + escapeHtml(d.acc) + "' style='flex:2;padding:8px;border-radius:8px;border:1px solid #ccc'>" +
-              "<input class='edit-amt' type='number' step='0.01' min='0' value='" + escapeHtml(paiseToStr(d.amt)) + "' style='flex:1;padding:8px;border-radius:8px;border:1px solid #ccc'>" +
-            "</div>"
-          );
+      var debitAccs = (entry.debits || []).map(function(d){ return String(d.acc || "").toLowerCase(); }).join(" ");
+      var creditAccs = (entry.credits || []).map(function(c){ return String(c.acc || "").toLowerCase(); }).join(" ");
+      var allAccs = (debitAccs + " " + creditAccs).trim();
+
+      if (mode === "date") return date.indexOf(q) !== -1;
+      if (mode === "narration") return narration.indexOf(q) !== -1;
+      if (mode === "account") return allAccs.indexOf(q) !== -1;
+
+      // all
+      return (
+        date.indexOf(q) !== -1 ||
+        narration.indexOf(q) !== -1 ||
+        allAccs.indexOf(q) !== -1
+      );
+    }
+
+    function clearJournalSearch() {
+      var s = $("#journalSearchInput");
+      if (s) s.value = "";
+      renderJournal();
+    }
+    window.clearJournalSearch = clearJournalSearch;
+
+    // ------------------------------
+    // SEARCH (Ledger)
+    // ------------------------------
+    function getLedgerSearchQuery() {
+      var q = ($("#ledgerSearchInput") ? $("#ledgerSearchInput").value : "");
+      return String(q || "").trim().toLowerCase();
+    }
+
+    function clearLedgerSearch() {
+      var s = $("#ledgerSearchInput");
+      if (s) s.value = "";
+      renderLedger();
+    }
+    window.clearLedgerSearch = clearLedgerSearch;
+
+    // ------------------------------
+    // RENDERING
+    // ------------------------------
+    function renderJournal() {
+      var out = document.getElementById("journalOutput");
+      if (!out) return;
+
+      if (!journal.length) {
+        out.innerHTML = "<p class='muted'>No entries yet.</p>";
+        return;
+      }
+
+      var q = getJournalSearchQuery();
+      var mode = getJournalSearchMode();
+
+      var html = "";
+      var shown = 0;
+
+      journal.forEach(function (e, idx) {
+        if (!entryMatchesSearch(e, q, mode)) return;
+
+        shown++;
+
+        var debitLines = (e.debits || []).map(function(d){
+          return "<div>" + escapeHtml(d.acc) + " <b>Dr.</b> " + paiseToStr(d.amt) + "</div>";
         }).join("");
 
-        var creditEdit = (e.credits || []).map(function(c){
+        var creditLines = (e.credits || []).map(function(c){
+          return "<div><b>To</b> " + escapeHtml(c.acc) + " " + paiseToStr(c.amt) + "</div>";
+        }).join("");
+
+        html +=
+          "<div class='entry-card'>" +
+            "<div class='row' style='justify-content:space-between;'>" +
+              "<div><b>Entry " + (idx + 1) + "</b> <span class='pill'>Date: " + escapeHtml(e.date) + "</span></div>" +
+              "<div class='row' style='gap:8px;'>" +
+                "<button class='btn green' onclick='editEntry(" + idx + ")'>Edit</button>" +
+              "</div>" +
+            "</div>" +
+            "<div style='margin-top:8px'>" + debitLines + "</div>" +
+            "<div style='margin-top:8px'>" + creditLines + "</div>" +
+            "<div style='margin-top:8px'><i>Narration:</i> " + escapeHtml(e.narration || "-") + "</div>" +
+          "</div>";
+      });
+
+      if (!shown) {
+        out.innerHTML = "<p class='muted'>No matching entries found.</p>";
+        return;
+      }
+
+      out.innerHTML = html;
+    }
+
+    function renderLedger() {
+      var out = document.getElementById("ledgerOutput");
+      if (!out) return;
+
+      var q = getLedgerSearchQuery();
+
+      var accNames = Object.keys(ledger).sort(function(a,b){
+        return a.localeCompare(b);
+      });
+
+      if (q) {
+        accNames = accNames.filter(function(name){
+          return String(name).toLowerCase().indexOf(q) !== -1;
+        });
+      }
+
+      if (!accNames.length) {
+        out.innerHTML = "<p class='muted'>Ledger is empty / no matching account.</p>";
+        return;
+      }
+
+      var html = "";
+      accNames.forEach(function (acc) {
+        var rows = ledger[acc] || [];
+        var debitTotal = 0, creditTotal = 0;
+
+        var rowHtml = rows.map(function (r) {
+          debitTotal += r.debit || 0;
+          creditTotal += r.credit || 0;
           return (
-            "<div class='edit-credit-row' style='display:flex;gap:8px;margin-top:6px'>" +
-              "<input class='edit-acc' type='text' value='" + escapeHtml(c.acc) + "' style='flex:2;padding:8px;border-radius:8px;border:1px solid #ccc'>" +
-              "<input class='edit-amt' type='number' step='0.01' min='0' value='" + escapeHtml(paiseToStr(c.amt)) + "' style='flex:1;padding:8px;border-radius:8px;border:1px solid #ccc'>" +
-            "</div>"
+            "<tr>" +
+              "<td>" + escapeHtml(r.date) + "</td>" +
+              "<td>" + escapeHtml(r.particulars) + "</td>" +
+              "<td>" + escapeHtml(r.jf || "-") + "</td>" +
+              "<td style='text-align:right'>" + (r.debit ? paiseToStr(r.debit) : "") + "</td>" +
+              "<td style='text-align:right'>" + (r.credit ? paiseToStr(r.credit) : "") + "</td>" +
+            "</tr>"
           );
         }).join("");
 
         html +=
-          "<div class='entry-card' data-edit-index='" + idx + "' style='border:2px solid rgba(0,0,0,0.2)'>" +
-            "<div style='display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap'>" +
-              "<div><b>Entry " + (idx + 1) + " (Editing)</b></div>" +
-              "<div style='display:flex;gap:8px;flex-wrap:wrap'>" +
-                "<button type='button' onclick='saveEditEntry(" + idx + ")' style='padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer'>Save</button>" +
-                "<button type='button' onclick='cancelEditEntry()' style='padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer'>Cancel</button>" +
-              "</div>" +
+          "<div class='ledger-card'>" +
+            "<div class='row' style='justify-content:space-between;'>" +
+              "<h3 style='margin:0;'>" + escapeHtml(acc) + "</h3>" +
+              "<span class='pill'>Entries: " + rows.length + "</span>" +
             "</div>" +
-
-            "<div style='margin-top:10px'>" +
-              "<div style='font-weight:700;margin-bottom:6px'>Date</div>" +
-              "<input class='edit-date' type='date' value='" + escapeHtml(e.date) + "' style='width:100%;padding:10px;border-radius:8px;border:1px solid #ccc'>" +
+            "<div style='overflow:auto; margin-top:10px;'>" +
+              "<table class='ledger-table'>" +
+                "<thead><tr><th>Date</th><th>Particulars</th><th>J/F</th><th>Debit</th><th>Credit</th></tr></thead>" +
+                "<tbody>" + rowHtml + "</tbody>" +
+                "<tfoot>" +
+                  "<tr>" +
+                    "<td colspan='3'><b>Total</b></td>" +
+                    "<td style='text-align:right'><b>" + paiseToStr(debitTotal) + "</b></td>" +
+                    "<td style='text-align:right'><b>" + paiseToStr(creditTotal) + "</b></td>" +
+                  "</tr>" +
+                "</tfoot>" +
+              "</table>" +
             "</div>" +
-
-            "<div style='margin-top:10px'>" +
-              "<div style='font-weight:700;margin-bottom:6px'>Narration</div>" +
-              "<input class='edit-narration' type='text' value='" + escapeHtml(e.narration || "-") + "' style='width:100%;padding:10px;border-radius:8px;border:1px solid #ccc'>" +
-            "</div>" +
-
-            "<div style='margin-top:10px'><div style='font-weight:700'>Debits</div>" + debitEdit + "</div>" +
-            "<div style='margin-top:10px'><div style='font-weight:700'>Credits</div>" + creditEdit + "</div>" +
           "</div>";
-        return;
-      }
+      });
 
-      var debitLines = (e.debits || []).map(function(d){
-        return "<div>" + escapeHtml(d.acc) + " Dr. " + paiseToStr(d.amt) + "</div>";
-      }).join("");
-
-      var creditLines = (e.credits || []).map(function(c){
-        return "<div>To " + escapeHtml(c.acc) + " " + paiseToStr(c.amt) + "</div>";
-      }).join("");
-
-      html +=
-        "<div class='entry-card'>" +
-          "<div style='display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap'>" +
-            "<div><b>Entry " + (idx + 1) + "</b> | " + escapeHtml(e.date) + "</div>" +
-            "<div style='display:flex;gap:8px;flex-wrap:wrap'>" +
-              "<button type='button' onclick='startEditEntry(" + idx + ")' style='padding:6px 10px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer'>Edit</button>" +
-            "</div>" +
-          "</div>" +
-          "<div style='margin-top:6px'>" + debitLines + "</div>" +
-          "<div style='margin-top:6px'>" + creditLines + "</div>" +
-          "<div style='margin-top:6px'><i>Narration:</i> " + escapeHtml(e.narration || "-") + "</div>" +
-        "</div>";
-    });
-
-    out.innerHTML = visibleCount ? html : "<p style='opacity:0.8'>No matching entries found.</p>";
-
-    if (hint) {
-      hint.textContent = query
-        ? ("Showing " + visibleCount + " matching entry(s) for: " + query)
-        : ("Showing all entries: " + journal.length);
-    }
-  }
-
-  function renderLedger() {
-    var out = document.getElementById("ledgerOutput");
-    if (!out) return;
-
-    var accNames = Object.keys(ledger).sort();
-    if (!accNames.length) {
-      out.innerHTML = "<p style='opacity:0.8'>Ledger is empty.</p>";
-      return;
+      out.innerHTML = html;
     }
 
-    var html = "";
-    accNames.forEach(function (acc) {
-      var rows = ledger[acc] || [];
-      var debitTotal = 0, creditTotal = 0;
+    function renderAll() {
+      renderJournal();
+      renderLedger();
+    }
+    window.renderAll = renderAll;
 
-      var rowHtml = rows.map(function (r) {
-        debitTotal += r.debit || 0;
-        creditTotal += r.credit || 0;
-        return (
-          "<tr>" +
-            "<td>" + escapeHtml(r.date) + "</td>" +
-            "<td>" + escapeHtml(r.particulars) + "</td>" +
-            "<td>" + escapeHtml(r.jf || "-") + "</td>" +
-            "<td style='text-align:right'>" + (r.debit ? paiseToStr(r.debit) : "") + "</td>" +
-            "<td style='text-align:right'>" + (r.credit ? paiseToStr(r.credit) : "") + "</td>" +
-          "</tr>"
-        );
-      }).join("");
+    // live search hooks
+    function attachSearchListeners(){
+      var js = $("#journalSearchInput");
+      var jm = $("#journalSearchMode");
+      var ls = $("#ledgerSearchInput");
 
-      html +=
-        "<div class='ledger-card'>" +
-          "<h3>" + escapeHtml(acc) + "</h3>" +
-          "<div style='overflow:auto'>" +
-          "<table class='ledger-table'>" +
-            "<thead><tr><th>Date</th><th>Particulars</th><th>J/F</th><th>Debit</th><th>Credit</th></tr></thead>" +
-            "<tbody>" + rowHtml + "</tbody>" +
-            "<tfoot><tr><td colspan='3'><b>Total</b></td>" +
-              "<td style='text-align:right'><b>" + paiseToStr(debitTotal) + "</b></td>" +
-              "<td style='text-align:right'><b>" + paiseToStr(creditTotal) + "</b></td></tr></tfoot>" +
-          "</table></div></div>";
+      if (js) js.addEventListener("input", function(){ renderJournal(); });
+      if (jm) jm.addEventListener("change", function(){ renderJournal(); });
+      if (ls) ls.addEventListener("input", function(){ renderLedger(); });
+    }
+
+    // ------------------------------
+    // INIT
+    // ------------------------------
+    function init() {
+      restore();
+      rebuildLedgerFromJournal();
+
+      // Ensure at least one row exists
+      if (!document.querySelector(".debit-row")) addDebit();
+      if (!document.querySelector(".credit-row")) addCredit();
+
+      autoFillParticularsInForm();
+      attachSearchListeners();
+      renderAll();
+    }
+
+    // crash guard
+    window.addEventListener("error", function(e){
+      console.error("Runtime error:", e.message, e.error);
     });
 
-    out.innerHTML = html;
-  }
-
-  function renderAll() {
-    renderJournal();
-    renderLedger();
-  }
-  window.renderAll = renderAll;
-
-  // ------------------------------
-  // INIT (Crash-Proof)
-  // ------------------------------
-  function init() {
-    // If your required elements are missing, stop safely
-    if (!document.getElementById("debitContainer")) return;
-    if (!document.getElementById("creditContainer")) return;
-    if (!document.getElementById("journalOutput")) return;
-    if (!document.getElementById("ledgerOutput")) return;
-    if (!document.getElementById("dateInput")) return;
-
-    restore();
-    rebuildLedgerFromJournal();
-
-    ensureNarrationInputExists();
-    ensureSearchUIExists();
-
-    if (!document.querySelector(".debit-row")) addDebit();
-    if (!document.querySelector(".credit-row")) addCredit();
-
-    autoFillParticularsInForm();
-    renderAll();
-  }
-
-  window.addEventListener("error", function(e){
-    console.error("Runtime error:", e.message, e.error);
-  });
-
-  function safeInitWithRetry(retries) {
-    try {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
       init();
-    } catch (err) {
-      console.error("Init failed:", err);
-      if (retries > 0) setTimeout(function(){ safeInitWithRetry(retries - 1); }, 150);
-      else safeAlert("Error loading app. Please refresh the page.");
     }
-  }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function(){ safeInitWithRetry(10); });
-  } else {
-    safeInitWithRetry(10);
-  }
-
-})();
-</script>
+  })();
+  </script>
+</body>
+</html>
