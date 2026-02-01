@@ -450,6 +450,27 @@
           return { ledger, folioMap };
         }, [journal]);
 
+        // Trial Balance auto generation
+        const trialBalance = useMemo(() => {
+          const accounts = Object.keys(ledgerData.ledger || {}).sort();
+          const rows = accounts.map((acc) => {
+            const entries = ledgerData.ledger[acc] || [];
+            const dr = entries.reduce((s, e) => s + (e.debit || 0), 0);
+            const cr = entries.reduce((s, e) => s + (e.credit || 0), 0);
+            const bal = dr - cr;
+            return {
+              acc,
+              debit: bal > 0 ? bal : 0,
+              credit: bal < 0 ? Math.abs(bal) : 0,
+            };
+          });
+
+          const totalDr = rows.reduce((s, r) => s + r.debit, 0);
+          const totalCr = rows.reduce((s, r) => s + r.credit, 0);
+
+          return { rows, totalDr, totalCr };
+        }, [ledgerData]);
+
         const getFilteredJournal = () => {
           if (!journalSearch) return journal;
           const q = journalSearch.toLowerCase();
@@ -754,8 +775,17 @@
                       </select>
                     </div>
 
-                    <div className="text-sm font-serif text-[#8d7b68] italic">
-                      Showing <strong>{getFilteredJournal().length}</strong> records
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm font-serif text-[#8d7b68] italic">
+                        Showing <strong>{getFilteredJournal().length}</strong> records
+                      </div>
+
+                      <button
+                        onClick={handleDeleteAll}
+                        className="px-5 py-2 bg-[#fff5f5] border-2 border-[#e6c8c8] text-[#a0522d] hover:bg-[#ffebeb] rounded-lg font-bold text-xs tracking-widest uppercase flex items-center gap-2 transition-colors"
+                      >
+                        <Icon name="Trash2" className="w-4 h-4" /> Delete All
+                      </button>
                     </div>
                   </div>
 
@@ -873,6 +903,79 @@
                             </tbody>
                           ))}
                         </table>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Trial Balance Section */}
+                  <div className="bg-[#fffefc] rounded-xl border border-[#dcd0b9] shadow-lg overflow-hidden">
+                    <div className="px-8 py-6 border-b border-[#e8dfcf] bg-[#faf8f2] flex items-center justify-between">
+                      <h2
+                        className="text-2xl font-bold flex items-center gap-3 text-[#5c4033]"
+                        style={{ fontFamily: '"Playfair Display", serif' }}
+                      >
+                        <Icon name="BookOpen" className="w-6 h-6 text-[#d4af37]" />
+                        Trial Balance (Auto)
+                      </h2>
+
+                      <div className="text-sm font-serif text-[#8d7b68] italic">
+                        Total Dr: ₹{paiseToStr(trialBalance.totalDr)} | Total Cr: ₹
+                        {paiseToStr(trialBalance.totalCr)}
+                      </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-[#f0ece3] border-b-2 border-[#d4af37]">
+                            <th className="px-6 py-4 text-left font-bold text-[#5c4033] uppercase tracking-wider font-serif">
+                              Particulars
+                            </th>
+                            <th className="px-6 py-4 text-right font-bold text-[#5c4033] uppercase tracking-wider w-48 font-serif border-l border-[#e0d8c8]">
+                              Debit (₹)
+                            </th>
+                            <th className="px-6 py-4 text-right font-bold text-[#5c4033] uppercase tracking-wider w-48 font-serif border-l border-[#e0d8c8]">
+                              Credit (₹)
+                            </th>
+                          </tr>
+                        </thead>
+
+                        <tbody className="divide-y divide-[#f0ece3]">
+                          {trialBalance.rows.map((r, i) => (
+                            <tr key={i} className="hover:bg-[#faf8f2] transition-colors">
+                              <td className="px-6 py-3 text-[#3e2723] font-serif font-bold">
+                                {r.acc}
+                              </td>
+                              <td className="px-6 py-3 text-right font-mono text-[#2e4a2e] bg-[#f4f8f4]/50 border-l border-[#f4f1ea]">
+                                {r.debit ? paiseToStr(r.debit) : ""}
+                              </td>
+                              <td className="px-6 py-3 text-right font-mono text-[#5c3a2e] bg-[#fcf6f4]/50 border-l border-[#f4f1ea]">
+                                {r.credit ? paiseToStr(r.credit) : ""}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+
+                        <tfoot className="bg-[#f0ece3] border-t-2 border-[#d4c5b0] font-bold text-[#3e2723]">
+                          <tr>
+                            <td className="px-6 py-4 text-right text-xs uppercase text-[#8d7b68] tracking-widest font-serif">
+                              Total
+                            </td>
+                            <td className="px-6 py-4 text-right font-mono text-base border-l border-[#e0d8c8]">
+                              ₹{paiseToStr(trialBalance.totalDr)}
+                            </td>
+                            <td className="px-6 py-4 text-right font-mono text-base border-l border-[#e0d8c8]">
+                              ₹{paiseToStr(trialBalance.totalCr)}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+
+                    {trialBalance.totalDr !== trialBalance.totalCr && (
+                      <div className="p-4 bg-[#fff5f5] border-t border-[#e6c8c8] text-[#a0522d] font-bold text-sm">
+                        ⚠️ Warning: Trial Balance does not match. Check entries (Debit must equal
+                        Credit).
                       </div>
                     )}
                   </div>
