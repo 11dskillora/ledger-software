@@ -1,1101 +1,897 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SARASWATI INTERNATIONAL SCHOOL - Accounting System</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SARASWATI INTERNATIONAL SCHOOL - Accounting System</title>  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-<style>
-  :root{
-    --bg:#f6f1e6;
-    --card:#fffaf0;
-    --ink:#2b1b12;
-    --muted:#7a5c3d;
-    --border:#d8c1a2;
-    --shadow:0 12px 30px rgba(0,0,0,.12);
-    --accent:#8b5a2b;
-    --accent2:#c59a6c;
-    --danger:#b23b3b;
-    --ok:#2f6f3e;
-  }
+  <style>
+    /* =========================================================
+       LIGHT WOODY PREMIUM UI (Fixed Menu)
+       ========================================================= */
 
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family: ui-serif, Georgia, "Times New Roman", serif;
-    color:var(--ink);
-    background:
-      radial-gradient(circle at 10% 10%, rgba(255,255,255,.6), transparent 40%),
-      linear-gradient(180deg, #f3eadb, #efe4d2);
-    min-height:100vh;
-  }
+    :root {
+      /* Palette */
+      --text-main: #3e2723;       /* Dark Coffee */
+      --text-muted: #6d5d52;      /* Muted Brown */
+      --gold: #bfa176;            /* Muted Gold */
+      --danger: #c0392b;          /* Red for delete */
+      --glass: rgba(255, 255, 255, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.5);
+      --shadow-soft: 0 15px 35px rgba(62, 39, 35, 0.1);
+      --font-heading: 'Playfair Display', serif;
+      --font-body: 'Lato', sans-serif;
+    }
 
-  /* ===== Top Sticky Menu ===== */
-  .topbar{
-    position:sticky; top:0; z-index:999;
-    background: linear-gradient(90deg, #3a261a, #5a3a24);
-    color:#fff;
-    box-shadow: 0 10px 25px rgba(0,0,0,.25);
-    padding:10px 14px;
-  }
-  .topbar-inner{
-    max-width:1200px;
-    margin:0 auto;
-    display:flex;
-    gap:12px;
-    align-items:center;
-    justify-content:space-between;
-    flex-wrap:wrap;
-  }
-  .brand{
-    display:flex; align-items:center; gap:10px;
-    font-weight:800;
-    letter-spacing:.5px;
-  }
-  .seal{
-    width:36px;height:36px;border-radius:50%;
-    background: radial-gradient(circle at 30% 30%, #ffdf9a, #b8892a);
-    border:2px solid rgba(255,255,255,.4);
-    box-shadow: inset 0 0 10px rgba(0,0,0,.25);
-  }
-  .brand-title{
-    line-height:1.05;
-    font-size:14px;
-  }
-  .brand-sub{
-    opacity:.85;
-    font-size:12px;
-    font-weight:600;
-  }
+    * { box-sizing: border-box; cursor: none; /* Custom cursor */ }
+    
+    body {
+      margin: 0; padding: 0;
+      font-family: var(--font-body);
+      color: var(--text-main);
+      overflow-x: hidden;
+      background: #f0e6d2; /* Fallback */
+    }
 
-  .menu{
-    display:flex; align-items:center; gap:10px;
-    flex-wrap:wrap;
-  }
-  select, input, button, textarea{
-    font-family: inherit;
-  }
-  .select{
-    padding:10px 12px;
-    border-radius:12px;
-    border:1px solid rgba(255,255,255,.25);
-    background: rgba(255,255,255,.12);
-    color:#fff;
-    outline:none;
-    cursor:pointer;
-  }
-  .select option{color:#111;}
-  .btn{
-    border:none;
-    border-radius:12px;
-    padding:10px 12px;
-    cursor:pointer;
-    font-weight:800;
-    letter-spacing:.2px;
-    transition:.15s;
-    user-select:none;
-    white-space:nowrap;
-  }
-  .btn:active{transform:scale(.98)}
-  .btn-accent{
-    background: linear-gradient(90deg, var(--accent2), var(--accent));
-    color:#fff;
-    box-shadow: 0 10px 20px rgba(0,0,0,.25);
-  }
-  .btn-ghost{
-    background: rgba(255,255,255,.12);
-    color:#fff;
-    border:1px solid rgba(255,255,255,.25);
-  }
-  .btn-danger{
-    background: linear-gradient(90deg, #d66, #b23b3b);
-    color:#fff;
-  }
+    /* --- Custom Cursor --- */
+    .cursor-dot, .cursor-outline {
+      position: fixed; top: 0; left: 0;
+      transform: translate(-50%, -50%);
+      border-radius: 50%; z-index: 9999;
+      pointer-events: none;
+    }
+    .cursor-dot { width: 8px; height: 8px; background: var(--text-main); }
+    .cursor-outline { 
+      width: 40px; height: 40px; 
+      border:1px solid rgba(62,39,35,0.2); 
+      transition: width 0.2s, height 0.2s, background 0.2s; 
+    }
+    body:hover .cursor-outline.hovered {
+      width: 60px; height: 60px;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(2px);
+      border: none;
+    }
 
-  /* ===== Layout ===== */
-  .wrap{
-    max-width:1200px;
-    margin:14px auto 60px;
-    padding:0 14px;
-  }
+    /* --- Background --- */
+    #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+    
+    /* --- Bottom Glow --- */
+    .bottom-glow {
+      position: fixed; bottom: 0; left: 0; width: 100%; height: 300px;
+      background: radial-gradient(circle at 50% 100%, rgba(255, 245, 230, 0.8), transparent 70%);
+      pointer-events: none; z-index: 0;
+      mix-blend-mode: overlay;
+      opacity: 0.5; transition: opacity 0.5s ease;
+    }
 
-  .panel{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:18px;
-    box-shadow: var(--shadow);
-    padding:16px;
-    overflow:hidden;
-  }
+    /* --- Layout --- */
+    .app { min-height: 100vh; padding: 20px; position: relative; z-index: 1; }
+    .container { max-width: 1200px; margin: 0 auto; }
 
-  /* ===== Notebook Table ===== */
-  .table-wrap{
-    overflow:auto;
-    border-radius:14px;
-    border:1px solid var(--border);
-    background:
-      linear-gradient(transparent 0, transparent 27px, rgba(140,90,40,.18) 28px),
-      linear-gradient(90deg, rgba(210,40,40,.25) 0 2px, transparent 2px),
-      var(--paper);
-    background-size: 100% 28px, 100% 100%, 100% 100%;
-    background-position: 0 0, 58px 0, 0 0;
-  }
-  table{
-    width:100%;
-    border-collapse:collapse;
-    min-width:780px;
-  }
-  th,td{
-    padding:10px 10px;
-    border-bottom:1px dashed rgba(120,80,40,.35);
-    vertical-align:top;
-    font-size:14px;
-  }
-  th{
-    position:sticky; top:0;
-    background: linear-gradient(180deg, rgba(250,248,243,.96), rgba(245,236,219,.92));
-    z-index:2;
-    text-align:left;
-    border-bottom:2px solid rgba(120,80,40,.35);
-  }
+    /* --- Navigation (Fixed: No Toggle) --- */
+    .topbar {
+      background: rgba(255,255,255,0.3);
+      backdrop-filter: blur(20px);
+      border:1px solid var(--glass-border);
+      border-radius: 50px;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow-soft);
+      flex-wrap: wrap; /* Allow wrapping */
+      position: relative; /* Context for absolute items */
+      z-index: 50;
+    }
 
-  .muted{color:var(--muted); font-weight:600;}
-  .pill{
-    display:inline-block;
-    padding:4px 10px;
-    border-radius:999px;
-    border:1px solid rgba(0,0,0,.08);
-    background:rgba(255,255,255,.55);
-    font-weight:800;
-    font-size:12px;
-  }
-  .pill.dr{color:#0b5}
-  .pill.cr{color:#b33}
+    .brand { font-family: var(--font-heading); font-weight: 600; font-size: 1.2rem; letter-spacing: 0.05em; }
 
-  .grid{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:14px;
-  }
-  @media (max-width: 900px){
-    .grid{grid-template-columns:1fr;}
-    table{min-width:980px;}
-  }
+    /* Nav Controls (Global Actions) */
+    .nav-controls { display: flex; gap: 10px; align-items: center; }
 
-  /* ===== Forms ===== */
-  .card{
-    border:1px solid var(--border);
-    border-radius:18px;
-    background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.55));
-    padding:14px;
-  }
-  .h2{
-    margin:0 0 10px;
-    font-size:18px;
-    font-weight:900;
-    letter-spacing:.2px;
-  }
-  .row{
-    display:grid;
-    grid-template-columns: 1.2fr .6fr .6fr auto;
-    gap:10px;
-    margin-bottom:10px;
-    align-items:center;
-  }
-  @media(max-width:650px){
-    .row{grid-template-columns:1fr 1fr; }
-    .row .span2{grid-column:span 2;}
-  }
+    /* Dropdown Menu Container */
+    .nav-menu-container { display: none; /* Hidden on mobile initially */ }
+    
+    /* Desktop View */
+    @media(min-width: 769px) {
+      .nav-menu-container { display: block; }
+      .nav-links { display: flex; gap: 15px; }
+    }
 
-  .field{
-    width:100%;
-    padding:10px 12px;
-    border-radius:12px;
-    border:1px solid var(--border);
-    background:#fffdf7;
-    outline:none;
-  }
-  .field:focus{
-    border-color:#caa57c;
-    box-shadow:0 0 0 4px rgba(197,154,108,.25);
-  }
+    /* Mobile View (FIXED: Always Visible, No Toggle) */
+    @media(max-width: 768px) {
+      /* 1. Change layout to Column for stacking */
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start; /* Align left */
+        padding: 15px;
+        gap: 20px;
+      }
 
-  .mini{
-    padding:8px 10px;
-    border-radius:12px;
-    border:1px solid var(--border);
-    background:#fffdf7;
-    cursor:pointer;
-    font-weight:900;
-  }
-  .mini.danger{
-    border-color: rgba(178,59,59,.35);
-    background: rgba(178,59,59,.08);
-    color: var(--danger);
-  }
-  .mini.ok{
-    border-color: rgba(47,111,62,.35);
-    background: rgba(47,111,62,.08);
-    color: var(--ok);
-  }
+      /* 2. Brand takes full width or stays inline */
+      .brand {
+        width: 100%;
+        text-align: center;
+      }
 
-  .actions{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-top:10px;
-  }
+      /* 3. Menu Container - Always Visible */
+      .nav-menu-container { 
+        display: block; /* Always show */
+        width: 100%; 
+        position: static; /* Normal flow, no absolute issues */
+      }
 
-  .note{
-    font-size:12px;
-    color:var(--muted);
-    margin-top:8px;
-    font-weight:700;
-  }
+      /* 4. Links - Column Layout */
+      .nav-links { 
+        display: flex; 
+        flex-direction: column; 
+        width: 100%;
+        gap: 10px; /* Space between buttons */
+      }
+      
+      /* 5. Global Actions - Hide on mobile */
+      .nav-controls {
+        display: none;
+      }
+    }
 
-  /* ===== Modal ===== */
-  .modal-backdrop{
-    position:fixed; inset:0;
-    background: rgba(0,0,0,.55);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    padding:18px;
-    z-index:2000;
-  }
-  .modal{
-    width:min(900px, 100%);
-    background: var(--card);
-    border:1px solid var(--border);
-    border-radius:20px;
-    box-shadow: 0 30px 80px rgba(0,0,0,.45);
-    overflow:hidden;
-  }
-  .modal-head{
-    padding:14px 16px;
-    background: linear-gradient(90deg, #3a261a, #5a3a24);
-    color:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-  }
-  .modal-body{padding:16px;}
-  .modal-backdrop.show{display:flex;}
-</style>
+    .magnetic-wrap {
+      display: inline-block;
+      transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .btn {
+      background: transparent;
+      border:1px solid rgba(62,39,35,0.2);
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-family: var(--font-body);
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      width: 100%; /* Full width for easier clicking on mobile */
+      text-align: center;
+    }
+    .btn:hover, .btn.active {
+      background: var(--text-main);
+      color: white;
+      transform: scale(1.02);
+    }
+    .btn-danger { border-color: rgba(192, 57, 43, 0.4); color: var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: white; border-color: var(--danger); }
+
+    /* --- 3D Dashboard Cards --- */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    .card-3d {
+      height: 200px;
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      transform: perspective(1000px);
+      box-shadow: var(--shadow-soft);
+      border:1px solid var(--glass-border);
+      background: rgba(255,255,255,0.4);
+      backdrop-filter: blur(10px);
+    }
+
+    .card-bg-img {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      object-fit: cover; opacity: 0.6; transition: transform 0.5s;
+    }
+    .card-3d:hover .card-bg-img { transform: scale(1.05); }
+
+    .card-content {
+      position: relative; z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 20px;
+      transform: translateZ(30px);
+    }
+
+    .card-title { font-family: var(--font-heading); font-size: 1.2rem; margin-bottom: 5px; }
+    .card-value { font-family: var(--font-body); font-size: 1.5rem; font-weight: 700; }
+    .card-glare {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(125deg, rgba(255,255,255,0.4), transparent 60%);
+      opacity: 0; pointer-events: none; mix-blend-mode: overlay;
+    }
+
+    /* --- Content Sections --- */
+    .paper {
+      background: var(--glass);
+      backdrop-filter: blur(25px);
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: var(--shadow-soft);
+      border:1px solid var(--glass-border);
+      min-height: 400px;
+      animation: fadeIn 0.6s ease-out;
+    }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .section-title { font-family: var(--font-heading); font-size: 2rem; margin-bottom: 20px; border-bottom: 2px solid var(--gold); display: inline-block; padding-bottom: 5px; }
+
+    /* --- Forms --- */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    input, select, textarea {
+      width: 100%; padding: 12px 15px;
+      border-radius: 12px; border:1px solid rgba(62,39,35,0.2);
+      background: rgba(255,255,255,0.7);
+      font-family: var(--font-body);
+      font-size: 1rem; outline: none; transition: 0.3s;
+    }
+    input:focus { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(191, 161, 118, 0.2); }
+
+    .entry-lines { display: flex; flex-direction: column; gap: 10px; }
+    .entry-row { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; align-items: center; }
+    
+    .btn-action {
+      padding: 12px 30px; background: var(--text-main); color: white;
+      border: none; border-radius: 30px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 5px 15px rgba(62,39,35,0.2); transition: transform 0.2s;
+    }
+    .btn-action:active { transform: scale(0.95); }
+
+    /* --- Tables --- */
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { text-align: left; padding: 15px; background: rgba(62,39,35,0.05); color: var(--text-main); font-weight: 700; font-family: var(--font-heading); }
+    td { padding: 15px; border-bottom:1px solid rgba(62,39,35,0.1); font-family: var(--font-body); }
+    tr:hover td { background: rgba(255,255,255,0.5); }
+    
+    .mono { font-family: 'Courier New', monospace; letter-spacing: -0.5px; }
+    .text-right { text-align: right; }
+    
+    /* Mobile Fixes */
+    @media(max-width: 768px) {
+      .form-grid, .entry-row { grid-template-columns: 1fr; }
+      .cursor-dot, .cursor-outline { display: none; }
+      * { cursor: auto; }
+      .paper { padding: 15px; }
+      th, td { padding: 10px; font-size: 0.9rem; }
+    }
+  </style>
 </head>
-
 <body>
 
-<!-- TOP MENU (overlaps everything) -->
-<div class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <div class="seal" aria-hidden="true"></div>
-      <div>
-        <div class="brand-title">SARASWATI INTERNATIONAL SCHOOL</div>
-        <div class="brand-sub">Premium Accounting Practical System</div>
-      </div>
-    </div>
+  <div id="canvas-container"></div>
+  <div class="bottom-glow" id="bottom-glow"></div>
 
-    <div class="menu">
-      <select class="select" id="viewSelect" title="Choose section">
-        <option value="newEntry">New Entry</option>
-        <option value="journal">Journal</option>
-        <option value="ledger">Ledger</option>
-        <option value="trial">Trial Balance</option>
-      </select>
+  <div class="cursor-dot" id="cursor-dot"></div>
+  <div class="cursor-outline" id="cursor-outline"></div>
 
-      <button class="btn btn-ghost" id="undoBtn" title="Undo last action">Undo</button>
-      <button class="btn btn-danger" id="deleteAllBtn" title="Delete everything">Delete All</button>
-    </div>
-  </div>
-</div>
-
-<div class="wrap">
-  <div class="panel" id="app"></div>
-</div>
-
-<!-- EDIT MODAL -->
-<div class="modal-backdrop" id="editBackdrop">
-  <div class="modal">
-    <div class="modal-head">
-      <div style="font-weight:900">Edit Journal Entry (CBSE Practical)</div>
-      <button class="btn btn-ghost" id="closeEdit">Close</button>
-    </div>
-    <div class="modal-body">
-      <div class="card">
-        <div class="h2">Edit Entry</div>
-        <div class="note">You can modify date, narration, and debit/credit lines. Totals must match.</div>
-
-        <div class="row">
-          <input class="field span2" id="editDate" type="date" />
-          <input class="field span2" id="editNarr" placeholder="Narration" />
+  <div class="app">
+    <div class="container">
+      
+      <!-- Navigation (No Toggle Button) -->
+      <nav class="topbar">
+        <div class="brand magnetic-area">
+          <div class="magnetic-wrap">SIS ACCOUNTING</div>
         </div>
-
-        <div id="editLines"></div>
-
-        <div class="actions">
-          <button class="btn btn-accent" id="saveEdit">Save Changes</button>
-          <button class="btn btn-danger" id="deleteEditEntry">Delete This Entry</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-/* ============================================================
-   SARASWATI INTERNATIONAL SCHOOL - Accounting System
-   FIXED + TRIPLE CHECKED
-   - Multiple Dr/Cr in one entry
-   - LocalStorage autosave
-   - Undo
-   - Delete All / Delete Journal / Delete Ledger
-   - Delete single journal entry
-   - Edit journal entry
-   - Delete single ledger account
-   - Trial Balance auto-generated
-   - Scroll-wheel number disabled
-   ============================================================ */
-
-/* -------------------- Utils -------------------- */
-const $ = (id)=>document.getElementById(id);
-const money = (n)=>"₹ " + (Number(n)||0).toLocaleString("en-IN",{minimumFractionDigits:2, maximumFractionDigits:2});
-const uid = ()=> "E" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-
-function deepClone(obj){ return JSON.parse(JSON.stringify(obj)); }
-
-/* -------------------- State -------------------- */
-const STORAGE_KEY = "sis_accounting_v1";
-
-let state = {
-  journal: [], // entries
-  ledger: {},  // accountName -> {name, lines:[{entryId, date, type, amount}]}
-  lastActionStack: [] // undo snapshots
-};
-
-/* -------------------- Undo -------------------- */
-function pushUndoSnapshot(){
-  // keep only last 25 actions to avoid huge storage
-  state.lastActionStack.push({
-    journal: deepClone(state.journal),
-    ledger: deepClone(state.ledger)
-  });
-  if(state.lastActionStack.length>25) state.lastActionStack.shift();
-}
-function undo(){
-  const snap = state.lastActionStack.pop();
-  if(!snap){ alert("Nothing to undo."); return; }
-  state.journal = snap.journal;
-  state.ledger = snap.ledger;
-  saveToLocal();
-  render();
-}
-
-/* -------------------- LocalStorage -------------------- */
-function saveToLocal(){
-  const safe = {
-    journal: state.journal,
-    ledger: state.ledger
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(safe));
-}
-function loadFromLocal(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(!raw) return;
-  try{
-    const data = JSON.parse(raw);
-    if(data && typeof data === "object"){
-      state.journal = Array.isArray(data.journal) ? data.journal : [];
-      state.ledger = data.ledger && typeof data.ledger==="object" ? data.ledger : {};
-    }
-  }catch(e){
-    console.warn("Storage corrupted. Resetting.");
-    state.journal=[]; state.ledger={};
-  }
-}
-
-/* -------------------- Ledger Rebuild (safe + correct) -------------------- */
-function rebuildLedgerFromJournal(){
-  const ledger = {};
-  const ensure = (acc)=>{
-    if(!ledger[acc]) ledger[acc] = {name: acc, lines: []};
-  };
-
-  for(const entry of state.journal){
-    const date = entry.date;
-    for(const d of entry.debits){
-      ensure(d.account);
-      ledger[d.account].lines.push({entryId: entry.id, date, type:"Dr", amount: Number(d.amount)||0});
-    }
-    for(const c of entry.credits){
-      ensure(c.account);
-      ledger[c.account].lines.push({entryId: entry.id, date, type:"Cr", amount: Number(c.amount)||0});
-    }
-  }
-
-  // sort lines by date (then by entryId)
-  for(const acc in ledger){
-    ledger[acc].lines.sort((a,b)=>{
-      if(a.date===b.date) return (a.entryId>b.entryId?1:-1);
-      return (a.date>b.date?1:-1);
-    });
-  }
-
-  state.ledger = ledger;
-}
-
-/* -------------------- Validation -------------------- */
-function sumLines(arr){ return arr.reduce((s,x)=>s+(Number(x.amount)||0),0); }
-
-function validateEntry(entry){
-  if(!entry.date) return "Date is required.";
-  if(!entry.narration || entry.narration.trim().length<3) return "Narration must be at least 3 characters.";
-
-  if(!Array.isArray(entry.debits) || entry.debits.length===0) return "At least 1 debit line required.";
-  if(!Array.isArray(entry.credits) || entry.credits.length===0) return "At least 1 credit line required.";
-
-  for(const d of entry.debits){
-    if(!d.account || !d.account.trim()) return "Debit account name missing.";
-    if(!(Number(d.amount)>0)) return "Debit amount must be > 0.";
-  }
-  for(const c of entry.credits){
-    if(!c.account || !c.account.trim()) return "Credit account name missing.";
-    if(!(Number(c.amount)>0)) return "Credit amount must be > 0.";
-  }
-
-  const td = sumLines(entry.debits);
-  const tc = sumLines(entry.credits);
-  if(Math.abs(td-tc) > 0.001) return "Total Debit must equal Total Credit.";
-  return null;
-}
-
-/* -------------------- Scroll-wheel disable for number inputs -------------------- */
-document.addEventListener("wheel", function(e){
-  const el = document.activeElement;
-  if(el && el.tagName==="INPUT" && el.type==="number"){
-    el.blur();
-    e.preventDefault();
-    setTimeout(()=>el.focus(), 0);
-  }
-},{passive:false});
-
-/* -------------------- UI Builders -------------------- */
-const app = $("app");
-const viewSelect = $("viewSelect");
-
-function setView(v){
-  viewSelect.value = v;
-  render();
-}
-
-/* -------------------- New Entry UI -------------------- */
-function NewEntryView(){
-  const container = document.createElement("div");
-  container.className = "grid";
-
-  const left = document.createElement("div");
-  left.className = "card";
-
-  left.innerHTML = `
-    <div class="h2">New Journal Entry</div>
-
-    <div class="row">
-      <div class="span2">
-        <div class="muted">Date</div>
-        <input class="field" id="dateField" type="date"/>
-      </div>
-      <div class="span2">
-        <div class="muted">Narration</div>
-        <input class="field" id="narrField" placeholder="Being ... (CBSE style narration)"/>
-      </div>
-    </div>
-
-    <div class="muted" style="margin:10px 0 6px;font-weight:900;">Debit Lines</div>
-    <div id="debitLines"></div>
-    <button class="mini ok" id="addDebit">+ Add Debit</button>
-
-    <div class="muted" style="margin:14px 0 6px;font-weight:900;">Credit Lines</div>
-    <div id="creditLines"></div>
-    <button class="mini ok" id="addCredit">+ Add Credit</button>
-
-    <div class="actions">
-      <button class="btn btn-accent" id="postEntry">Post Entry</button>
-      <button class="btn btn-ghost" id="clearForm">Clear</button>
-    </div>
-
-    <div class="note">
-      Tip: Add multiple debit/credit accounts in one entry. Totals must match.
-    </div>
-  `;
-
-  const right = document.createElement("div");
-  right.className = "card";
-  right.innerHTML = `
-    <div class="h2">Quick Actions</div>
-    <div class="actions">
-      <button class="btn btn-ghost" id="gotoJournal">Open Journal</button>
-      <button class="btn btn-ghost" id="gotoLedger">Open Ledger</button>
-      <button class="btn btn-ghost" id="gotoTrial">Open Trial Balance</button>
-    </div>
-
-    <div style="margin-top:14px;">
-      <div class="muted" style="font-weight:900;margin-bottom:6px;">Delete Options</div>
-      <div class="actions">
-        <button class="btn btn-danger" id="deleteJournal">Delete Journal</button>
-        <button class="btn btn-danger" id="deleteLedger">Delete Ledger</button>
-      </div>
-      <div class="note">Delete Journal removes entries and auto rebuilds ledger as empty.</div>
-    </div>
-  `;
-
-  container.appendChild(left);
-  container.appendChild(right);
-
-  // default lines
-  const debitWrap = left.querySelector("#debitLines");
-  const creditWrap = left.querySelector("#creditLines");
-
-  function lineRow(type){
-    const row = document.createElement("div");
-    row.className = "row";
-    row.innerHTML = `
-      <input class="field span2 acc" placeholder="${type} Account (e.g., Cash A/c)" />
-      <input class="field amt" type="number" inputmode="numeric" placeholder="Amount" />
-      <button class="mini danger remove">Remove</button>
-    `;
-    row.querySelector(".remove").onclick = ()=> row.remove();
-    return row;
-  }
-
-  debitWrap.appendChild(lineRow("Debit"));
-  creditWrap.appendChild(lineRow("Credit"));
-
-  left.querySelector("#addDebit").onclick = ()=> debitWrap.appendChild(lineRow("Debit"));
-  left.querySelector("#addCredit").onclick = ()=> creditWrap.appendChild(lineRow("Credit"));
-
-  left.querySelector("#clearForm").onclick = ()=>{
-    $("dateField").value="";
-    $("narrField").value="";
-    debitWrap.innerHTML="";
-    creditWrap.innerHTML="";
-    debitWrap.appendChild(lineRow("Debit"));
-    creditWrap.appendChild(lineRow("Credit"));
-  };
-
-  left.querySelector("#postEntry").onclick = ()=>{
-    const date = $("dateField").value;
-    const narration = $("narrField").value;
-
-    const debits = [...debitWrap.querySelectorAll(".row")].map(r=>({
-      account: r.querySelector(".acc").value.trim(),
-      amount: Number(r.querySelector(".amt").value)||0
-    })).filter(x=>x.account || x.amount);
-
-    const credits = [...creditWrap.querySelectorAll(".row")].map(r=>({
-      account: r.querySelector(".acc").value.trim(),
-      amount: Number(r.querySelector(".amt").value)||0
-    })).filter(x=>x.account || x.amount);
-
-    const entry = { id: uid(), date, narration, debits, credits };
-
-    const err = validateEntry(entry);
-    if(err){ alert(err); return; }
-
-    pushUndoSnapshot();
-    state.journal.push(entry);
-    rebuildLedgerFromJournal();
-    saveToLocal();
-
-    alert("Entry posted successfully!");
-    setView("journal");
-  };
-
-  right.querySelector("#gotoJournal").onclick = ()=> setView("journal");
-  right.querySelector("#gotoLedger").onclick = ()=> setView("ledger");
-  right.querySelector("#gotoTrial").onclick = ()=> setView("trial");
-
-  right.querySelector("#deleteJournal").onclick = ()=>{
-    if(!confirm("Delete all journal entries?")) return;
-    pushUndoSnapshot();
-    state.journal = [];
-    rebuildLedgerFromJournal();
-    saveToLocal();
-    render();
-  };
-  right.querySelector("#deleteLedger").onclick = ()=>{
-    if(!confirm("Delete all ledger accounts? (Ledger will be cleared)")) return;
-    pushUndoSnapshot();
-    state.ledger = {};
-    // keep journal? As per user: delete ledger only
-    saveToLocal();
-    render();
-  };
-
-  return container;
-}
-
-/* -------------------- Journal UI -------------------- */
-function JournalView(){
-  const box = document.createElement("div");
-  box.className="card";
-  box.innerHTML = `
-    <div class="h2">Journal</div>
-    <div class="actions">
-      <button class="btn btn-ghost" id="jNew">New Entry</button>
-      <button class="btn btn-danger" id="jDeleteAll">Delete All (Journal)</button>
-    </div>
-    <div class="note">Each entry has Edit and Delete buttons (CBSE practical feature).</div>
-    <div style="margin-top:12px" class="table-wrap" id="jTableWrap"></div>
-  `;
-
-  box.querySelector("#jNew").onclick = ()=> setView("newEntry");
-  box.querySelector("#jDeleteAll").onclick = ()=>{
-    if(!confirm("Delete ALL journal entries?")) return;
-    pushUndoSnapshot();
-    state.journal=[];
-    rebuildLedgerFromJournal();
-    saveToLocal();
-    render();
-  };
-
-  const tw = box.querySelector("#jTableWrap");
-
-  let html = `
-    <table>
-      <thead>
-        <tr>
-          <th style="width:120px;">Date</th>
-          <th>Particulars</th>
-          <th style="width:160px;">L.F.</th>
-          <th style="width:170px;">Debit (₹)</th>
-          <th style="width:170px;">Credit (₹)</th>
-          <th style="width:180px;">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  if(state.journal.length===0){
-    html += `<tr><td colspan="6" class="muted">No journal entries yet.</td></tr>`;
-  }else{
-    state.journal.forEach((entry, idx)=>{
-      const lf = String(idx+1).padStart(3,"0"); // CBSE style folio numbering
-
-      // Build CBSE-style journal rows:
-      // - debit lines first
-      // - credit lines indented
-      // - narration in italics
-      const rows = [];
-
-      entry.debits.forEach((d,i)=>{
-        rows.push(`
-          <tr>
-            ${i===0?`<td rowspan="${entry.debits.length + entry.credits.length + 1}">${entry.date}</td>`:""}
-            <td><span class="pill dr">Dr</span> ${escapeHtml(d.account)}</td>
-            <td>${lf}</td>
-            <td>${money(d.amount)}</td>
-            <td></td>
-            ${i===0?`<td rowspan="${entry.debits.length + entry.credits.length + 1}">
-              <button class="mini ok" data-edit="${entry.id}">Edit</button>
-              <button class="mini danger" data-del="${entry.id}">Delete</button>
-            </td>`:""}
-          </tr>
-        `);
-      });
-
-      entry.credits.forEach((c)=>{
-        rows.push(`
-          <tr>
-            <td style="padding-left:26px;"><span class="pill cr">Cr</span> To ${escapeHtml(c.account)}</td>
-            <td>${lf}</td>
-            <td></td>
-            <td>${money(c.amount)}</td>
-          </tr>
-        `);
-      });
-
-      rows.push(`
-        <tr>
-          <td colspan="4" class="muted"><em>${escapeHtml(entry.narration)}</em></td>
-        </tr>
-      `);
-
-      html += rows.join("");
-    });
-  }
-
-  html += `</tbody></table>`;
-  tw.innerHTML = html;
-
-  // Bind edit/delete
-  tw.querySelectorAll("[data-del]").forEach(btn=>{
-    btn.onclick = ()=>{
-      const id = btn.getAttribute("data-del");
-      if(!confirm("Delete this journal entry?")) return;
-      pushUndoSnapshot();
-      state.journal = state.journal.filter(e=>e.id!==id);
-      rebuildLedgerFromJournal();
-      saveToLocal();
-      render();
-    };
-  });
-  tw.querySelectorAll("[data-edit]").forEach(btn=>{
-    btn.onclick = ()=>{
-      const id = btn.getAttribute("data-edit");
-      openEditModal(id);
-    };
-  });
-
-  return box;
-}
-
-/* -------------------- Ledger UI -------------------- */
-function LedgerView(){
-  const box = document.createElement("div");
-  box.className="card";
-  box.innerHTML = `
-    <div class="h2">Ledger (Single Page)</div>
-    <div class="actions">
-      <button class="btn btn-ghost" id="lNew">New Entry</button>
-      <button class="btn btn-danger" id="lDeleteAll">Delete All (Ledger)</button>
-    </div>
-    <div class="note">You can delete a single ledger account from here.</div>
-    <div style="margin-top:12px" id="ledgerArea"></div>
-  `;
-
-  box.querySelector("#lNew").onclick = ()=> setView("newEntry");
-  box.querySelector("#lDeleteAll").onclick = ()=>{
-    if(!confirm("Delete ALL ledger accounts? (Journal will remain)")) return;
-    pushUndoSnapshot();
-    state.ledger = {};
-    saveToLocal();
-    render();
-  };
-
-  const area = box.querySelector("#ledgerArea");
-  const accounts = Object.keys(state.ledger).sort((a,b)=>a.localeCompare(b));
-
-  if(accounts.length===0){
-    area.innerHTML = `<div class="muted">No ledger accounts available. Post journal entries first.</div>`;
-    return box;
-  }
-
-  let out = "";
-  for(const acc of accounts){
-    const obj = state.ledger[acc];
-    const totals = ledgerTotals(obj.lines);
-
-    out += `
-      <div style="margin-bottom:18px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-          <div style="font-weight:900;font-size:16px;">${escapeHtml(acc)}</div>
-          <div class="actions" style="margin:0;">
-            <span class="pill">Dr: ${money(totals.debit)}</span>
-            <span class="pill">Cr: ${money(totals.credit)}</span>
-            <span class="pill">${totals.balanceSide}: ${money(totals.balance)}</span>
-            <button class="mini danger" data-led-del="${escapeAttr(acc)}">Delete Account</button>
+        
+        <!-- Nav Links (Always Visible on Mobile) -->
+        <div class="nav-menu-container">
+          <div class="nav-links" id="navLinks">
+            <div class="magnetic-area">
+              <button class="btn active magnetic-wrap" data-view="dashboard" onclick="switchView('dashboard')">Dashboard</button>
+            </div>
+            <div class="magnetic-area">
+              <button class="btn magnetic-wrap" data-view="new" onclick="switchView('new')">New Entry</button>
+            </div>
+            <div class="magnetic-area">
+              <button class="btn magnetic-wrap" data-view="journal" onclick="switchView('journal')">Journal</button>
+            </div>
+            <div class="magnetic-area">
+              <button class="btn magnetic-wrap" data-view="ledger" onclick="switchView('ledger')">Ledger</button>
+            </div>
+            <div class="magnetic-area">
+              <button class="btn magnetic-wrap" data-view="trial" onclick="switchView('trial')">Trial Balance</button>
+            </div>
           </div>
         </div>
 
-        <div class="table-wrap" style="margin-top:10px;">
-          <table>
-            <thead>
-              <tr>
-                <th style="width:140px;">Date</th>
-                <th style="width:120px;">Type</th>
-                <th>Particulars</th>
-                <th style="width:180px;">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${
-                obj.lines.length===0
-                ? `<tr><td colspan="4" class="muted">No transactions</td></tr>`
-                : obj.lines.map(line=>`
-                  <tr>
-                    <td>${line.date || ""}</td>
-                    <td>${line.type==="Dr" ? '<span class="pill dr">Dr</span>' : '<span class="pill cr">Cr</span>'}</td>
-                    <td>Ref: ${line.entryId}</td>
-                    <td>${money(line.amount)}</td>
-                  </tr>
-                `).join("")
-              }
-            </tbody>
-          </table>
+        <!-- Global Actions (Hidden on Mobile) -->
+        <div class="nav-controls">
+          <button class="btn" onclick="undo()" title="Undo Last Action">↩ Undo</button>
+          <button class="btn btn-danger" onclick="confirmGlobalDelete()" title="Delete All Data">🗑 Global Delete</button>
         </div>
-      </div>
-    `;
-  }
+      </nav>
 
-  area.innerHTML = out;
+      <main id="main-content"></main>
+    </div>
+  </div>
 
-  // Delete single ledger account
-  area.querySelectorAll("[data-led-del]").forEach(btn=>{
-    btn.onclick = ()=>{
-      const acc = btn.getAttribute("data-led-del");
-      if(!confirm(`Delete ledger account "${acc}" only?`)) return;
-      pushUndoSnapshot();
-      delete state.ledger[acc];
-      saveToLocal();
-      render();
+  <script>
+    /* =========================================================
+       ACCOUNTING ENGINE (Fixed Menu)
+       ========================================================= */
+    
+    const LS_KEY = "SIS_ACCOUNTING_V7";
+    const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+
+    // State
+    const state = {
+      view: 'dashboard',
+      entries: [],
+      ledger: {},
+      folioNext: 1,
+      editingId: null
     };
-  });
 
-  return box;
-}
+    // Undo History Stack
+    let historyStack = [];
 
-/* -------------------- Trial Balance UI -------------------- */
-function TrialBalanceView(){
-  const box = document.createElement("div");
-  box.className="card";
-  box.innerHTML = `
-    <div class="h2">Trial Balance (Auto-generated)</div>
-    <div class="note">Generated from Ledger totals. Debit and Credit totals must match.</div>
-    <div style="margin-top:12px" class="table-wrap" id="tbWrap"></div>
-  `;
+    const uid2 = () => Math.random().toString(36).substr(2, 9);
 
-  const wrap = box.querySelector("#tbWrap");
-  const accounts = Object.keys(state.ledger).sort((a,b)=>a.localeCompare(b));
-
-  let totalDr=0, totalCr=0;
-  let rows="";
-
-  if(accounts.length===0){
-    rows = `<tr><td colspan="4" class="muted">No ledger accounts available.</td></tr>`;
-  }else{
-    for(const acc of accounts){
-      const t = ledgerTotals(state.ledger[acc].lines);
-      let dr=0, cr=0;
-      if(t.balanceSide==="Dr") dr = t.balance;
-      else cr = t.balance;
-
-      totalDr += dr;
-      totalCr += cr;
-
-      rows += `
-        <tr>
-          <td>${escapeHtml(acc)}</td>
-          <td>${t.balanceSide}</td>
-          <td>${dr?money(dr):""}</td>
-          <td>${cr?money(cr):""}</td>
-        </tr>
-      `;
+    // Utils
+    function safeText(s) { return String(s ?? "").replace(/[<>]/g,""); }
+    function toPaise(str) { 
+      if(str === "" || str === null || str === undefined) return 0;
+      const n = Number(str);
+      if(!Number.isFinite(n)) return 0;
+      return Math.round(n * 100);
     }
-  }
+    function paiseToStr(p) {
+      return (p/100).toLocaleString("en-IN", {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+    function todayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    }
 
-  wrap.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Particulars</th>
-          <th style="width:120px;">Type</th>
-          <th style="width:200px;">Debit</th>
-          <th style="width:200px;">Credit</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows}
-        <tr>
-          <td style="font-weight:900;">TOTAL</td>
-          <td></td>
-          <td style="font-weight:900;">${money(totalDr)}</td>
-          <td style="font-weight:900;">${money(totalCr)}</td>
-        </tr>
-      </tbody>
-    </table>
-  `;
+    // --- History / Undo ---
+    function pushHistory() {
+      historyStack.push(JSON.stringify({
+        entries: state.entries,
+        ledger: state.ledger,
+        folioNext: state.folioNext
+      }));
+      if(historyStack.length > 20) historyStack.shift();
+      saveLocal();
+    }
 
-  return box;
-}
+    function undo() {
+      if(historyStack.length === 0) {
+        alert("No actions to undo.");
+        return;
+      }
+      const previousState = JSON.parse(historyStack.pop());
+      state.entries = previousState.entries;
+      state.ledger = previousState.ledger;
+      state.folioNext = previousState.folioNext;
+      state.editingId = null;
+      saveLocal();
+      render();
+    }
 
-/* -------------------- Helper: ledger totals -------------------- */
-function ledgerTotals(lines){
-  let debit=0, credit=0;
-  for(const l of lines){
-    if(l.type==="Dr") debit += Number(l.amount)||0;
-    else credit += Number(l.amount)||0;
-  }
-  const net = debit - credit;
-  return {
-    debit, credit,
-    balance: Math.abs(net),
-    balanceSide: net>=0 ? "Dr" : "Cr"
-  };
-}
+    // Data Logic
+    function saveLocal() {
+      localStorage.setItem(LS_KEY, JSON.stringify({ entries: state.entries, ledger: state.ledger, folioNext: state.folioNext }));
+    }
+    function loadLocal() {
+      const raw = localStorage.getItem(LS_KEY);
+      if(raw) {
+        const data = JSON.parse(raw);
+        state.entries = data.entries || [];
+        state.ledger = data.ledger || {};
+        state.folioNext = data.folioNext || 1;
+      }
+    }
 
-/* -------------------- Delete All -------------------- */
-function deleteAll(){
-  if(!confirm("Delete EVERYTHING (Journal + Ledger)?")) return;
-  pushUndoSnapshot();
-  state.journal=[];
-  state.ledger={};
-  saveToLocal();
-  render();
-}
+    function buildLedger() {
+      state.ledger = {};
+      state.entries.forEach(e => {
+        e.debits.forEach(d => {
+          if(!state.ledger[d.acc]) state.ledger[d.acc] = { dr: 0, cr: 0, lf: state.folioNext++ };
+          state.ledger[d.acc].dr += d.amtPaise;
+        });
+        e.credits.forEach(c => {
+          if(!state.ledger[c.acc]) state.ledger[c.acc] = { dr: 0, cr: 0, lf: state.folioNext++ };
+          state.ledger[c.acc].cr += c.amtPaise;
+        });
+      });
+    }
 
-/* -------------------- Edit Modal -------------------- */
-let editingEntryId = null;
+    // View Rendering
+    const mainContent = document.getElementById('main-content');
 
-function openEditModal(entryId){
-  const entry = state.journal.find(e=>e.id===entryId);
-  if(!entry){ alert("Entry not found."); return; }
+    function switchView(v) {
+      state.view = v;
+      state.editingId = null;
+      document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+      const btn = document.querySelector(`[data-view="${v}"]`);
+      if(btn) btn.classList.add('active');
+      render();
+    }
 
-  editingEntryId = entryId;
-  $("editDate").value = entry.date || "";
-  $("editNarr").value = entry.narration || "";
+    function render() {
+      buildLedger(); 
+      mainContent.innerHTML = '';
+      
+      if(state.view === 'dashboard') renderDashboard();
+      else if(state.view === 'new') renderNewEntry();
+      else if(state.view === 'journal') renderJournal();
+      else if(state.view === 'ledger') renderLedger();
+      else if(state.view === 'trial') renderTrialBalance();
+      
+      initMagnetic();
+      init3DCards();
+    }
 
-  const wrap = $("editLines");
-  wrap.innerHTML = "";
+    // --- Dashboard ---
+    function renderDashboard() {
+      const html = `
+        <div class="paper">
+          <h2 class="section-title">Overview</h2>
+          <p>Welcome to the Saraswati International School Accounting System.</p>
+        </div>
+      `;
+      mainContent.innerHTML = html;
+    }
 
-  function addLine(type, account="", amount=""){
-    const div = document.createElement("div");
-    div.className = "row";
-    div.innerHTML = `
-      <input class="field span2 acc" placeholder="${type} Account" value="${escapeAttr(account)}"/>
-      <input class="field amt" type="number" inputmode="numeric" placeholder="Amount" value="${escapeAttr(amount)}"/>
-      <button class="mini danger remove">Remove</button>
-    `;
-    div.dataset.type = type;
-    div.querySelector(".remove").onclick = ()=> div.remove();
-    wrap.appendChild(div);
-  }
+    // --- New Entry ---
+    let tempDebits = [{id: uid2(), acc: '', amt: ''}];
+    let tempCredits = [{id: uid2(), acc: '', amt: ''}];
 
-  // Add debit lines
-  const title1 = document.createElement("div");
-  title1.className="muted";
-  title1.style.fontWeight="900";
-  title1.style.margin="8px 0 6px";
-  title1.textContent = "Debit Lines";
-  wrap.appendChild(title1);
+    function renderNewEntry() {
+      if(state.editingId) {
+        const entry = state.entries.find(e => e.id === state.editingId);
+        if(entry) {
+           tempDebits = entry.debits.map(d => ({id: uid2(), acc: d.acc, amt: String(d.amtPaise/100)}));
+           tempCredits = entry.credits.map(c => ({id: uid2(), acc: c.acc, amt: String(c.amtPaise/100)}));
+        }
+      } else {
+         tempDebits = [{id: uid2(), acc: '', amt: ''}];
+         tempCredits = [{id: uid2(), acc: '', amt: ''}];
+      }
 
-  entry.debits.forEach(d=>addLine("Debit", d.account, d.amount));
-  const addDeb = document.createElement("button");
-  addDeb.className="mini ok";
-  addDeb.textContent="+ Add Debit";
-  addDeb.onclick = ()=> addLine("Debit");
-  wrap.appendChild(addDeb);
+      const dateVal = state.editingId ? state.entries.find(e=>e.id===state.editingId).date : todayISO();
+      const narrVal = state.editingId ? state.entries.find(e=>e.id===state.editingId).narration : "";
 
-  // Add credit lines
-  const title2 = document.createElement("div");
-  title2.className="muted";
-  title2.style.fontWeight="900";
-  title2.style.margin="14px 0 6px";
-  title2.textContent = "Credit Lines";
-  wrap.appendChild(title2);
+      const html = `
+        <div class="paper">
+          <h2 class="section-title">${state.editingId ? "Edit Entry" : "New Journal Entry"}</h2>
+          <div class="form-grid">
+            <div>
+              <label>Date</label>
+              <input type="date" id="entryDate" value="${dateVal}">
+            </div>
+            <div>
+              <label>Narration</label>
+              <input type="text" id="entryNarr" placeholder="Description..." value="${narrVal}">
+            </div>
+          </div>
+          
+          <h3>Debits</h3>
+          <div class="entry-lines" id="debitLines"></div>
+          <button class="btn" onclick="addLine('debit')">+ Add Debit</button>
 
-  entry.credits.forEach(c=>addLine("Credit", c.account, c.amount));
-  const addCr = document.createElement("button");
-  addCr.className="mini ok";
-  addCr.textContent="+ Add Credit";
-  addCr.onclick = ()=> addLine("Credit");
-  wrap.appendChild(addCr);
+          <h3 style="margin-top:20px;">Credits</h3>
+          <div class="entry-lines" id="creditLines"></div>
+          <button class="btn" onclick="addLine('credit')">+ Add Credit</button>
 
-  $("editBackdrop").classList.add("show");
-}
+          <div style="margin-top:30px; text-align:right;">
+            <button class="btn" onclick="switchView('journal')" style="margin-right:10px;">Cancel</button>
+            <button class="btn-action" onclick="saveEntry()">Save Entry</button>
+          </div>
+        </div>
+      `;
+      mainContent.innerHTML = html;
+      renderLines('debit', tempDebits);
+      renderLines('credit', tempCredits);
+    }
 
-function closeEdit(){
-  editingEntryId = null;
-  $("editBackdrop").classList.remove("show");
-}
+    function addLine(side) {
+      if(side === 'debit') tempDebits.push({id: uid2(), acc: '', amt: ''});
+      else tempCredits.push({id: uid2(), acc: '', amt: ''});
+      renderLines(side, side==='debit' ? tempDebits : tempCredits);
+    }
 
-$("closeEdit").onclick = closeEdit;
-$("editBackdrop").addEventListener("click",(e)=>{
-  if(e.target.id==="editBackdrop") closeEdit();
-});
+    function renderLines(side, arr) {
+      const container = document.getElementById(side + 'Lines');
+      container.innerHTML = arr.map((line, i) => `
+        <div class="entry-row" data-id="${line.id}" data-side="${side}">
+          <input type="text" placeholder="Account Name" class="inp-acc" value="${safeText(line.acc)}">
+          <input type="number" placeholder="Amount" class="inp-amt" value="${line.amt}">
+          <button class="btn" style="padding:5px 10px; color:red;" onclick="removeLine('${side}', ${i})">✕</button>
+        </div>
+      `).join('');
+    }
 
-$("saveEdit").onclick = ()=>{
-  if(!editingEntryId) return;
+    function removeLine(side, index) {
+      if(side === 'debit') tempDebits.splice(index, 1);
+      else tempCredits.splice(index, 1);
+      renderLines(side, side==='debit' ? tempDebits : tempCredits);
+    }
 
-  const entryIndex = state.journal.findIndex(e=>e.id===editingEntryId);
-  if(entryIndex<0){ alert("Entry missing."); return; }
+    function saveEntry() {
+      const date = document.getElementById('entryDate').value;
+      const narr = document.getElementById('entryNarr').value;
+      
+      const debRows = document.querySelectorAll('#debitLines .entry-row');
+      const debits = [];
+      debRows.forEach(r => {
+        const acc = r.querySelector('.inp-acc').value;
+        const amt = toPaise(r.querySelector('.inp-amt').value);
+        if(acc && amt > 0) debits.push({id: uid2(), acc, amtPaise: amt});
+      });
 
-  const date = $("editDate").value;
-  const narration = $("editNarr").value;
+      const credRows = document.querySelectorAll('#creditLines .entry-row');
+      const credits = [];
+      credRows.forEach(r => {
+        const acc = r.querySelector('.inp-acc').value;
+        const amt = toPaise(r.querySelector('.inp-amt').value);
+        if(acc && amt > 0) credits.push({id: uid2(), acc, amtPaise: amt});
+      });
 
-  const rows = [...$("editLines").querySelectorAll(".row")];
+      const drTotal = debits.reduce((a,b)=>a+b.amtPaise,0);
+      const crTotal = credits.reduce((a,b)=>a+b.amtPaise,0);
 
-  const debits=[], credits=[];
-  for(const r of rows){
-    const type = r.dataset.type;
-    const account = r.querySelector(".acc").value.trim();
-    const amount = Number(r.querySelector(".amt").value)||0;
-    if(!account && !amount) continue;
-    if(type==="Debit") debits.push({account, amount});
-    else credits.push({account, amount});
-  }
+      if(drTotal !== crTotal) {
+        alert(`Debit Total (${paiseToStr(drTotal)}) must match Credit Total (${paiseToStr(crTotal)}).`);
+        return;
+      }
 
-  const updated = {
-    id: editingEntryId,
-    date,
-    narration,
-    debits,
-    credits
-  };
+      if(state.editingId) {
+        const index = state.entries.findIndex(e => e.id === state.editingId);
+        if(index !== -1) {
+           state.entries[index] = {
+             id: state.editingId,
+             date, narration: narr,
+             debits, credits,
+             createdAt: state.entries[index].createdAt
+           };
+        }
+        state.editingId = null;
+      } else {
+        state.entries.push({
+          id: uid(),
+          date, narration: narr,
+          debits, credits,
+          createdAt: Date.now()
+        });
+      }
+      
+      tempDebits = [{id: uid2(), acc: '', amt: ''}];
+      tempCredits = [{id: uid2(), acc: '', amt: ''}];
+      
+      pushHistory(); 
+      switchView('journal');
+    }
 
-  const err = validateEntry(updated);
-  if(err){ alert(err); return; }
+    function editEntry(id) {
+      state.editingId = id;
+      switchView('new');
+    }
 
-  pushUndoSnapshot();
-  state.journal[entryIndex] = updated;
-  rebuildLedgerFromJournal();
-  saveToLocal();
-  closeEdit();
-  render();
-};
+    // --- Journal View ---
+    function renderJournal() {
+      buildLedger();
+      const rows = [...state.entries].sort((a,b) => b.createdAt - a.createdAt);
+      let html = `<div class="paper"><h2 class="section-title">Journal Entries</h2>`;
+      
+      // Delete All Button
+      html += `<div style="text-align:right; margin-bottom:10px;">
+          <button class="btn btn-danger" onclick="confirmJournalDelete()">Delete All (Journal)</button>
+      </div>`;
 
-$("deleteEditEntry").onclick = ()=>{
-  if(!editingEntryId) return;
-  if(!confirm("Delete this entry?")) return;
+      if(rows.length === 0) html += `<p>No entries found.</p>`;
+      else {
+        html += `<div class="table-responsive"><table>
+          <thead><tr><th>Date</th><th>Particulars</th><th class="text-right">Debit</th><th class="text-right">Credit</th><th class="text-right">Actions</th></tr></thead>
+          <tbody>`;
+        
+        rows.forEach(e => {
+          const drTotal = e.debits.reduce((a,b)=>a+b.amtPaise,0);
+          const crTotal = e.credits.reduce((a,b)=>a+b.amtPaise,0);
+          
+          e.debits.forEach((d, i) => {
+            html += `<tr>
+              <td>${i===0?e.date:''}</td>
+              <td><b>${d.acc}</b> ${i===0?`<br><small class="text-muted">${e.narration}</small>`:''}</td>
+              <td class="text-right mono">${paiseToStr(d.amtPaise)}</td>
+              <td class="text-right"></td>
+              <td class="text-right">${i===0 ? `<button class="btn" style="padding:4px 8px; font-size:0.7rem;" onclick="editEntry('${e.id}')">Edit</button>` : ""}</td>
+            </tr>`;
+          });
+          e.credits.forEach(c => {
+            html += `<tr>
+              <td></td>
+              <td style="padding-left:20px;">To <b>${c.acc}</b></td>
+              <td class="text-right"></td>
+              <td class="text-right mono">${paiseToStr(c.amtPaise)}</td>
+              <td class="text-right"></td>
+            </tr>`;
+          });
+          
+          const folioValDebit = state.ledger[e.debits[0].acc]?.lf || "-";
+          const folioValCredit = state.ledger[e.credits[0].acc]?.lf || "-";
 
-  pushUndoSnapshot();
-  state.journal = state.journal.filter(e=>e.id!==editingEntryId);
-  rebuildLedgerFromJournal();
-  saveToLocal();
-  closeEdit();
-  render();
-};
+          html += `<tr>
+             <td colspan="3" style="text-align:right; border-top:1px dashed #ccc;"><b>Total</b></td>
+             <td class="text-right mono"><b>${paiseToStr(drTotal)}</b></td>
+             <td class="text-right mono"><b>${paiseToStr(crTotal)}</b></td>
+             <td></td>
+          </tr>`;
+        });
+        html += `</tbody></table></div>`;
+      }
+      html += `</div>`;
+      mainContent.innerHTML = html;
+    }
 
-/* -------------------- Escaping -------------------- */
-function escapeHtml(str){
-  return String(str ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-function escapeAttr(str){ return escapeHtml(str).replaceAll("\n"," "); }
+    function deleteSingleEntry(id) {
+      if(confirm("Are you sure you want to delete this entry?")) {
+        pushHistory();
+        state.entries = state.entries.filter(e => e.id !== id);
+        state.editingId = null;
+        saveLocal();
+        render();
+      }
+    }
 
-/* -------------------- Render -------------------- */
-function render(){
-  const v = viewSelect.value;
+    function confirmJournalDelete() {
+      if(confirm("This will delete ALL Journal Entries (and consequently clear Ledger). Continue?")) {
+        pushHistory();
+        state.entries = [];
+        state.ledger = {};
+        state.folioNext = 1;
+        saveLocal();
+        render();
+      }
+    }
 
-  // safety: if ledger deleted but journal exists, rebuild if needed
-  // (only rebuild when ledger missing and journal has entries)
-  if((!state.ledger || typeof state.ledger!=="object") && state.journal.length>0){
-    rebuildLedgerFromJournal();
-  }
+    function confirmGlobalDelete() {
+      if(confirm("GLOBAL DELETE: This will wipe ALL data permanently.")) {
+        localStorage.removeItem(LS_KEY);
+        state.entries = [];
+        state.ledger = {};
+        state.folioNext = 1;
+        historyStack = [];
+        render();
+      }
+    }
 
-  app.innerHTML = "";
-  if(v==="newEntry") app.appendChild(NewEntryView());
-  else if(v==="journal") app.appendChild(JournalView());
-  else if(v==="ledger") app.appendChild(LedgerView());
-  else if(v==="trial") app.appendChild(TrialBalanceView());
-}
+    // --- Ledger View ---
+    function renderLedger() {
+      buildLedger();
+      const accounts = Object.keys(state.ledger).sort();
+      let html = `<div class="paper"><h2 class="section-title">General Ledger</h2>`;
+      
+      if(accounts.length === 0) html += `<p>No ledger data.</p>`;
+      else {
+        html += `<div style="display:grid; grid-template-columns: 1fr; gap:20px;">`;
+        accounts.forEach(acc => {
+          const data = state.ledger[acc];
+          const bal = data.dr - data.cr;
+          const balType = bal >= 0 ? "Dr" : "Cr";
+          
+          html += `
+            <div style="background:rgba(255,255,255,0.4); padding:15px; border-radius:12px; border:1px solid rgba(0,0,0,0.05);">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin-top:0;">${acc} <small>(LF: ${data.lf})</small></h3>
+                <button class="btn btn-danger" style="padding:4px 8px; font-size:0.7rem;" onclick="deleteAccount('${safeText(acc)}')">Delete Account</button>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px dashed #ccc;">
+                <span>Total Debit:</span> <span class="mono">${paiseToStr(data.dr)}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:10px 0;">
+                <span>Total Credit:</span> <span class="mono">${paiseToStr(data.cr)}</span>
+              </div>
+              <div style="margin-top:10px; padding:10px; background:rgba(191,161,118,0.2); border-radius:8px; text-align:center;">
+                <b>Balance: ${paiseToStr(Math.abs(bal))} ${balType}</b>
+              </div>
+            </div>
+          `;
+        });
+        html += `</div>`;
+      }
+      html += `</div>`;
+      mainContent.innerHTML = html;
+    }
 
-/* -------------------- Topbar Buttons -------------------- */
-$("undoBtn").onclick = undo;
-$("deleteAllBtn").onclick = deleteAll;
-viewSelect.onchange = render;
+    function deleteAccount(accName) {
+      if(confirm(`Delete ALL entries for account "${accName}"? This cannot be undone.`)) {
+        pushHistory();
+        state.entries = state.entries.filter(e => {
+          const hasInDebit = e.debits.some(d => d.acc === accName);
+          const hasInCredit = e.credits.some(c => c.acc === accName);
+          return !(hasInDebit || hasInCredit);
+        });
+        saveLocal();
+        render();
+      }
+    }
 
-/* -------------------- Init -------------------- */
-loadFromLocal();
-// ensure ledger consistent with journal on load
-rebuildLedgerFromJournal();
-render();
-</script>
+    // --- Trial Balance ---
+    function renderTrialBalance() {
+      buildLedger();
+      const accounts = Object.keys(state.ledger).sort();
+      let totalDr = 0;
+      let totalCr = 0;
+      
+      let html = `<div class="paper"><h2 class="section-title">Trial Balance</h2>`;
+      
+      if(accounts.length === 0) html += `<p>No data available. Create entries first.</p>`;
+      else {
+        html += `<div class="table-responsive"><table>
+          <thead>
+            <tr>
+              <th>Account Name</th>
+              <th class="text-right">L.F.</th>
+              <th class="text-right">Debit Balance (₹)</th>
+              <th class="text-right">Credit Balance (₹)</th>
+            </tr>
+          </thead>
+          <tbody>`;
+          
+        accounts.forEach(acc => {
+          const data = state.ledger[acc];
+          const bal = data.dr - data.cr;
+          
+          if (bal === 0) return;
 
+          if (bal > 0) {
+            totalDr += bal;
+            html += `<tr><td><b>${safeText(acc)}</b></td><td class="text-right">${data.lf}</td><td class="text-right mono">${paiseToStr(bal)}</td><td class="text-right"></td></tr>`;
+          } else {
+            totalCr += Math.abs(bal);
+            html += `<tr><td><b>${safeText(acc)}</b></td><td class="text-right">${data.lf}</td><td class="text-right"></td><td class="text-right mono">${paiseToStr(Math.abs(bal))}</td></tr>`;
+          }
+        });
+
+        const isMatched = totalDr === totalCr;
+        const matchColor = isMatched ? 'green' : 'red';
+
+        html += `</tbody>
+          <tfoot>
+            <tr style="background:rgba(0,0,0,0.03); font-weight:700;">
+              <td colspan="2" style="text-align:right;">Total:</td>
+              <td class="text-right mono">${paiseToStr(totalDr)}</td>
+              <td class="text-right mono">${paiseToStr(totalCr)}</td>
+            </tr>
+          </tfoot>
+        </table></div>
+        
+        <div style="margin-top:20px; text-align:center; padding:15px; background:rgba(255,255,255,0.4); border-radius:12px; border:1px solid rgba(0,0,0,0.05);">
+          Status: <b style="color:${matchColor};">${isMatched ? '✓ Matched' : '✗ Not Matched'}</b>
+        </div>`;
+      }
+      html += `</div>`;
+      mainContent.innerHTML = html;
+    }
+
+    /* =========================================================
+       VISUAL EFFECTS
+       ========================================================= */
+
+    const initThreeJS = () => {
+      const container = document.getElementById('canvas-container');
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      const renderer = new THREE.WebGLRenderer({ alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      container.appendChild(renderer.domElement);
+
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      const uniforms = {
+        u_time: { value: 0.0 },
+        u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+      };
+
+      const fragmentShader = `
+        uniform float u_time;
+        uniform vec2 u_resolution;
+        float random (in vec2 st) { return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123); }
+        float noise (in vec2 st) {
+            vec2 i = floor(st); vec2 f = fract(st);
+            float a = random(i); float b = random(i + vec2(1.0, 0.0));
+            float c = random(i + vec2(0.0, 1.0)); float d = random(i + vec2(1.0, 1.0));
+            vec2 u = f * f * (3.0 - 2.0 * f);
+            return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+        }
+        void main() {
+            vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+            float n = noise(vec2(uv.x * 20.0, uv.y * 5.0 + u_time * 0.05));
+            float grain = fract(n * 10.0);
+            vec3 colorA = vec3(0.94, 0.90, 0.82); vec3 colorB = vec3(0.86, 0.78, 0.65);
+            vec3 finalColor = mix(colorA, colorB, grain);
+            float light = sin(uv.x * 10.0 + u_time * 0.1) * 0.05;
+            finalColor += light;
+            gl_FragColor = vec4(finalColor, 1.0);
+        }
+      `;
+
+      const material = new THREE.ShaderMaterial({
+        uniforms: uniforms, fragmentShader: fragmentShader,
+        vertexShader: 'void main(){gl_Position=vec4(position,1.0);}'
+      });
+
+      const plane = new THREE.Mesh(geometry, material);
+      scene.add(plane);
+      const animate = () => { requestAnimationFrame(animate); uniforms.u_time.value += 0.01; renderer.render(scene, camera); };
+      animate();
+      window.addEventListener('resize', () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        uniforms.u_resolution.value.x = window.innerWidth; uniforms.u_resolution.value.y = window.innerHeight;
+      });
+    };
+
+    function initMagnetic() {
+      document.querySelectorAll('.magnetic-area').forEach(magnet => {
+        const wrap = magnet.querySelector('.magnetic-wrap');
+        if(!wrap) return;
+        magnet.addEventListener('mousemove', (e) => {
+          const rect = magnet.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          wrap.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+        });
+        magnet.addEventListener('mouseleave', () => { wrap.style.transform = 'translate(0px, 0px)'; });
+      });
+    }
+
+    function init3DCards() {
+      document.querySelectorAll('.card-3d').forEach(card => {
+        const glare = card.querySelector('.card-glare');
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+          const centerX = rect.width / 2; const centerY = rect.height / 2;
+          const rotateX = ((y - centerY) / centerY) * -10; const rotateY = ((x - centerX) / centerX) * 10;
+          card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+          glare.style.opacity = '1';
+          glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.5), transparent 60%)`;
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = `perspective(1000px) rotateX(0) rotateY(0)`;
+          glare.style.opacity = '0';
+        });
+      });
+    }
+
+    window.addEventListener('scroll', () => {
+      const scroll = window.scrollY;
+      const height = document.body.scrollHeight - window.innerHeight;
+      const pct = scroll / height;
+      const glow = document.getElementById('bottom-glow');
+      glow.style.opacity = 0.3 + (pct * 0.5);
+    });
+
+    const cursorDot = document.getElementById('cursor-dot');
+    const cursorOutline = document.getElementById('cursor-outline');
+    window.addEventListener('mousemove', (e) => {
+      cursorDot.style.left = e.clientX + 'px'; cursorDot.style.top = e.clientY + 'px';
+      cursorOutline.animate({ left: e.clientX + 'px', top: e.clientY + 'px' }, { duration: 500, fill: "forwards" });
+    });
+
+    // Initialize
+    loadLocal();
+    initThreeJS();
+    render();
+
+  </script>
 </body>
 </html>
