@@ -1,1392 +1,1524 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Saraswati International School - Ledger System</title>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SARASWATI INTERNATIONAL SCHOOL - Accounting System</title>
 
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* =========================================================
+       SARASWATI INTERNATIONAL SCHOOL
+       Premium Woody Notebook UI + Advanced Accounting Engine
+       Single HTML file (CSS + JS included)
+       ========================================================= */
 
-    <style>
-      html,
-      body {
-        height: 100%;
-        background: #2a1f18;
-      }
+    :root{
+      --wood-dark:#1e140f;
+      --wood-mid:#2a1f18;
+      --wood-light:#3a2820;
+      --gold:#d4af37;
+      --gold2:#c9a961;
+      --paper:#faf8f3;
+      --paper2:#f0ece3;
+      --ink:#2c1810;
+      --muted:#8b6f47;
+      --border:#b8956a;
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --radius: 18px;
+      --radius2: 26px;
+    }
 
-      /* ====== WOOD DESK TEXTURE BACKGROUND (image-like via gradients) ====== */
-      body {
-        background-image:
-          radial-gradient(circle at 20% 10%, rgba(255, 220, 160, 0.06), transparent 40%),
-          radial-gradient(circle at 80% 70%, rgba(255, 220, 160, 0.05), transparent 45%),
-          repeating-linear-gradient(
-            90deg,
-            rgba(0, 0, 0, 0) 0px,
-            rgba(0, 0, 0, 0) 6px,
-            rgba(139, 90, 43, 0.08) 7px,
-            rgba(139, 90, 43, 0.08) 8px
-          ),
-          linear-gradient(135deg, #2a1f18 0%, #1a1410 100%);
-        background-attachment: fixed;
-        background-size: cover;
-      }
+    *{box-sizing:border-box;}
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family: "Georgia", serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 20% 15%, rgba(255,255,255,.10), transparent 45%),
+        radial-gradient(circle at 80% 25%, rgba(255,255,255,.06), transparent 50%),
+        linear-gradient(120deg, rgba(0,0,0,.25), rgba(0,0,0,.05)),
+        url("https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1920&q=80");
+      background-size: cover;
+      background-position:center;
+      background-attachment: fixed;
+    }
 
-      body::before {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: repeating-linear-gradient(
-          90deg,
-          transparent,
-          transparent 2px,
-          rgba(139, 90, 43, 0.03) 2px,
-          rgba(139, 90, 43, 0.03) 4px
-        );
-        pointer-events: none;
-        z-index: 1;
-      }
+    /* ---------- Page frame ---------- */
+    .app{
+      min-height:100%;
+      padding:18px;
+    }
 
-      /* Scrollbar */
-      ::-webkit-scrollbar {
-        width: 14px;
-        height: 14px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #3a2f28;
-        border-left: 1px solid #5c4033;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, #8b6f47, #5c4033);
-        border: 2px solid #3a2f28;
-        border-radius: 8px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, #a68256, #6d4c37);
-      }
+    .shell{
+      max-width: 1320px;
+      margin: 0 auto;
+    }
 
-      .parchment {
-        background: linear-gradient(135deg, #f5e6d3, #e8dcc8 50%, #f0e4d0);
-        position: relative;
-      }
-      .wood-panel {
-        background: linear-gradient(135deg, #5c4033, #3e2a1f);
-        position: relative;
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-      }
-      .leather {
-        background: linear-gradient(135deg, #4a3428, #3a2820);
-        position: relative;
-      }
-      .embossed {
-        text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3), -1px -1px 2px rgba(0, 0, 0, 0.5);
-      }
-      .gold-foil {
-        background: linear-gradient(
-          135deg,
-          #d4af37,
-          #c9a961 25%,
-          #f4e4bc 50%,
-          #c9a961 75%,
-          #b8941f
-        );
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-      .brass {
-        background: linear-gradient(135deg, #b5a642, #8b7335);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-          0 2px 4px rgba(0, 0, 0, 0.4);
-      }
-      .wax-seal {
-        background: radial-gradient(circle, #8b1a1a, #5c0f0f);
-        box-shadow: 0 2px 8px rgba(139, 26, 26, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.2);
-      }
+    /* ---------- Header ---------- */
+    .topbar{
+      border-radius: var(--radius2);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      border: 2px solid rgba(212,175,55,.25);
+      background: linear-gradient(180deg, rgba(42,31,24,.95), rgba(30,20,15,.92));
+      position: sticky;
+      top: 12px;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+    }
 
-      /* Disable wheel + spinners */
-      input[type="number"]::-webkit-outer-spin-button,
-      input[type="number"]::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-      input[type="number"] {
-        -moz-appearance: textfield;
-      }
+    .topbar-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding: 16px 18px;
+    }
 
-      /* ====== NOTEBOOK RULED + DASHED ROWS (CBSE copy style) ====== */
-      .ruled-paper {
-        position: relative;
-      }
-      .ruled-paper::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        background-image: repeating-linear-gradient(
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width: 0;
+    }
+
+    .seal{
+      width:52px;height:52px;
+      border-radius:999px;
+      display:grid;
+      place-items:center;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.12), transparent 55%),
+        linear-gradient(135deg, rgba(212,175,55,.95), rgba(133,96,26,.95));
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,.25), 0 10px 25px rgba(0,0,0,.35);
+      flex:0 0 auto;
+    }
+    .seal span{
+      font-weight:900;
+      color:#24160e;
+      letter-spacing:.08em;
+    }
+
+    .brand h1{
+      margin:0;
+      font-size: 20px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color: var(--gold);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brand p{
+      margin:4px 0 0 0;
+      font-size: 11px;
+      letter-spacing:.30em;
+      color: rgba(212,175,55,.70);
+      text-transform:uppercase;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* ---------- Dropdown menu ---------- */
+    .menu{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .select{
+      appearance:none;
+      border: 2px solid rgba(212,175,55,.35);
+      background: rgba(0,0,0,.18);
+      color: var(--gold);
+      padding: 10px 42px 10px 14px;
+      border-radius: 14px;
+      font-weight:700;
+      letter-spacing:.12em;
+      outline:none;
+      cursor:pointer;
+      position:relative;
+      min-width: 220px;
+      font-size: 12px;
+    }
+
+    .select:focus{
+      box-shadow: 0 0 0 6px rgba(212,175,55,.12);
+    }
+
+    .menu-wrap{
+      position:relative;
+    }
+    .menu-wrap:after{
+      content:"▾";
+      position:absolute;
+      right:14px;
+      top:50%;
+      transform:translateY(-50%);
+      color: rgba(212,175,55,.9);
+      pointer-events:none;
+      font-weight:900;
+    }
+
+    .btn{
+      border:none;
+      cursor:pointer;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-weight:800;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-size: 11px;
+      transition: transform .12s ease, box-shadow .2s ease, background .2s ease;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      user-select:none;
+    }
+    .btn:active{transform:scale(.98);}
+    .btn-gold{
+      background: linear-gradient(135deg, rgba(212,175,55,.95), rgba(161,115,22,.95));
+      color:#2b1a10;
+      box-shadow: 0 12px 25px rgba(0,0,0,.25);
+    }
+    .btn-dark{
+      background: rgba(0,0,0,.25);
+      color: var(--gold);
+      border: 2px solid rgba(212,175,55,.25);
+    }
+    .btn-dark:hover{
+      background: rgba(0,0,0,.35);
+    }
+
+    /* ---------- Main content ---------- */
+    .main{
+      padding: 22px 0 60px;
+    }
+
+    .paper{
+      background:
+        radial-gradient(circle at 10% 10%, rgba(255,255,255,.55), transparent 35%),
+        linear-gradient(180deg, rgba(250,248,243,.98), rgba(240,236,227,.98));
+      border-radius: var(--radius2);
+      border: 4px solid rgba(139,111,71,.65);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .paper-header{
+      padding: 18px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background:
+        linear-gradient(180deg, rgba(58,40,32,.95), rgba(42,31,24,.92));
+      border-bottom: 4px solid rgba(212,175,55,.65);
+      color: #f4e4bc;
+    }
+
+    .paper-header h2{
+      margin:0;
+      font-size: 18px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+    }
+
+    .paper-body{
+      padding: 18px;
+    }
+
+    /* ---------- Notebook dashed ruled lines in tables ---------- */
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead th{
+      text-align:left;
+      padding: 12px 12px;
+      background: rgba(42,31,24,.92);
+      color: rgba(244,228,188,.95);
+      text-transform:uppercase;
+      letter-spacing:.18em;
+      font-size: 11px;
+      border-bottom: 3px solid rgba(212,175,55,.55);
+    }
+    tbody td{
+      padding: 10px 12px;
+      border-bottom: 1px dashed rgba(139,111,71,.55);
+      vertical-align:top;
+      background:
+        repeating-linear-gradient(
           to bottom,
-          rgba(0, 0, 0, 0) 0px,
-          rgba(0, 0, 0, 0) 26px,
-          rgba(30, 90, 255, 0.14) 27px
+          rgba(90,140,210,.00) 0px,
+          rgba(90,140,210,.00) 22px,
+          rgba(90,140,210,.16) 22px,
+          rgba(90,140,210,.16) 23px
         );
-        opacity: 0.35;
-        z-index: 0;
-      }
-      .notebook-table tbody tr {
-        border-bottom: 1px dashed rgba(139, 90, 43, 0.55);
-      }
-      .notebook-table tbody tr:last-child {
-        border-bottom: none;
-      }
-      .notebook-table td,
-      .notebook-table th {
-        position: relative;
-        z-index: 1; /* above ruled lines */
-      }
-
-      /* ====== PAGE FLIP ANIMATION ====== */
-      .page-flip {
-        transform-style: preserve-3d;
-        transform-origin: left center;
-        animation: flipPage 650ms ease;
-      }
-      @keyframes flipPage {
-        0% {
-          transform: rotateY(-88deg);
-          opacity: 0.15;
-        }
-        45% {
-          transform: rotateY(-22deg);
-          opacity: 0.95;
-        }
-        100% {
-          transform: rotateY(0deg);
-          opacity: 1;
-        }
-      }
-
-      /* Mobile tweaks */
-      @media (max-width: 1024px) {
-        .title-tight {
-          letter-spacing: 0.12em !important;
-        }
-      }
-      @media (max-width: 640px) {
-        .title-tight {
-          font-size: 22px !important;
-          letter-spacing: 0.08em !important;
-        }
-      }
-    </style>
-  </head>
-
-  <body>
-    <div id="root"></div>
-
-    <script type="text/babel">
-      const { useState, useEffect, useMemo } = React;
-      const svgBase =
-        "w-5 h-5 stroke-current fill-none stroke-[2] stroke-linecap-round stroke-linejoin-round";
-
-      function Icon({ name, className = svgBase, style }) {
-        const paths = {
-          Building2: (
-            <>
-              <path d="M3 21V3h18v18" />
-              <path d="M9 21V9h6v12" />
-              <path d="M7 7h.01M17 7h.01M7 11h.01M17 11h.01M7 15h.01M17 15h.01" />
-            </>
-          ),
-          Plus: (
-            <>
-              <path d="M12 5v14" />
-              <path d="M5 12h14" />
-            </>
-          ),
-          ScrollText: (
-            <>
-              <path d="M8 21h12a2 2 0 0 0 2-2V7" />
-              <path d="M6 3h12a2 2 0 0 1 2 2v2" />
-              <path d="M6 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2" />
-              <path d="M6 17h10M6 13h10M6 9h10" />
-            </>
-          ),
-          BookOpen: (
-            <>
-              <path d="M12 7v14" />
-              <path d="M3 18a2 2 0 0 0 2 2h7V6H5a2 2 0 0 0-2 2z" />
-              <path d="M21 18a2 2 0 0 1-2 2h-7V6h7a2 2 0 0 1 2 2z" />
-            </>
-          ),
-          Pencil: (
-            <>
-              <path d="M17 3a2.85 2.85 0 0 1 4 4L7 21H3v-4Z" />
-              <path d="M15 5l4 4" />
-            </>
-          ),
-          Save: (
-            <>
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
-              <path d="M17 21v-8H7v8M7 3v5h8" />
-            </>
-          ),
-          RotateCcw: (
-            <>
-              <path d="M3 12a9 9 0 1 0 3-6.7" />
-              <path d="M3 4v6h6" />
-            </>
-          ),
-          Undo2: (
-            <>
-              <path d="M9 14 4 9l5-5" />
-              <path d="M4 9h10a6 6 0 0 1 0 12h-4" />
-            </>
-          ),
-          Trash2: (
-            <>
-              <path d="M3 6h18" />
-              <path d="M8 6V4h8v2" />
-              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" />
-            </>
-          ),
-          TrendingDown: (
-            <>
-              <path d="M3 7l6 6 4-4 8 8" />
-              <path d="M21 17V7h-10" />
-            </>
-          ),
-          TrendingUp: (
-            <>
-              <path d="M3 17l6-6 4 4 8-8" />
-              <path d="M21 7v10H11" />
-            </>
-          ),
-          Search: (
-            <>
-              <circle cx="11" cy="11" r="8" />
-              <path d="M21 21l-4.3-4.3" />
-            </>
-          ),
-          Info: (
-            <>
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 16v-4M12 8h.01" />
-            </>
-          ),
-          BadgeCheck: (
-            <>
-              <path d="M12 2l3 3 4 .5-2.5 3.2.8 4.3L12 11l-3.3 2.3.8-4.3L7 5.5 11 5z" />
-              <path d="M9 12l2 2 4-4" />
-            </>
-          ),
-          Feather: (
-            <>
-              <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
-              <line x1="16" y1="8" x2="2" y2="22" />
-              <line x1="17.5" y1="15" x2="9" y2="15" />
-            </>
-          ),
-          Scale: (
-            <>
-              <path d="M12 3v18" />
-              <path d="M3 7h18" />
-              <path d="M7 7l-4 8h8l-4-8ZM17 7l-4 8h8l-4-8ZM8 21h8" />
-            </>
-          ),
-          LayoutDashboard: (
-            <>
-              <rect x="3" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="3" width="7" height="4" rx="1" />
-              <rect x="14" y="9" width="7" height="12" rx="1" />
-              <rect x="3" y="12" width="7" height="9" rx="1" />
-            </>
-          )
-        };
-
-        return (
-          <svg className={className} style={style} viewBox="0 0 24 24">
-            {paths[name]}
-          </svg>
+    }
+    tbody tr:hover td{
+      background:
+        linear-gradient(0deg, rgba(212,175,55,.08), rgba(212,175,55,.08)),
+        repeating-linear-gradient(
+          to bottom,
+          rgba(90,140,210,.00) 0px,
+          rgba(90,140,210,.00) 22px,
+          rgba(90,140,210,.16) 22px,
+          rgba(90,140,210,.16) 23px
         );
+    }
+
+    .right{text-align:right;}
+    .center{text-align:center;}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;}
+    .muted{color: rgba(44,24,16,.65);}
+
+    /* ---------- Forms ---------- */
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .grid-1{grid-template-columns: 1fr;}
+    .field label{
+      display:block;
+      font-weight:800;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      font-size: 11px;
+      margin-bottom:6px;
+      color: rgba(92,64,51,.92);
+    }
+    .input{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 2px solid rgba(184,149,106,.75);
+      background: rgba(255,255,255,.85);
+      outline:none;
+      font-weight:700;
+      color: var(--ink);
+      transition: box-shadow .2s ease, border .2s ease;
+    }
+    .input:focus{
+      border-color: rgba(139,111,71,.95);
+      box-shadow: 0 0 0 6px rgba(212,175,55,.14);
+    }
+
+    .panel{
+      border-radius: var(--radius2);
+      border: 3px solid rgba(139,111,71,.55);
+      background: rgba(250,248,243,.7);
+      padding: 14px;
+      overflow:hidden;
+    }
+
+    .lines{
+      border-radius: 16px;
+      padding: 10px;
+      border: 2px solid rgba(212,175,55,.25);
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255,255,255,.85) 0px,
+          rgba(255,255,255,.85) 26px,
+          rgba(90,140,210,.16) 26px,
+          rgba(90,140,210,.16) 27px
+        );
+    }
+
+    .line-row{
+      display:grid;
+      grid-template-columns: 1fr 140px 42px;
+      gap:10px;
+      padding: 8px 0;
+      border-bottom: 1px dashed rgba(139,111,71,.35);
+      align-items:center;
+    }
+    .line-row:last-child{border-bottom:none;}
+
+    .mini-btn{
+      border:none;
+      cursor:pointer;
+      width:42px;
+      height:42px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.10);
+      border: 2px solid rgba(139,111,71,.25);
+      font-weight:900;
+      transition: .2s ease;
+    }
+    .mini-btn:hover{background: rgba(0,0,0,.14);}
+    .mini-btn.danger{
+      color:#7a1c1c;
+      border-color: rgba(122,28,28,.22);
+      background: rgba(255,220,220,.55);
+    }
+
+    .row-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      margin-top: 14px;
+    }
+
+    .badge{
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 2px solid rgba(212,175,55,.25);
+      background: rgba(0,0,0,.12);
+      color: rgba(212,175,55,.95);
+      font-weight:900;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      font-size: 10px;
+      white-space:nowrap;
+    }
+
+    /* ---------- Page flip animation ---------- */
+    .flip-stage{
+      perspective: 1200px;
+    }
+    .flip{
+      transform-style: preserve-3d;
+      animation: flipIn .55s ease both;
+    }
+    @keyframes flipIn{
+      from{
+        transform: rotateY(-80deg) translateX(-30px);
+        opacity:0;
       }
-
-      const normalize = (n) => {
-        n = String(n || "").trim().replace(/\s+/g, " ");
-        return n
-          ? n.replace(/A\/c\s*A\/c$/i, "A/c").replace(/a\/c$/i, "") + " A/c"
-          : n;
-      };
-
-      const toPaise = (v) => {
-        const n = Number(v);
-        return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : 0;
-      };
-
-      const paiseToStr = (p) => ((Number(p) || 0) / 100).toFixed(2);
-
-      const safeParse = (s, f) => {
-        try {
-          const o = JSON.parse(s || "");
-          return o == null ? f : o;
-        } catch {
-          return f;
-        }
-      };
-
-      // Fallback if randomUUID not supported
-      const uuid = () =>
-        (crypto && crypto.randomUUID)
-          ? crypto.randomUUID()
-          : "id-" + Math.random().toString(16).slice(2) + "-" + Date.now();
-
-      function AccountingApp() {
-        const [view, setView] = useState("new");
-        const [flipKey, setFlipKey] = useState(0);
-
-        const [journal, setJournal] = useState([]);
-        const [undoStack, setUndoStack] = useState([]);
-
-        const [date, setDate] = useState("");
-        const [narration, setNarration] = useState("");
-        const [debits, setDebits] = useState([]);
-        const [credits, setCredits] = useState([]);
-        const [editingIndex, setEditingIndex] = useState(null);
-
-        const [journalSearch, setJournalSearch] = useState("");
-        const [journalSearchMode, setJournalSearchMode] = useState("all");
-        const [ledgerSearch, setLedgerSearch] = useState("");
-
-        const reset = () => {
-          setDate(new Date().toISOString().slice(0, 10));
-          setNarration("");
-          setDebits([{ id: uuid(), acc: "", amtStr: "", amt: 0 }]);
-          setCredits([{ id: uuid(), acc: "", amtStr: "", amt: 0 }]);
-          setEditingIndex(null);
-        };
-
-        useEffect(() => {
-          setJournal(safeParse(localStorage.getItem("journalData"), []));
-          setUndoStack(safeParse(localStorage.getItem("undoStack"), []));
-          reset();
-
-          // Disable scroll wheel changing number input values
-          const h = (e) => {
-            const t = e.target;
-            if (t && t.tagName === "INPUT" && t.type === "number") {
-              e.preventDefault();
-            }
-          };
-          window.addEventListener("wheel", h, { passive: false });
-          return () => window.removeEventListener("wheel", h);
-        }, []);
-
-        useEffect(() => localStorage.setItem("journalData", JSON.stringify(journal)), [journal]);
-        useEffect(() => localStorage.setItem("undoStack", JSON.stringify(undoStack)), [undoStack]);
-
-        const changeView = (v) => {
-          setView(v);
-          setFlipKey((k) => k + 1);
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        };
-
-        const updateRow = (type, i, field, val) => {
-          const update = (list) => {
-            const n = [...list];
-            const item = { ...n[i] };
-            if (field === "acc") item.acc = val;
-            else {
-              item.amtStr = val;
-              item.amt = toPaise(val);
-            }
-            n[i] = item;
-            return n;
-          };
-          type === "debit" ? setDebits(update) : setCredits(update);
-        };
-
-        const removeRow = (type, i) => {
-          const fn = (prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== i) : prev);
-          type === "debit" ? setDebits(fn) : setCredits(fn);
-        };
-
-        const debitParts = useMemo(() => {
-          const v = debits.map((d) => normalize(d.acc)).filter(Boolean);
-          return v.length ? "By " + v.join(", ") : "";
-        }, [debits]);
-
-        const creditParts = useMemo(() => {
-          const v = credits.map((c) => normalize(c.acc)).filter(Boolean);
-          return v.length ? "To " + v.join(", ") : "";
-        }, [credits]);
-
-        const handleSave = () => {
-          const fD = debits
-            .map((d) => ({ ...d, acc: normalize(d.acc) }))
-            .filter((d) => d.acc || d.amt > 0);
-
-          const fC = credits
-            .map((c) => ({ ...c, acc: normalize(c.acc) }))
-            .filter((c) => c.acc || c.amt > 0);
-
-          const err = [];
-          if (!fD.length) err.push("Add at least 1 debit line.");
-          if (!fC.length) err.push("Add at least 1 credit line.");
-
-          fD.forEach((d, i) => {
-            if (!d.acc) err.push(`Debit row ${i + 1}: Account name required.`);
-            if (d.amt <= 0) err.push(`Debit row ${i + 1}: Amount must be > 0.`);
-          });
-
-          fC.forEach((c, i) => {
-            if (!c.acc) err.push(`Credit row ${i + 1}: Account name required.`);
-            if (c.amt <= 0) err.push(`Credit row ${i + 1}: Amount must be > 0.`);
-          });
-
-          const dT = fD.reduce((s, d) => s + d.amt, 0);
-          const cT = fC.reduce((s, c) => s + c.amt, 0);
-
-          if (dT !== cT)
-            err.push(
-              `Debit total (₹${paiseToStr(dT)}) must equal Credit total (₹${paiseToStr(cT)}).`
-            );
-
-          if (err.length)
-            return alert(
-              "Please fix these errors:\n\n" + err.map((e) => "• " + e).join("\n")
-            );
-
-          const entry = {
-            date: date || new Date().toISOString().slice(0, 10),
-            narration: narration || "-",
-            debits: fD.map((d) => ({ acc: d.acc, amt: d.amt })),
-            credits: fC.map((c) => ({ acc: c.acc, amt: c.amt })),
-            jf: "-"
-          };
-
-          if (editingIndex !== null) {
-            const old = JSON.parse(JSON.stringify(journal[editingIndex]));
-            setUndoStack((p) => [...p, { type: "edit", index: editingIndex, oldEntry: old }]);
-            setJournal((p) => {
-              const c = [...p];
-              c[editingIndex] = entry;
-              return c;
-            });
-            alert("✓ Entry updated successfully!");
-          } else {
-            setUndoStack((p) => [...p, { type: "add", index: journal.length, entry }]);
-            setJournal((p) => [...p, entry]);
-          }
-
-          reset();
-        };
-
-        const handleEdit = (i) => {
-          const e = journal[i];
-          setDate(e.date);
-          setNarration(e.narration === "-" ? "" : e.narration);
-          setDebits(
-            e.debits.map((d) => ({
-              id: uuid(),
-              acc: d.acc,
-              amt: d.amt,
-              amtStr: paiseToStr(d.amt)
-            }))
-          );
-          setCredits(
-            e.credits.map((c) => ({
-              id: uuid(),
-              acc: c.acc,
-              amt: c.amt,
-              amtStr: paiseToStr(c.amt)
-            }))
-          );
-          setEditingIndex(i);
-          changeView("new");
-        };
-
-        const handleDelete = (i) => {
-          if (!confirm(`Delete Entry #${i + 1}?`)) return;
-          const old = JSON.parse(JSON.stringify(journal[i]));
-          setUndoStack((p) => [...p, { type: "delete", index: i, oldEntry: old }]);
-          setJournal((p) => p.filter((_, idx) => idx !== i));
-        };
-
-        const handleDeleteAll = () => {
-          if (!journal.length) return alert("No entries to delete.");
-          if (!confirm("DELETE ALL ENTRIES?\nThis action can be undone.")) return;
-          setUndoStack((p) => [
-            ...p,
-            { type: "deleteAll", prevJournal: JSON.parse(JSON.stringify(journal)) }
-          ]);
-          setJournal([]);
-          alert("✓ All entries deleted successfully!");
-        };
-
-        const handleUndo = () => {
-          if (!undoStack.length) return alert("Nothing to undo.");
-          const last = undoStack[undoStack.length - 1];
-          setUndoStack((p) => p.slice(0, -1));
-
-          if (last.type === "add") setJournal((p) => p.filter((_, i) => i !== last.index));
-          else if (last.type === "edit")
-            setJournal((p) => {
-              const c = [...p];
-              if (c[last.index]) c[last.index] = last.oldEntry;
-              return c;
-            });
-          else if (last.type === "delete")
-            setJournal((p) => {
-              const c = [...p];
-              c.splice(last.index, 0, last.oldEntry);
-              return c;
-            });
-          else if (last.type === "deleteAll") setJournal(last.prevJournal || []);
-        };
-
-        const ledgerData = useMemo(() => {
-          const ledger = {};
-          const accSet = new Set();
-
-          journal.forEach((e) => {
-            e.debits.forEach((d) => accSet.add(d.acc));
-            e.credits.forEach((c) => accSet.add(c.acc));
-          });
-
-          const sorted = Array.from(accSet).sort();
-          const folioMap = {};
-          sorted.forEach((a, i) => (folioMap[a] = "L" + (i + 1)));
-
-          const ensure = (a) => {
-            if (!ledger[a]) ledger[a] = [];
-          };
-
-          journal.forEach((e, idx) => {
-            const jf = e.jf || "-";
-            const cP = "To " + e.credits.map((c) => c.acc).join(", ");
-            const dP = "By " + e.debits.map((d) => d.acc).join(", ");
-
-            e.debits.forEach((d) => {
-              ensure(d.acc);
-              ledger[d.acc].push({
-                entryIndex: idx,
-                date: e.date,
-                particulars: cP,
-                debit: d.amt,
-                credit: 0,
-                jf,
-                lf: folioMap[d.acc] || "-"
-              });
-            });
-
-            e.credits.forEach((c) => {
-              ensure(c.acc);
-              ledger[c.acc].push({
-                entryIndex: idx,
-                date: e.date,
-                particulars: dP,
-                debit: 0,
-                credit: c.amt,
-                jf,
-                lf: folioMap[c.acc] || "-"
-              });
-            });
-          });
-
-          return { ledger, folioMap };
-        }, [journal]);
-
-        const trialBalance = useMemo(() => {
-          const accs = Object.keys(ledgerData.ledger || {}).sort();
-          const rows = accs.map((acc) => {
-            const entries = ledgerData.ledger[acc] || [];
-            const dr = entries.reduce((s, e) => s + (e.debit || 0), 0);
-            const cr = entries.reduce((s, e) => s + (e.credit || 0), 0);
-            const bal = dr - cr;
-
-            return {
-              acc,
-              debit: bal > 0 ? bal : 0,
-              credit: bal < 0 ? Math.abs(bal) : 0,
-              lf: ledgerData.folioMap?.[acc] || "-"
-            };
-          });
-
-          return {
-            rows,
-            totalDr: rows.reduce((s, r) => s + r.debit, 0),
-            totalCr: rows.reduce((s, r) => s + r.credit, 0)
-          };
-        }, [ledgerData]);
-
-        const getFilteredJournal = () => {
-          if (!journalSearch) return journal;
-          const q = journalSearch.toLowerCase();
-          return journal.filter((e) => {
-            const d = e.date.toLowerCase();
-            const n = e.narration.toLowerCase();
-            const a = [...e.debits, ...e.credits].map((x) => x.acc.toLowerCase()).join(" ");
-            return journalSearchMode === "date"
-              ? d.includes(q)
-              : journalSearchMode === "narration"
-              ? n.includes(q)
-              : journalSearchMode === "account"
-              ? a.includes(q)
-              : d.includes(q) || n.includes(q) || a.includes(q);
-          });
-        };
-
-        const getFilteredLedger = () => {
-          const accs = Object.keys(ledgerData.ledger).sort();
-          if (!ledgerSearch) return accs;
-          return accs.filter((a) => a.toLowerCase().includes(ledgerSearch.toLowerCase()));
-        };
-
-        const fonts = {
-          p: '"Playfair Display", serif',
-          c: '"Crimson Text", serif',
-          e: '"EB Garamond", serif'
-        };
-
-        const btn1 =
-          "px-6 py-2.5 bg-[#3a2820] border-2 border-[#5c4033] text-[#d4af37] hover:bg-[#2a1f18] hover:border-[#8b6f47] rounded-md font-bold text-xs tracking-widest uppercase flex items-center gap-2 transition-all shadow-lg";
-
-        const inp =
-          "w-full px-4 py-3.5 bg-[#faf8f3] border-2 border-[#b8956a] rounded-md text-[#3e2a1f] focus:border-[#8b6f47] focus:ring-4 focus:ring-[#d4af37]/20 transition-all outline-none shadow-inner font-semibold";
-
-        return (
-          <div className="min-h-screen relative z-10" style={{ fontFamily: fonts.e }}>
-            <header className="wood-panel sticky top-0 z-50 border-b-4 border-[#d4af37] shadow-2xl">
-              <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 relative z-10">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 py-4">
-                  <div className="flex items-center gap-5">
-                    <div className="wax-seal p-3 rounded-full relative">
-                      <Icon name="Feather" className="w-8 h-8 text-[#d4af37]" />
-                    </div>
-                    <div>
-                      <h1
-                        className="text-2xl sm:text-3xl lg:text-4xl font-bold gold-foil embossed title-tight"
-                        style={{ fontFamily: fonts.p }}
-                      >
-                        SARASWATI INTERNATIONAL SCHOOL
-                      </h1>
-                      <p className="text-[10px] sm:text-xs text-[#c9a961] font-semibold tracking-[0.25em] uppercase mt-1.5">
-                        Accounts & Ledger System
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* SINGLE DROPDOWN MENU */}
-                  <div className="w-full lg:w-auto leather rounded-lg px-4 py-3 border-2 border-[#8b5a2b] shadow-inner flex items-center gap-3">
-                    <div className="brass p-2 rounded">
-                      <Icon name="LayoutDashboard" className="w-5 h-5 text-[#2c1810]" />
-                    </div>
-
-                    <div className="flex flex-col leading-tight flex-1">
-                      <span className="text-[10px] text-[#c9a961] font-bold tracking-[0.25em] uppercase">
-                        Sections
-                      </span>
-
-                      <select
-                        value={view}
-                        onChange={(e) => changeView(e.target.value)}
-                        className="w-full bg-[#2a1f18] text-[#c9a961] border-2 border-[#5c4033] hover:border-[#8b6f47] rounded-md px-4 py-2 text-sm font-bold tracking-[0.12em] outline-none focus:border-[#d4af37] shadow-inner"
-                        style={{ fontFamily: fonts.p }}
-                      >
-                        <option value="new">New Entry</option>
-                        <option value="journal">Journal</option>
-                        <option value="ledger">Ledger</option>
-                        <option value="trial">Trial Balance</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </header>
-
-            <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-12 relative z-10">
-              {/* ================= NEW ENTRY ================= */}
-              {view === "new" && (
-                <div key={"new-" + flipKey} className="page-flip max-w-5xl mx-auto space-y-8">
-                  <div className="parchment rounded-lg shadow-2xl border-4 border-[#8b6f47] overflow-hidden relative">
-                    <div className="wood-panel px-6 sm:px-10 py-6 border-b-4 border-[#d4af37] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <h2
-                        className="text-2xl sm:text-3xl font-bold flex items-center gap-4 text-[#f4e4bc] embossed"
-                        style={{ fontFamily: fonts.p, letterSpacing: "0.15em" }}
-                      >
-                        <div className="brass p-2 rounded">
-                          <Icon name="Pencil" className="w-6 h-6 text-[#2c1810]" />
-                        </div>
-                        {editingIndex !== null ? "Amend Entry" : "New Transaction Entry"}
-                      </h2>
-
-                      <button onClick={handleDeleteAll} className={btn1} style={{ fontFamily: fonts.e }}>
-                        <Icon name="Trash2" className="w-4 h-4" />
-                        Delete All
-                      </button>
-                    </div>
-
-                    <div className="p-6 sm:p-10 space-y-10 relative z-10">
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-                        <div className="md:col-span-4">
-                          <label
-                            className="block text-sm font-bold text-[#5c4033] uppercase tracking-[0.15em] mb-3"
-                            style={{ fontFamily: fonts.c }}
-                          >
-                            Date of Transaction
-                          </label>
-                          <input
-                            type="date"
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            className={inp}
-                            style={{ fontFamily: fonts.e, fontSize: "16px" }}
-                          />
-                        </div>
-
-                        <div className="md:col-span-8">
-                          <label
-                            className="block text-sm font-bold text-[#5c4033] uppercase tracking-[0.15em] mb-3"
-                            style={{ fontFamily: fonts.c }}
-                          >
-                            Narration & Description
-                          </label>
-                          <input
-                            type="text"
-                            value={narration}
-                            onChange={(e) => setNarration(e.target.value)}
-                            placeholder="Enter detailed description of the transaction..."
-                            className={inp}
-                            style={{ fontFamily: fonts.e, fontSize: "16px" }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="h-px bg-gradient-to-r from-transparent via-[#8b6f47] to-transparent relative">
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 brass px-4 py-1 text-xs text-[#2c1810] font-bold tracking-widest">
-                          DR & CR
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                        {[
-                          {
-                            type: "debit",
-                            list: debits,
-                            parts: creditParts,
-                            color: "#2e4a2e",
-                            bg: "#e8f5e9",
-                            label: "DEBIT SIDE",
-                            icon: "TrendingDown",
-                            add: () => setDebits((p) => [...p, { id: uuid(), acc: "", amtStr: "", amt: 0 }])
-                          },
-                          {
-                            type: "credit",
-                            list: credits,
-                            parts: debitParts,
-                            color: "#5c3a2e",
-                            bg: "#fff3e0",
-                            label: "CREDIT SIDE",
-                            icon: "TrendingUp",
-                            add: () => setCredits((p) => [...p, { id: uuid(), acc: "", amtStr: "", amt: 0 }])
-                          }
-                        ].map((side) => (
-                          <div
-                            key={side.type}
-                            className="space-y-5 bg-[#f0ece3] border-4 border-[#8b6f47] rounded-lg p-6 shadow-xl relative"
-                          >
-                            <div className="absolute -top-4 left-6 brass px-4 py-1 rounded text-[#2c1810] font-bold text-sm tracking-widest">
-                              {side.label}
-                            </div>
-
-                            <h3
-                              className="text-xl font-bold pt-2 pb-3 border-b-2 flex items-center gap-2"
-                              style={{ fontFamily: fonts.p, color: side.color, borderColor: side.color + "4D" }}
-                            >
-                              <Icon name={side.icon} className="w-5 h-5" style={{ color: side.color }} />
-                              {side.label.split(" ")[0]} Accounts
-                            </h3>
-
-                            <div className="space-y-4">
-                              {side.list.map((row, i) => (
-                                <div
-                                  key={row.id}
-                                  className="flex flex-col sm:flex-row gap-3 items-start bg-[#faf8f3] p-3 rounded border border-[#d4c5b0]"
-                                >
-                                  <div className="flex-1 space-y-2 w-full">
-                                    <input
-                                      placeholder="Account Name"
-                                      value={row.acc}
-                                      onChange={(e) => updateRow(side.type, i, "acc", e.target.value)}
-                                      className="w-full px-3 py-2.5 bg-white border-2 border-[#c9b896] rounded text-[#2c1810] focus:ring-2 outline-none shadow-sm placeholder-[#a68b7c] font-semibold"
-                                      style={{ fontFamily: fonts.e, borderColor: side.color }}
-                                    />
-                                    <div className="text-xs text-[#5c4033] px-2 italic" style={{ fontFamily: fonts.c }}>
-                                      {side.parts || "Particulars will appear here..."}
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center gap-2 w-full sm:w-auto">
-                                    <input
-                                      type="number"
-                                      step="1"
-                                      min="0"
-                                      inputMode="numeric"
-                                      placeholder="0.00"
-                                      value={row.amtStr}
-                                      onChange={(e) => updateRow(side.type, i, "amtStr", e.target.value)}
-                                      onWheel={(e) => e.preventDefault()}
-                                      className="w-full sm:w-32 px-3 py-2.5 bg-white border-2 border-[#c9b896] rounded text-right font-mono font-bold focus:ring-2 outline-none shadow-sm"
-                                      style={{ fontSize: "15px", color: side.color, borderColor: side.color }}
-                                    />
-
-                                    <button
-                                      onClick={() => removeRow(side.type, i)}
-                                      className="p-2.5 text-[#8b6f47] hover:text-[#a0522d] hover:bg-[#faf0f0] rounded transition-colors"
-                                      title="Remove row"
-                                    >
-                                      <Icon name="Trash2" className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-
-                            <button
-                              onClick={side.add}
-                              className="w-full py-3 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.2em] rounded border-2 transition-all shadow-sm"
-                              style={{
-                                fontFamily: fonts.e,
-                                color: side.color,
-                                background: side.bg,
-                                borderColor: side.color + "4D"
-                              }}
-                            >
-                              <Icon name="Plus" className="w-4 h-4" />
-                              Add {side.label.split(" ")[0]} Entry
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="pt-8 border-t-2 border-[#8b6f47] flex flex-col sm:flex-row flex-wrap gap-4">
-                        <button
-                          onClick={handleSave}
-                          className="flex-1 wood-panel text-[#f4e4bc] hover:shadow-2xl px-10 py-5 rounded-lg font-bold text-base tracking-[0.2em] uppercase flex items-center justify-center gap-4 transition-all active:scale-[0.98] border-4 border-[#d4af37] shadow-xl"
-                          style={{ fontFamily: fonts.p }}
-                        >
-                          <Icon name="Save" className="w-6 h-6" />
-                          {editingIndex !== null ? "Update Entry" : "Post to Ledger"}
-                        </button>
-
-                        <button
-                          onClick={reset}
-                          className="px-8 py-5 bg-[#e8dcc8] border-4 border-[#b8956a] text-[#3e2a1f] hover:bg-[#f0e4d0] hover:border-[#8b6f47] rounded-lg font-bold text-sm tracking-[0.15em] uppercase flex items-center gap-3 transition-all shadow-lg"
-                          style={{ fontFamily: fonts.e }}
-                        >
-                          <Icon name="RotateCcw" className="w-5 h-5" />
-                          Reset
-                        </button>
-
-                        <button
-                          onClick={handleUndo}
-                          className={btn1 + " px-8 py-5 border-4"}
-                          style={{ fontFamily: fonts.e }}
-                        >
-                          <Icon name="Undo2" className="w-5 h-5" />
-                          Undo
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="leather border-2 border-[#8b6f47] rounded-lg p-5 flex gap-4 shadow-xl">
-                    <div className="brass p-2 rounded flex-shrink-0">
-                      <Icon name="Info" className="w-5 h-5 text-[#2c1810]" />
-                    </div>
-                    <p className="text-[#c9a961] italic text-sm leading-relaxed" style={{ fontFamily: fonts.c }}>
-                      <strong>Accountant's Note:</strong> Debit and Credit totals must balance precisely for the entry to be recorded.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* ================= JOURNAL ================= */}
-              {view === "journal" && (
-                <div key={"journal-" + flipKey} className="page-flip space-y-8">
-                  <div className="parchment p-6 rounded-lg border-4 border-[#8b6f47] shadow-xl flex flex-col gap-5">
-                    <div className="flex flex-col sm:flex-row gap-5 justify-between items-center">
-                      <div className="flex items-center gap-4 w-full sm:w-auto">
-                        <div className="brass p-2 rounded">
-                          <Icon name="Search" className="w-5 h-5 text-[#2c1810]" />
-                        </div>
-                        <input
-                          type="text"
-                          placeholder="Search journal entries..."
-                          value={journalSearch}
-                          onChange={(e) => setJournalSearch(e.target.value)}
-                          className="flex-1 sm:w-96 pl-4 pr-4 py-3 bg-[#faf8f3] border-2 border-[#b8956a] rounded-md text-sm text-[#3e2a1f] focus:bg-white focus:border-[#8b6f47] focus:ring-2 focus:ring-[#d4af37]/20 outline-none transition-all placeholder-[#a68b7c] shadow-inner font-semibold"
-                          style={{ fontFamily: fonts.e }}
-                        />
-                        <select
-                          value={journalSearchMode}
-                          onChange={(e) => setJournalSearchMode(e.target.value)}
-                          className="bg-[#faf8f3] border-2 border-[#b8956a] text-sm text-[#3e2a1f] rounded-md px-4 py-3 outline-none focus:border-[#8b6f47] shadow-inner font-semibold"
-                          style={{ fontFamily: fonts.e }}
-                        >
-                          <option value="all">All Fields</option>
-                          <option value="account">Account</option>
-                          <option value="narration">Narration</option>
-                          <option value="date">Date</option>
-                        </select>
-                      </div>
-                      <div className="text-sm text-[#5c4033] italic font-semibold" style={{ fontFamily: fonts.c }}>
-                        Displaying{" "}
-                        <span className="brass px-3 py-1 rounded text-[#2c1810] not-italic">
-                          {getFilteredJournal().length}
-                        </span>{" "}
-                        records
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end">
-                      <button onClick={handleDeleteAll} className={btn1} style={{ fontFamily: fonts.e }}>
-                        <Icon name="Trash2" className="w-4 h-4" />
-                        Delete All (Journal)
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="parchment rounded-lg border-4 border-[#8b6f47] shadow-2xl overflow-hidden">
-                    {getFilteredJournal().length === 0 ? (
-                      <div className="p-20 sm:p-28 text-center">
-                        <div className="brass w-24 h-24 rounded-full mx-auto mb-8 flex items-center justify-center">
-                          <Icon name="ScrollText" className="w-12 h-12 text-[#2c1810]" />
-                        </div>
-                        <h3 className="text-2xl sm:text-3xl text-[#5c4033] mb-3 font-bold" style={{ fontFamily: fonts.p }}>
-                          The Journal Awaits
-                        </h3>
-                        <p className="text-[#8b6f47] italic" style={{ fontFamily: fonts.c }}>
-                          Begin your accounting journey by creating the first transaction entry.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm notebook-table ruled-paper">
-                          <thead>
-                            <tr className="wood-panel border-b-4 border-[#d4af37]">
-                              {["Date", "Particulars", "L.F.", "Debit (₹)", "Credit (₹)"].map((h, i) => (
-                                <th
-                                  key={h}
-                                  className={`px-6 py-5 font-bold text-[#f4e4bc] uppercase tracking-[0.2em] ${
-                                    i === 0
-                                      ? "text-left w-32 border-r border-[#5c4033]/50"
-                                      : i === 1
-                                      ? "text-left"
-                                      : i === 2
-                                      ? "text-center w-24 border-l border-r border-[#5c4033]/50"
-                                      : i === 3
-                                      ? "text-right w-40 border-r border-[#5c4033]/50"
-                                      : "text-right w-40"
-                                  }`}
-                                  style={{ fontFamily: fonts.p, fontSize: "11px" }}
-                                >
-                                  {h}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-
-                          {getFilteredJournal().map((entry, idx) => (
-                            <tbody key={idx} className="border-b-2 border-[#8b6f47]">
-                              {entry.debits.map((d, di) => (
-                                <tr key={`d-${idx}-${di}`} className="group hover:bg-[#f5ede0] transition-colors">
-                                  <td
-                                    className="px-6 py-4 text-[#3e2a1f] font-semibold border-r border-[#e8dcc8]"
-                                    style={{ fontFamily: fonts.e }}
-                                  >
-                                    {di === 0 ? entry.date : ""}
-                                  </td>
-
-                                  <td className="px-6 py-4">
-                                    <div className="flex items-baseline gap-2">
-                                      <span className="font-bold text-[#2c1810] text-base" style={{ fontFamily: fonts.e }}>
-                                        {d.acc}
-                                      </span>
-                                      <span className="text-[#8b6f47] text-xs italic" style={{ fontFamily: fonts.c }}>
-                                        Dr.
-                                      </span>
-                                    </div>
-
-                                    {di === 0 && (
-                                      <div className="flex flex-wrap gap-4 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button
-                                          onClick={() => handleEdit(idx)}
-                                          className="brass px-3 py-1 rounded text-[#2c1810] text-xs font-bold uppercase tracking-wide hover:shadow-lg transition-shadow"
-                                        >
-                                          Edit
-                                        </button>
-                                        <button
-                                          onClick={() => handleDelete(idx)}
-                                          className="bg-[#3a2820] border border-[#5c4033] px-3 py-1 rounded text-[#d4af37] text-xs font-bold uppercase tracking-wide hover:bg-[#2a1f18] transition-colors"
-                                        >
-                                          Delete
-                                        </button>
-
-                                        {entry.narration !== "-" && (
-                                          <span
-                                            className="text-[#5c4033] text-sm italic ml-3 border-l-2 border-[#d4c5b0] pl-4"
-                                            style={{ fontFamily: fonts.c }}
-                                          >
-                                            "{entry.narration}"
-                                          </span>
-                                        )}
-                                      </div>
-                                    )}
-                                  </td>
-
-                                  <td
-                                    className="px-6 py-4 text-center text-[#5c4033] font-semibold border-l border-r border-[#e8dcc8]"
-                                    style={{ fontFamily: fonts.e }}
-                                  >
-                                    {ledgerData.folioMap[d.acc]}
-                                  </td>
-
-                                  <td className="px-6 py-4 text-right font-mono text-[#2e4a2e] font-bold text-base bg-[#e8f5e9]/40 border-r border-[#e8dcc8]">
-                                    {paiseToStr(d.amt)}
-                                  </td>
-                                  <td className="px-6 py-4"></td>
-                                </tr>
-                              ))}
-
-                              {entry.credits.map((c, ci) => (
-                                <tr key={`c-${idx}-${ci}`} className="hover:bg-[#f5ede0] transition-colors">
-                                  <td className="px-6 py-4 border-r border-[#e8dcc8]"></td>
-
-                                  <td className="px-6 py-4 pl-16">
-                                    <span className="text-[#8b6f47] text-xs italic mr-3" style={{ fontFamily: fonts.c }}>
-                                      To
-                                    </span>
-                                    <span className="text-[#3e2a1f] font-semibold" style={{ fontFamily: fonts.e }}>
-                                      {c.acc}
-                                    </span>
-                                  </td>
-
-                                  <td
-                                    className="px-6 py-4 text-center text-[#5c4033] font-semibold border-l border-r border-[#e8dcc8]"
-                                    style={{ fontFamily: fonts.e }}
-                                  >
-                                    {ledgerData.folioMap[c.acc]}
-                                  </td>
-
-                                  <td className="px-6 py-4 border-r border-[#e8dcc8]"></td>
-                                  <td className="px-6 py-4 text-right font-mono text-[#5c3a2e] font-bold text-base bg-[#fff3e0]/40">
-                                    {paiseToStr(c.amt)}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          ))}
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* ================= LEDGER ================= */}
-              {view === "ledger" && (
-                <div key={"ledger-" + flipKey} className="page-flip space-y-10">
-                  <div className="parchment p-6 rounded-lg border-4 border-[#8b6f47] shadow-xl">
-                    <div className="flex items-center gap-4 max-w-md">
-                      <div className="brass p-2 rounded">
-                        <Icon name="Search" className="w-5 h-5 text-[#2c1810]" />
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="Filter ledger accounts..."
-                        value={ledgerSearch}
-                        onChange={(e) => setLedgerSearch(e.target.value)}
-                        className="flex-1 px-4 py-3 bg-[#faf8f3] border-2 border-[#b8956a] rounded-md text-sm text-[#3e2a1f] focus:bg-white focus:border-[#8b6f47] outline-none transition-all placeholder-[#a68b7c] shadow-inner font-semibold"
-                        style={{ fontFamily: fonts.e }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-12">
-                    {getFilteredLedger().map((acc) => {
-                      const entries = ledgerData.ledger[acc];
-                      const dr = entries.reduce((s, e) => s + e.debit, 0);
-                      const cr = entries.reduce((s, e) => s + e.credit, 0);
-                      const bal = dr - cr;
-                      const balStr = paiseToStr(Math.abs(bal));
-                      const balType = bal >= 0 ? "Dr" : "Cr";
-
-                      const drRows = entries.filter((e) => e.debit > 0);
-                      const crRows = entries.filter((e) => e.credit > 0);
-                      const maxRows = Math.max(drRows.length, crRows.length);
-
-                      return (
-                        <div key={acc} className="parchment rounded-lg border-4 border-[#8b6f47] shadow-2xl overflow-hidden">
-                          <div className="wood-panel px-6 sm:px-10 py-6 border-b-4 border-[#d4af37] flex flex-wrap justify-between items-center gap-4">
-                            <h3
-                              className="text-xl sm:text-2xl font-bold text-[#f4e4bc] flex items-center gap-4 embossed"
-                              style={{ fontFamily: fonts.p, letterSpacing: "0.1em" }}
-                            >
-                              <div className="wax-seal p-2 rounded-full">
-                                <Icon name="BadgeCheck" className="w-6 h-6 text-[#d4af37]" />
-                              </div>
-                              {acc}
-                            </h3>
-
-                            <div className="flex flex-wrap gap-4">
-                              <span className="brass px-5 py-2 rounded-full text-xs font-bold text-[#2c1810] uppercase tracking-widest">
-                                {entries.length} Records
-                              </span>
-                              <span
-                                className={`px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border-2 ${
-                                  bal >= 0
-                                    ? "bg-[#e8f5e9] text-[#2e4a2e] border-[#556b2f]"
-                                    : "bg-[#fff3e0] text-[#5c3a2e] border-[#8b4513]"
-                                }`}
-                              >
-                                Balance: ₹{balStr} {balType}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm border-collapse notebook-table ruled-paper">
-                              <thead>
-                                <tr className="leather border-b-2 border-[#8b6f47]">
-                                  <th
-                                    colSpan="4"
-                                    className="py-4 text-center border-r-4 border-[#8b6f47] bg-[#e8f5e9]/30 text-[#2e4a2e] font-bold uppercase tracking-[0.25em]"
-                                    style={{ fontFamily: fonts.p, fontSize: "13px" }}
-                                  >
-                                    Dr. Debit Side
-                                  </th>
-                                  <th
-                                    colSpan="4"
-                                    className="py-4 text-center bg-[#fff3e0]/30 text-[#5c3a2e] font-bold uppercase tracking-[0.25em]"
-                                    style={{ fontFamily: fonts.p, fontSize: "13px" }}
-                                  >
-                                    Cr. Credit Side
-                                  </th>
-                                </tr>
-
-                                <tr className="bg-[#f0ece3] border-b border-[#d4c5b0]">
-                                  {["Date", "Particulars", "JF", "Amount", "Date", "Particulars", "JF", "Amount"].map((h, i) => (
-                                    <th
-                                      key={h + i}
-                                      className={`px-5 py-4 font-bold text-[#5c4033] uppercase tracking-widest ${
-                                        i === 0
-                                          ? "text-left w-32"
-                                          : i === 1
-                                          ? "text-left"
-                                          : i === 2
-                                          ? "text-center w-20"
-                                          : i === 3
-                                          ? "text-right w-32 border-r-4 border-[#d4c5b0]"
-                                          : i === 4
-                                          ? "text-left w-32 pl-8"
-                                          : i === 5
-                                          ? "text-left"
-                                          : i === 6
-                                          ? "text-center w-20"
-                                          : "text-right w-32"
-                                      }`}
-                                      style={{ fontFamily: fonts.e, fontSize: "11px" }}
-                                    >
-                                      {h}
-                                    </th>
-                                  ))}
-                                </tr>
-                              </thead>
-
-                              <tbody className="divide-y divide-[#e8dcc8]">
-                                {Array.from({ length: maxRows }).map((_, i) => {
-                                  const d = drRows[i];
-                                  const c = crRows[i];
-                                  return (
-                                    <tr key={i} className="hover:bg-[#f5ede0]">
-                                      <td className="px-5 py-3 text-[#3e2a1f] font-semibold" style={{ fontFamily: fonts.e }}>
-                                        {d?.date || ""}
-                                      </td>
-                                      <td
-                                        className="px-5 py-3 text-[#2c1810] font-medium truncate max-w-[200px]"
-                                        title={d?.particulars}
-                                        style={{ fontFamily: fonts.e }}
-                                      >
-                                        {d?.particulars || ""}
-                                      </td>
-                                      <td className="px-5 py-3 text-center text-[#8b6f47] font-semibold" style={{ fontFamily: fonts.e }}>
-                                        {d ? d.jf || "-" : ""}
-                                      </td>
-                                      <td className="px-5 py-3 text-right font-mono text-[#2e4a2e] font-bold border-r-4 border-[#e8dcc8] bg-[#e8f5e9]/20">
-                                        {d ? paiseToStr(d.debit) : ""}
-                                      </td>
-
-                                      <td className="px-5 py-3 text-[#3e2a1f] font-semibold pl-8" style={{ fontFamily: fonts.e }}>
-                                        {c?.date || ""}
-                                      </td>
-                                      <td
-                                        className="px-5 py-3 text-[#2c1810] font-medium truncate max-w-[200px]"
-                                        title={c?.particulars}
-                                        style={{ fontFamily: fonts.e }}
-                                      >
-                                        {c?.particulars || ""}
-                                      </td>
-                                      <td className="px-5 py-3 text-center text-[#8b6f47] font-semibold" style={{ fontFamily: fonts.e }}>
-                                        {c ? c.jf || "-" : ""}
-                                      </td>
-                                      <td className="px-5 py-3 text-right font-mono text-[#5c3a2e] font-bold bg-[#fff3e0]/20">
-                                        {c ? paiseToStr(c.credit) : ""}
-                                      </td>
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* ================= TRIAL BALANCE ================= */}
-              {view === "trial" && (
-                <div key={"trial-" + flipKey} className="page-flip space-y-8">
-                  <div className="parchment rounded-lg border-4 border-[#8b6f47] shadow-2xl overflow-hidden">
-                    <div className="wood-panel px-6 sm:px-10 py-6 border-b-4 border-[#d4af37] flex items-center justify-between gap-4 flex-wrap">
-                      <h2
-                        className="text-2xl sm:text-3xl font-bold flex items-center gap-4 text-[#f4e4bc] embossed"
-                        style={{ fontFamily: fonts.p, letterSpacing: "0.15em" }}
-                      >
-                        <div className="brass p-2 rounded">
-                          <Icon name="Scale" className="w-6 h-6 text-[#2c1810]" />
-                        </div>
-                        Trial Balance
-                      </h2>
-                      <span className="brass px-5 py-2 rounded-full text-xs font-bold text-[#2c1810] uppercase tracking-widest">
-                        Auto Generated
-                      </span>
-                    </div>
-
-                    <div className="p-6 sm:p-8">
-                      {trialBalance.rows.length === 0 ? (
-                        <div className="p-16 sm:p-20 text-center">
-                          <div className="brass w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center">
-                            <Icon name="Scale" className="w-10 h-10 text-[#2c1810]" />
-                          </div>
-                          <h3 className="text-xl sm:text-2xl text-[#5c4033] font-bold mb-2" style={{ fontFamily: fonts.p }}>
-                            No Data Yet
-                          </h3>
-                          <p className="text-[#8b6f47] italic" style={{ fontFamily: fonts.c }}>
-                            Create journal entries to generate Trial Balance automatically.
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm notebook-table ruled-paper">
-                            <thead>
-                              <tr className="leather border-b-2 border-[#8b6f47]">
-                                {["Particulars", "L.F.", "Debit (₹)", "Credit (₹)"].map((h, i) => (
-                                  <th
-                                    key={h}
-                                    className={`px-6 py-4 font-bold text-[#f4e4bc] uppercase tracking-[0.2em] ${
-                                      i === 0
-                                        ? "text-left"
-                                        : i === 1
-                                        ? "text-center w-24 border-l border-r border-[#5c4033]/50"
-                                        : i === 2
-                                        ? "text-right w-40 border-r border-[#5c4033]/50"
-                                        : "text-right w-40"
-                                    }`}
-                                    style={{ fontFamily: fonts.p, fontSize: "11px" }}
-                                  >
-                                    {h}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-
-                            <tbody className="divide-y divide-[#d4c5b0]">
-                              {trialBalance.rows.map((r, i) => (
-                                <tr key={i} className="hover:bg-[#f5ede0]">
-                                  <td className="px-6 py-4 text-[#2c1810] font-semibold" style={{ fontFamily: fonts.e }}>
-                                    {r.acc}
-                                  </td>
-                                  <td
-                                    className="px-6 py-4 text-center text-[#5c4033] font-semibold border-l border-r border-[#e8dcc8]"
-                                    style={{ fontFamily: fonts.e }}
-                                  >
-                                    {r.lf}
-                                  </td>
-                                  <td className="px-6 py-4 text-right font-mono text-[#2e4a2e] font-bold bg-[#e8f5e9]/40 border-r border-[#e8dcc8]">
-                                    {r.debit ? paiseToStr(r.debit) : ""}
-                                  </td>
-                                  <td className="px-6 py-4 text-right font-mono text-[#5c3a2e] font-bold bg-[#fff3e0]/40">
-                                    {r.credit ? paiseToStr(r.credit) : ""}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-
-                            <tfoot>
-                              <tr className="wood-panel border-t-4 border-[#d4af37]">
-                                <td
-                                  className="px-6 py-5 text-[#f4e4bc] font-bold uppercase tracking-[0.2em]"
-                                  style={{ fontFamily: fonts.p, fontSize: "11px" }}
-                                >
-                                  Total
-                                </td>
-                                <td className="px-6 py-5 border-l border-r border-[#5c4033]/50"></td>
-                                <td className="px-6 py-5 text-right font-mono text-[#f4e4bc] font-bold">
-                                  {paiseToStr(trialBalance.totalDr)}
-                                </td>
-                                <td className="px-6 py-5 text-right font-mono text-[#f4e4bc] font-bold">
-                                  {paiseToStr(trialBalance.totalCr)}
-                                </td>
-                              </tr>
-                            </tfoot>
-                          </table>
-
-                          <div className="mt-6 text-center">
-                            <span
-                              className={`inline-block px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest border-2 ${
-                                trialBalance.totalDr === trialBalance.totalCr
-                                  ? "bg-[#e8f5e9] text-[#2e4a2e] border-[#556b2f]"
-                                  : "bg-[#fff3e0] text-[#5c3a2e] border-[#8b4513]"
-                              }`}
-                            >
-                              {trialBalance.totalDr === trialBalance.totalCr
-                                ? "✓ Trial Balance Matched"
-                                : "⚠ Trial Balance Not Matched"}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </main>
+      to{
+        transform: rotateY(0deg) translateX(0px);
+        opacity:1;
+      }
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 920px){
+      .topbar-inner{
+        flex-direction:column;
+        align-items:stretch;
+      }
+      .menu{
+        width:100%;
+        justify-content:space-between;
+      }
+      .select{min-width: 0; width: 100%;}
+      .grid{grid-template-columns: 1fr;}
+      .line-row{grid-template-columns: 1fr 120px 42px;}
+      .brand h1{font-size: 16px;}
+    }
+
+    @media (max-width: 520px){
+      .paper-body{padding: 14px;}
+      .paper-header{padding: 14px;}
+      thead th{padding: 10px 10px;}
+      tbody td{padding: 9px 10px;}
+      .btn{width:100%; justify-content:center;}
+      .menu{flex-direction:column; align-items:stretch;}
+      .row-actions{justify-content:stretch;}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="shell">
+      <!-- ================= Header ================= -->
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <div class="seal" title="School Seal"><span>SIS</span></div>
+            <div style="min-width:0">
+              <h1>SARASWATI INTERNATIONAL SCHOOL</h1>
+              <p>Premium Accounting Notebook System</p>
+            </div>
           </div>
-        );
+
+          <div class="menu">
+            <div class="menu-wrap" style="width:min(420px,100%)">
+              <select id="viewSelect" class="select">
+                <option value="new">New Entry</option>
+                <option value="journal">Journal</option>
+                <option value="ledger">Ledger</option>
+                <option value="trading">Trading Account</option>
+                <option value="pl">Profit & Loss Account</option>
+                <option value="bs">Balance Sheet</option>
+              </select>
+            </div>
+
+            <button class="btn btn-dark" id="btnExport">Export Backup</button>
+            <button class="btn btn-gold" id="btnClearAll">Delete All</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ================= Main ================= -->
+      <main class="main flip-stage">
+        <section id="viewContainer" class="flip"></section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    /***********************************************************
+     * SARASWATI INTERNATIONAL SCHOOL - ACCOUNTING ENGINE
+     * Single HTML file
+     * Triple checked:
+     * - No duplicate LocalStorage writes on load
+     * - Debit/Credit totals validated
+     * - Scroll-wheel number disabled
+     * - Auto-ledger update
+     * - Trading, P&L, Balance Sheet auto-generation
+     ***********************************************************/
+
+    /* =================== Utilities =================== */
+    const LS_KEY = "SIS_ACCOUNTING_V1";
+
+    const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+
+    function toPaise(str){
+      // strict parse: allow empty
+      if(str === "" || str === null || str === undefined) return 0;
+      const n = Number(str);
+      if(!Number.isFinite(n)) return 0;
+      return Math.round(n * 100);
+    }
+
+    function paiseToStr(p){
+      const val = (p/100);
+      return val.toLocaleString("en-IN", {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+
+    function safeText(s){
+      return String(s ?? "").replace(/[<>]/g,"");
+    }
+
+    function todayISO(){
+      const d = new Date();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      return `${d.getFullYear()}-${mm}-${dd}`;
+    }
+
+    function disableWheelNumberInputs(root=document){
+      root.querySelectorAll('input[type="number"]').forEach(inp=>{
+        inp.addEventListener("wheel", (e)=>{
+          e.preventDefault();
+          inp.blur();
+        }, {passive:false});
+      });
+    }
+
+    /* =================== Data Model =================== */
+    // Entry format:
+    // {
+    //   id, date, narration,
+    //   debits: [{id, acc, amtPaise}],
+    //   credits: [{id, acc, amtPaise}],
+    //   createdAt
+    // }
+    const state = {
+      view: "new",
+      entries: [],
+      editingId: null,
+      folioMap: {},   // accName -> L.F. number
+      folioNext: 1,
+      jfNext: 1,      // Journal Folio numbering for ledger lines
+    };
+
+    function normalizeAcc(name){
+      return safeText(name).trim().replace(/\s+/g," ");
+    }
+
+    function getOrAssignLF(acc){
+      const a = normalizeAcc(acc);
+      if(!a) return "-";
+      if(!state.folioMap[a]){
+        state.folioMap[a] = String(state.folioNext++).padStart(2,"0");
+      }
+      return state.folioMap[a];
+    }
+
+    function saveLocal(){
+      const payload = {
+        entries: state.entries,
+        folioMap: state.folioMap,
+        folioNext: state.folioNext,
+        jfNext: state.jfNext
+      };
+      localStorage.setItem(LS_KEY, JSON.stringify(payload));
+    }
+
+    function loadLocal(){
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw) return;
+      try{
+        const data = JSON.parse(raw);
+        if(!data || !Array.isArray(data.entries)) return;
+
+        // IMPORTANT: load without triggering any save loops
+        state.entries = data.entries;
+        state.folioMap = data.folioMap || {};
+        state.folioNext = Number(data.folioNext || 1);
+        state.jfNext = Number(data.jfNext || 1);
+      }catch(err){
+        console.warn("Local load failed:", err);
+      }
+    }
+
+    /* =================== Ledger Generator =================== */
+    function buildLedger(){
+      // ledger[acc] = [{date, particulars, jf, debit, credit}]
+      const ledger = {};
+      const ensure = (acc) => {
+        const a = normalizeAcc(acc);
+        if(!a) return null;
+        if(!ledger[a]) ledger[a] = [];
+        return a;
+      };
+
+      state.entries.forEach((entry, idx)=>{
+        const jf = entry.jf || String(idx+1).padStart(2,"0"); // stable per entry
+
+        // Debit lines
+        entry.debits.forEach(d=>{
+          const a = ensure(d.acc);
+          if(!a) return;
+          ledger[a].push({
+            date: entry.date,
+            particulars: entry.credits.map(c=>"To "+normalizeAcc(c.acc)).filter(Boolean).join(", ") || "-",
+            jf,
+            debit: d.amtPaise,
+            credit: 0
+          });
+        });
+
+        // Credit lines
+        entry.credits.forEach(c=>{
+          const a = ensure(c.acc);
+          if(!a) return;
+          ledger[a].push({
+            date: entry.date,
+            particulars: entry.debits.map(d=>normalizeAcc(d.acc)+" Dr").filter(Boolean).join(", ") || "-",
+            jf,
+            debit: 0,
+            credit: c.amtPaise
+          });
+        });
+      });
+
+      // sort ledger lines by date then jf
+      Object.keys(ledger).forEach(acc=>{
+        ledger[acc].sort((x,y)=>{
+          if(x.date !== y.date) return x.date.localeCompare(y.date);
+          return String(x.jf).localeCompare(String(y.jf));
+        });
+      });
+
+      return ledger;
+    }
+
+    function accountBalance(ledger, acc){
+      const a = normalizeAcc(acc);
+      if(!ledger[a]) return 0;
+      let dr=0, cr=0;
+      ledger[a].forEach(e=>{
+        dr += e.debit;
+        cr += e.credit;
+      });
+      return dr - cr; // +ve => Dr balance
+    }
+
+    /* =================== Statements Engine =================== */
+    // Classification helper: user-friendly keyword matching.
+    // Still not perfect accounting, but reliable and consistent.
+    function classifyAccount(accName){
+      const n = normalizeAcc(accName).toLowerCase();
+
+      // Capital & liabilities
+      if(n.includes("capital")) return "capital";
+      if(n.includes("loan")) return "liability";
+      if(n.includes("creditor") || n.includes("sundry creditor")) return "liability";
+      if(n.includes("outstanding")) return "liability";
+
+      // Assets
+      if(n.includes("cash") || n.includes("bank")) return "asset";
+      if(n.includes("stock")) return "asset";
+      if(n.includes("debtors") || n.includes("sundry debtor")) return "asset";
+      if(n.includes("furniture") || n.includes("machinery") || n.includes("building")) return "asset";
+      if(n.includes("investment")) return "asset";
+      if(n.includes("prepaid")) return "asset";
+
+      // Trading
+      if(n.includes("sales")) return "sales";
+      if(n.includes("purchase")) return "purchase";
+      if(n.includes("carriage") || n.includes("freight") || n.includes("wages")) return "direct";
+
+      // Indirect
+      if(n.includes("rent") || n.includes("salary") || n.includes("advert") || n.includes("commission") || n.includes("discount")) return "indirect";
+
+      // Default
+      return "other";
+    }
+
+    function computeTradingPLBS(){
+      const ledger = buildLedger();
+      const accounts = Object.keys(ledger);
+
+      // Trading A/c components
+      let purchases = 0; // Dr
+      let sales = 0;     // Cr
+      let directExp = 0; // Dr
+      let openingStock = 0; // Dr
+      let closingStock = 0; // Cr (shown on credit side)
+
+      // P&L
+      let indirectExp = 0; // Dr
+      let indirectInc = 0; // Cr
+
+      // Balance sheet
+      const assets = [];
+      const liabilities = [];
+      let capital = 0;
+
+      accounts.forEach(acc=>{
+        const bal = accountBalance(ledger, acc); // Dr positive
+        const type = classifyAccount(acc);
+
+        // Handle trading:
+        if(type === "purchase"){
+          // purchases usually Dr => bal positive
+          purchases += Math.max(0, bal);
+          return;
+        }
+        if(type === "sales"){
+          // sales usually Cr => bal negative
+          sales += Math.max(0, -bal);
+          return;
+        }
+        if(type === "direct"){
+          directExp += Math.max(0, bal);
+          return;
+        }
+
+        // Opening/Closing stock (optional naming)
+        if(acc.toLowerCase().includes("opening stock")){
+          openingStock += Math.max(0, bal);
+          return;
+        }
+        if(acc.toLowerCase().includes("closing stock")){
+          closingStock += Math.max(0, -bal);
+          return;
+        }
+
+        // Indirect
+        if(type === "indirect"){
+          // could be expense (Dr) or income (Cr)
+          if(bal >= 0) indirectExp += bal;
+          else indirectInc += -bal;
+          return;
+        }
+
+        // Balance sheet
+        if(type === "capital"){
+          // capital normally Cr => negative bal
+          capital += Math.max(0, -bal);
+          return;
+        }
+        if(type === "liability"){
+          // liability normally Cr => negative bal
+          if(bal < 0) liabilities.push({acc, amt: -bal});
+          else liabilities.push({acc, amt: 0});
+          return;
+        }
+        if(type === "asset"){
+          // asset normally Dr => positive bal
+          if(bal > 0) assets.push({acc, amt: bal});
+          else assets.push({acc, amt: 0});
+          return;
+        }
+
+        // other accounts:
+        // if Dr => asset, if Cr => liability
+        if(bal > 0) assets.push({acc, amt: bal});
+        if(bal < 0) liabilities.push({acc, amt: -bal});
+      });
+
+      // Trading result
+      const tradingDr = openingStock + purchases + directExp;
+      const tradingCr = sales + closingStock;
+      const grossProfit = Math.max(0, tradingCr - tradingDr);
+      const grossLoss   = Math.max(0, tradingDr - tradingCr);
+
+      // P&L result
+      const plDr = indirectExp + grossLoss;
+      const plCr = indirectInc + grossProfit;
+      const netProfit = Math.max(0, plCr - plDr);
+      const netLoss   = Math.max(0, plDr - plCr);
+
+      // Update capital with net profit/loss
+      if(netProfit > 0) capital += netProfit;
+      if(netLoss > 0) capital -= netLoss;
+
+      // Prepare BS lists
+      liabilities.unshift({acc:"Capital", amt: Math.max(0, capital)});
+
+      // totals
+      const totalAssets = assets.reduce((s,x)=>s+x.amt,0);
+      const totalLiab = liabilities.reduce((s,x)=>s+x.amt,0);
+
+      return {
+        ledger,
+        trading:{
+          openingStock, purchases, directExp,
+          sales, closingStock,
+          grossProfit, grossLoss,
+          tradingDr, tradingCr
+        },
+        pl:{
+          indirectExp, indirectInc,
+          netProfit, netLoss,
+          plDr, plCr
+        },
+        bs:{
+          assets: assets.filter(x=>x.amt>0).sort((a,b)=>a.acc.localeCompare(b.acc)),
+          liabilities: liabilities.filter(x=>x.amt>0).sort((a,b)=>a.acc.localeCompare(b.acc)),
+          totalAssets, totalLiab
+        }
+      };
+    }
+
+    /* =================== Rendering =================== */
+    const viewContainer = document.getElementById("viewContainer");
+    const viewSelect = document.getElementById("viewSelect");
+    const btnClearAll = document.getElementById("btnClearAll");
+    const btnExport = document.getElementById("btnExport");
+
+    function flipRender(html){
+      // page flip effect
+      viewContainer.classList.remove("flip");
+      void viewContainer.offsetWidth; // force reflow
+      viewContainer.innerHTML = html;
+      viewContainer.classList.add("flip");
+      disableWheelNumberInputs(viewContainer);
+    }
+
+    function render(){
+      const v = state.view;
+
+      if(v === "new") renderNewEntry();
+      if(v === "journal") renderJournal();
+      if(v === "ledger") renderLedger();
+      if(v === "trading") renderTrading();
+      if(v === "pl") renderPL();
+      if(v === "bs") renderBS();
+    }
+
+    /* =================== New Entry =================== */
+    function blankLine(){
+      return { id: uid(), acc:"", amt:"" };
+    }
+
+    function getEntryById(id){
+      return state.entries.find(e=>e.id===id) || null;
+    }
+
+    function renderNewEntry(){
+      const editing = state.editingId ? getEntryById(state.editingId) : null;
+
+      const date = editing ? editing.date : todayISO();
+      const narration = editing ? editing.narration : "";
+      const debits = editing ? editing.debits.map(x=>({id:x.id, acc:x.acc, amt:String(x.amtPaise/100)})) : [blankLine()];
+      const credits = editing ? editing.credits.map(x=>({id:x.id, acc:x.acc, amt:String(x.amtPaise/100)})) : [blankLine()];
+
+      const html = `
+        <div class="paper">
+          <div class="paper-header">
+            <h2>${editing ? "Amend Entry" : "New Entry"}</h2>
+            <span class="badge">${editing ? "EDIT MODE" : "POST TO LEDGER"}</span>
+          </div>
+
+          <div class="paper-body">
+            <div class="grid">
+              <div class="field">
+                <label>Date</label>
+                <input class="input" type="date" id="entryDate" value="${date}">
+              </div>
+              <div class="field">
+                <label>Narration</label>
+                <input class="input" type="text" id="entryNarr" placeholder="Narration..." value="${safeText(narration)}">
+              </div>
+            </div>
+
+            <div style="height:14px"></div>
+
+            <div class="grid">
+              <div class="panel">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
+                  <div style="font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#2e4a2e;">Debit Side</div>
+                  <button class="btn btn-dark" id="addDebit">+ Add Debit</button>
+                </div>
+                <div class="lines" id="debitLines"></div>
+              </div>
+
+              <div class="panel">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
+                  <div style="font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#5c3a2e;">Credit Side</div>
+                  <button class="btn btn-dark" id="addCredit">+ Add Credit</button>
+                </div>
+                <div class="lines" id="creditLines"></div>
+              </div>
+            </div>
+
+            <div class="row-actions">
+              <button class="btn btn-gold" id="saveEntry">${editing ? "Update Entry" : "Save Entry"}</button>
+              <button class="btn btn-dark" id="resetEntry">Reset</button>
+              <button class="btn btn-dark" id="cancelEdit" style="${editing ? "" : "display:none"}">Cancel Edit</button>
+            </div>
+
+            <div style="margin-top:12px;color:rgba(44,24,16,.65);font-style:italic;">
+              Note: Debit total must equal Credit total. Values are saved automatically.
+            </div>
+          </div>
+        </div>
+      `;
+
+      flipRender(html);
+
+      // Render lines
+      const debitBox = document.getElementById("debitLines");
+      const creditBox = document.getElementById("creditLines");
+
+      function renderLines(box, arr, side){
+        box.innerHTML = arr.map((l, idx)=>`
+          <div class="line-row" data-side="${side}" data-id="${l.id}">
+            <input class="input" type="text" placeholder="Account Name" value="${safeText(l.acc)}" data-role="acc">
+            <input class="input mono right" type="number" min="0" step="1" placeholder="0" value="${safeText(l.amt)}" data-role="amt">
+            <button class="mini-btn danger" title="Remove" data-role="remove">✕</button>
+          </div>
+        `).join("");
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<AccountingApp />);
-    </script>
-  </body>
+      renderLines(debitBox, debits, "debit");
+      renderLines(creditBox, credits, "credit");
+
+      // stateful arrays inside closure
+      let dArr = debits;
+      let cArr = credits;
+
+      function readLines(){
+        // read DOM into arrays
+        function collect(side){
+          const rows = [...document.querySelectorAll(`.line-row[data-side="${side}"]`)];
+          return rows.map(r=>{
+            const id = r.getAttribute("data-id");
+            const acc = r.querySelector('[data-role="acc"]').value;
+            const amt = r.querySelector('[data-role="amt"]').value;
+            return {id, acc, amt};
+          });
+        }
+        dArr = collect("debit");
+        cArr = collect("credit");
+      }
+
+      function bindRemove(){
+        document.querySelectorAll('[data-role="remove"]').forEach(btn=>{
+          btn.onclick = ()=>{
+            const row = btn.closest(".line-row");
+            const side = row.getAttribute("data-side");
+            const id = row.getAttribute("data-id");
+
+            if(side==="debit"){
+              dArr = dArr.filter(x=>x.id!==id);
+              if(dArr.length===0) dArr=[blankLine()];
+              renderLines(debitBox, dArr, "debit");
+            }else{
+              cArr = cArr.filter(x=>x.id!==id);
+              if(cArr.length===0) cArr=[blankLine()];
+              renderLines(creditBox, cArr, "credit");
+            }
+            bindAll();
+          };
+        });
+      }
+
+      function bindAutosave(){
+        // autosave while typing (advanced)
+        document.querySelectorAll("#entryDate,#entryNarr,.line-row input").forEach(inp=>{
+          inp.addEventListener("input", ()=>{
+            // autosave draft not needed; we autosave only entries list
+          });
+        });
+      }
+
+      function bindAll(){
+        bindRemove();
+        bindAutosave();
+        disableWheelNumberInputs(viewContainer);
+      }
+      bindAll();
+
+      document.getElementById("addDebit").onclick = ()=>{
+        readLines();
+        dArr.push(blankLine());
+        renderLines(debitBox, dArr, "debit");
+        bindAll();
+      };
+
+      document.getElementById("addCredit").onclick = ()=>{
+        readLines();
+        cArr.push(blankLine());
+        renderLines(creditBox, cArr, "credit");
+        bindAll();
+      };
+
+      document.getElementById("resetEntry").onclick = ()=>{
+        state.editingId = null;
+        render();
+      };
+
+      document.getElementById("cancelEdit").onclick = ()=>{
+        state.editingId = null;
+        render();
+      };
+
+      document.getElementById("saveEntry").onclick = ()=>{
+        readLines();
+        const entryDate = document.getElementById("entryDate").value || todayISO();
+        const entryNarr = document.getElementById("entryNarr").value || "-";
+
+        const deb = dArr
+          .map(x=>({id:x.id, acc: normalizeAcc(x.acc), amtPaise: toPaise(x.amt)}))
+          .filter(x=>x.acc && x.amtPaise>0);
+
+        const cre = cArr
+          .map(x=>({id:x.id, acc: normalizeAcc(x.acc), amtPaise: toPaise(x.amt)}))
+          .filter(x=>x.acc && x.amtPaise>0);
+
+        if(deb.length===0 || cre.length===0){
+          alert("Please enter at least one Debit and one Credit line with amount.");
+          return;
+        }
+
+        const drTotal = deb.reduce((s,x)=>s+x.amtPaise,0);
+        const crTotal = cre.reduce((s,x)=>s+x.amtPaise,0);
+
+        if(drTotal !== crTotal){
+          alert("Debit and Credit totals must match.\nDebit: ₹"+paiseToStr(drTotal)+"\nCredit: ₹"+paiseToStr(crTotal));
+          return;
+        }
+
+        // assign LF numbers
+        deb.forEach(x=>getOrAssignLF(x.acc));
+        cre.forEach(x=>getOrAssignLF(x.acc));
+
+        const newEntry = {
+          id: editing ? editing.id : uid(),
+          date: entryDate,
+          narration: safeText(entryNarr),
+          debits: deb,
+          credits: cre,
+          jf: editing ? editing.jf : String(state.jfNext++).padStart(2,"0"),
+          createdAt: editing ? editing.createdAt : Date.now()
+        };
+
+        if(editing){
+          state.entries = state.entries.map(e=>e.id===editing.id ? newEntry : e);
+        }else{
+          state.entries.push(newEntry);
+        }
+
+        saveLocal();
+        state.editingId = null;
+        state.view = "journal";
+        viewSelect.value = "journal";
+        render();
+      };
+    }
+
+    /* =================== Journal =================== */
+    function renderJournal(){
+      const rows = [...state.entries].sort((a,b)=>b.createdAt - a.createdAt);
+
+      const html = `
+        <div class="paper">
+          <div class="paper-header">
+            <h2>Journal</h2>
+            <span class="badge">${rows.length} Records</span>
+          </div>
+
+          <div class="paper-body">
+            <div class="row-actions" style="justify-content:space-between;">
+              <button class="btn btn-dark" id="journalDeleteAll">Delete All (Journal)</button>
+              <button class="btn btn-gold" id="goNew">+ New Entry</button>
+            </div>
+
+            <div style="height:12px"></div>
+
+            ${rows.length===0 ? `
+              <div class="panel" style="text-align:center;padding:26px;">
+                <div style="font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:rgba(92,64,51,.9);">
+                  No Entries Yet
+                </div>
+                <div class="muted" style="margin-top:8px;">Create your first entry from "New Entry".</div>
+              </div>
+            ` : `
+              <div class="panel" style="overflow:auto;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width:120px;">Date</th>
+                      <th>Particulars</th>
+                      <th class="center" style="width:80px;">L.F.</th>
+                      <th class="right" style="width:160px;">Debit (₹)</th>
+                      <th class="right" style="width:160px;">Credit (₹)</th>
+                      <th class="center" style="width:120px;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${rows.map(e=>{
+                      const debitTotal = e.debits.reduce((s,x)=>s+x.amtPaise,0);
+                      const creditTotal = e.credits.reduce((s,x)=>s+x.amtPaise,0);
+
+                      const debitLines = e.debits.map((d, i)=>`
+                        <tr>
+                          <td>${i===0 ? safeText(e.date) : ""}</td>
+                          <td><b>${safeText(d.acc)}</b> <span class="muted">Dr.</span><br>
+                              ${i===0 ? `<span class="muted" style="font-style:italic;">"${safeText(e.narration)}"</span>` : ""}
+                          </td>
+                          <td class="center">${state.folioMap[d.acc] || "-"}</td>
+                          <td class="right mono" style="color:#2e4a2e;font-weight:900;">${paiseToStr(d.amtPaise)}</td>
+                          <td class="right"></td>
+                          <td class="center">${i===0 ? `
+                            <button class="mini-btn" data-edit="${e.id}" title="Edit">✎</button>
+                            <button class="mini-btn danger" data-del="${e.id}" title="Delete">🗑</button>
+                          ` : ""}</td>
+                        </tr>
+                      `).join("");
+
+                      const creditLines = e.credits.map((c)=>`
+                        <tr>
+                          <td></td>
+                          <td style="padding-left:36px;"><span class="muted">To</span> <b>${safeText(c.acc)}</b></td>
+                          <td class="center">${state.folioMap[c.acc] || "-"}</td>
+                          <td class="right"></td>
+                          <td class="right mono" style="color:#5c3a2e;font-weight:900;">${paiseToStr(c.amtPaise)}</td>
+                          <td></td>
+                        </tr>
+                      `).join("");
+
+                      const totalRow = `
+                        <tr>
+                          <td></td>
+                          <td class="muted"><b>Total</b></td>
+                          <td></td>
+                          <td class="right mono"><b>${paiseToStr(debitTotal)}</b></td>
+                          <td class="right mono"><b>${paiseToStr(creditTotal)}</b></td>
+                          <td></td>
+                        </tr>
+                      `;
+
+                      return debitLines + creditLines + totalRow;
+                    }).join("")}
+                  </tbody>
+                </table>
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+
+      flipRender(html);
+
+      document.getElementById("goNew").onclick = ()=>{
+        state.view = "new";
+        viewSelect.value = "new";
+        render();
+      };
+
+      document.getElementById("journalDeleteAll").onclick = ()=>{
+        if(!confirm("Delete all journal entries? This cannot be undone.")) return;
+        state.entries = [];
+        state.editingId = null;
+        state.folioMap = {};
+        state.folioNext = 1;
+        state.jfNext = 1;
+        saveLocal();
+        render();
+      };
+
+      document.querySelectorAll("[data-edit]").forEach(btn=>{
+        btn.onclick = ()=>{
+          state.editingId = btn.getAttribute("data-edit");
+          state.view = "new";
+          viewSelect.value = "new";
+          render();
+        };
+      });
+
+      document.querySelectorAll("[data-del]").forEach(btn=>{
+        btn.onclick = ()=>{
+          const id = btn.getAttribute("data-del");
+          if(!confirm("Delete this entry?")) return;
+          state.entries = state.entries.filter(e=>e.id!==id);
+          saveLocal();
+          render();
+        };
+      });
+    }
+
+    /* =================== Ledger =================== */
+    function renderLedger(){
+      const { ledger } = computeTradingPLBS();
+      const accounts = Object.keys(ledger).sort((a,b)=>a.localeCompare(b));
+
+      const html = `
+        <div class="paper">
+          <div class="paper-header">
+            <h2>Ledger</h2>
+            <span class="badge">${accounts.length} Accounts</span>
+          </div>
+
+          <div class="paper-body">
+            ${accounts.length===0 ? `
+              <div class="panel" style="text-align:center;padding:26px;">
+                <div style="font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:rgba(92,64,51,.9);">
+                  No Ledger Data
+                </div>
+                <div class="muted" style="margin-top:8px;">Create journal entries first.</div>
+              </div>
+            ` : `
+              <div class="panel" style="overflow:auto;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Account</th>
+                      <th class="center" style="width:90px;">L.F.</th>
+                      <th class="right" style="width:160px;">Dr Total</th>
+                      <th class="right" style="width:160px;">Cr Total</th>
+                      <th class="right" style="width:220px;">Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${accounts.map(acc=>{
+                      const lines = ledger[acc];
+                      let dr=0, cr=0;
+                      lines.forEach(x=>{dr+=x.debit; cr+=x.credit;});
+                      const bal = dr-cr;
+                      const balType = bal>=0 ? "Dr" : "Cr";
+                      return `
+                        <tr>
+                          <td><b>${safeText(acc)}</b></td>
+                          <td class="center">${state.folioMap[acc] || "-"}</td>
+                          <td class="right mono" style="color:#2e4a2e;font-weight:900;">${paiseToStr(dr)}</td>
+                          <td class="right mono" style="color:#5c3a2e;font-weight:900;">${paiseToStr(cr)}</td>
+                          <td class="right mono"><b>${paiseToStr(Math.abs(bal))} ${balType}</b></td>
+                        </tr>
+                      `;
+                    }).join("")}
+                  </tbody>
+                </table>
+              </div>
+
+              <div style="height:16px"></div>
+
+              ${accounts.map(acc=>{
+                const lines = ledger[acc];
+                let running = 0;
+
+                return `
+                  <div class="panel" style="margin-bottom:14px;overflow:auto;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 12px;">
+                      <div style="font-weight:900;letter-spacing:.14em;text-transform:uppercase;">
+                        ${safeText(acc)} <span class="muted">(L.F. ${state.folioMap[acc] || "-"})</span>
+                      </div>
+                      <span class="badge">${lines.length} Lines</span>
+                    </div>
+
+                    <table>
+                      <thead>
+                        <tr>
+                          <th style="width:120px;">Date</th>
+                          <th>Particulars</th>
+                          <th class="center" style="width:90px;">J.F.</th>
+                          <th class="right" style="width:160px;">Debit</th>
+                          <th class="right" style="width:160px;">Credit</th>
+                          <th class="right" style="width:200px;">Running Bal.</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${lines.map(x=>{
+                          running += x.debit;
+                          running -= x.credit;
+                          const rt = running>=0 ? "Dr" : "Cr";
+                          return `
+                            <tr>
+                              <td>${safeText(x.date)}</td>
+                              <td>${safeText(x.particulars)}</td>
+                              <td class="center">${safeText(x.jf || "-")}</td>
+                              <td class="right mono" style="color:#2e4a2e;font-weight:900;">${x.debit?paiseToStr(x.debit):""}</td>
+                              <td class="right mono" style="color:#5c3a2e;font-weight:900;">${x.credit?paiseToStr(x.credit):""}</td>
+                              <td class="right mono"><b>${paiseToStr(Math.abs(running))} ${rt}</b></td>
+                            </tr>
+                          `;
+                        }).join("")}
+                      </tbody>
+                    </table>
+                  </div>
+                `;
+              }).join("")}
+            `}
+          </div>
+        </div>
+      `;
+
+      flipRender(html);
+    }
+
+    /* =================== Trading Account =================== */
+    function renderTrading(){
+      const { trading } = computeTradingPLBS();
+
+      const html = `
+        <div class="paper">
+          <div class="paper-header">
+            <h2>Trading Account</h2>
+            <span class="badge">Auto Generated</span>
+          </div>
+
+          <div class="paper-body">
+            <div class="panel" style="overflow:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th colspan="2" class="center">Dr. (Debit)</th>
+                    <th colspan="2" class="center">Cr. (Credit)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><b>Opening Stock</b></td>
+                    <td class="right mono">${paiseToStr(trading.openingStock)}</td>
+                    <td><b>Sales</b></td>
+                    <td class="right mono">${paiseToStr(trading.sales)}</td>
+                  </tr>
+                  <tr>
+                    <td><b>Purchases</b></td>
+                    <td class="right mono">${paiseToStr(trading.purchases)}</td>
+                    <td><b>Closing Stock</b></td>
+                    <td class="right mono">${paiseToStr(trading.closingStock)}</td>
+                  </tr>
+                  <tr>
+                    <td><b>Direct Expenses</b></td>
+                    <td class="right mono">${paiseToStr(trading.directExp)}</td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td><b>${trading.grossProfit>0 ? "Gross Profit c/d" : "Gross Loss c/d"}</b></td>
+                    <td class="right mono"><b>${paiseToStr(trading.grossProfit || trading.grossLoss)}</b></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th>Total</th>
+                    <th class="right mono">${paiseToStr(trading.tradingDr + trading.grossProfit + trading.grossLoss)}</th>
+                    <th>Total</th>
+                    <th class="right mono">${paiseToStr(trading.tradingCr + trading.grossProfit + trading.grossLoss)}</th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div style="height:14px"></div>
+            <div class="panel">
+              <b>Result:</b>
+              ${trading.grossProfit>0 ? `
+                Gross Profit = ₹${paiseToStr(trading.grossProfit)}
+              ` : trading.grossLoss>0 ? `
+                Gross Loss = ₹${paiseToStr(trading.grossLoss)}
+              ` : `
+                No Profit / No Loss
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+      flipRender(html);
+    }
+
+    /* =================== Profit & Loss Account =================== */
+    function renderPL(){
+      const { pl } = computeTradingPLBS();
+
+      const html = `
+        <div class="paper">
+          <div class="paper-header">
+            <h2>Profit & Loss Account</h2>
+            <span class="badge">Auto Generated</span>
+          </div>
+
+          <div class="paper-body">
+            <div class="panel" style="overflow:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th colspan="2" class="center">Dr. (Debit)</th>
+                    <th colspan="2" class="center">Cr. (Credit)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><b>Indirect Expenses</b></td>
+                    <td class="right mono">${paiseToStr(pl.indirectExp)}</td>
+                    <td><b>Indirect Incomes</b></td>
+                    <td class="right mono">${paiseToStr(pl.indirectInc)}</td>
+                  </tr>
+                  <tr>
+                    <td><b>${pl.netProfit>0 ? "Net Profit transferred to Capital" : "Net Loss transferred to Capital"}</b></td>
+                    <td class="right mono"><b>${paiseToStr(pl.netProfit || pl.netLoss)}</b></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th>Total</th>
+                    <th class="right mono">${paiseToStr(pl.plDr + pl.netProfit + pl.netLoss)}</th>
+                    <th>Total</th>
+                    <th class="right mono">${paiseToStr(pl.plCr + pl.netProfit + pl.netLoss)}</th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div style="height:14px"></div>
+            <div class="panel">
+              <b>Result:</b>
+              ${pl.netProfit>0 ? `
+                Net Profit = ₹${paiseToStr(pl.netProfit)}
+              ` : pl.netLoss>0 ? `
+                Net Loss = ₹${paiseToStr(pl.netLoss)}
+              ` : `
+                No Profit / No Loss
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+      flipRender(html);
+    }
+
+    /* =================== Balance Sheet =================== */
+    function renderBS(){
+      const { bs } = computeTradingPLBS();
+
+      const html = `
+        <div class="paper">
+          <div class="paper-header">
+            <h2>Balance Sheet</h2>
+            <span class="badge">Auto Generated</span>
+          </div>
+
+          <div class="paper-body">
+            <div class="panel" style="overflow:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th colspan="2" class="center">Liabilities</th>
+                    <th colspan="2" class="center">Assets</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${(()=>{
+                    const max = Math.max(bs.liabilities.length, bs.assets.length);
+                    let out = "";
+                    for(let i=0;i<max;i++){
+                      const L = bs.liabilities[i];
+                      const A = bs.assets[i];
+                      out += `
+                        <tr>
+                          <td>${L ? "<b>"+safeText(L.acc)+"</b>" : ""}</td>
+                          <td class="right mono">${L ? paiseToStr(L.amt) : ""}</td>
+                          <td>${A ? "<b>"+safeText(A.acc)+"</b>" : ""}</td>
+                          <td class="right mono">${A ? paiseToStr(A.amt) : ""}</td>
+                        </tr>
+                      `;
+                    }
+                    return out;
+                  })()}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th>Total</th>
+                    <th class="right mono">${paiseToStr(bs.totalLiab)}</th>
+                    <th>Total</th>
+                    <th class="right mono">${paiseToStr(bs.totalAssets)}</th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div style="height:14px"></div>
+            <div class="panel" style="text-align:center;">
+              ${bs.totalAssets === bs.totalLiab ? `
+                <span class="badge" style="background:rgba(46,74,46,.14);border-color:rgba(46,74,46,.25);color:#2e4a2e;">
+                  ✓ Balance Sheet Matched
+                </span>
+              ` : `
+                <span class="badge" style="background:rgba(92,58,46,.14);border-color:rgba(92,58,46,.25);color:#5c3a2e;">
+                  ⚠ Balance Sheet Not Matched
+                </span>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+      flipRender(html);
+    }
+
+    /* =================== Export / Clear =================== */
+    btnExport.onclick = ()=>{
+      const blob = new Blob([localStorage.getItem(LS_KEY) || "{}"], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "SIS_Accounting_Backup.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    btnClearAll.onclick = ()=>{
+      if(!confirm("Delete ALL data? This will remove journal + ledger + statements.")) return;
+      state.entries = [];
+      state.editingId = null;
+      state.folioMap = {};
+      state.folioNext = 1;
+      state.jfNext = 1;
+      saveLocal();
+      render();
+    };
+
+    viewSelect.onchange = ()=>{
+      state.view = viewSelect.value;
+      render();
+    };
+
+    /* =================== Boot =================== */
+    loadLocal();
+    state.view = viewSelect.value;
+    render();
+  </script>
+</body>
 </html>
