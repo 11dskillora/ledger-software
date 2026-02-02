@@ -1,1060 +1,1154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SARASWATI INTERNATIONAL SCHOOL - Accounting System</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SARASWATI INTERNATIONAL SCHOOL - Accounting Dashboard</title>
 
-  <style>
-    /* ==========================================================
-       SARASWATI INTERNATIONAL SCHOOL - NOTEBOOK LEDGER SYSTEM
-       Premium Woody UI + Notebook Paper + Mobile Friendly
-       ========================================================== */
+<style>
+  /* ==========================================================
+     OLD UI (Clean Notebook + Premium Simple)
+     ========================================================== */
 
-    :root{
-      --wood-dark:#2a1f18;
-      --wood-mid:#3b2a21;
-      --wood-light:#5b3f31;
+  :root{
+    --bg1:#fefcf5;
+    --bg2:#f4eee0;
+    --ink:#3e2723;
+    --ink2:#5c4033;
+    --muted:#8b6f47;
+    --border:#a1887f;
+    --paper:#fffdf7;
+    --paper2:#f7f0e4;
+    --shadow:0 10px 30px rgba(0,0,0,0.08);
+  }
 
-      --paper:#fbf8f1;
-      --paper-2:#f3eee2;
-      --ink:#2b1b13;
-      --muted:#7a5d47;
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: "Courier New", monospace;
+    background: linear-gradient(135deg,var(--bg1),var(--bg2));
+    color:var(--ink);
+  }
 
-      --gold:#d7b04a;
-      --border:#caa574;
-      --shadow: 0 18px 50px rgba(0,0,0,.35);
+  h1,h2,h3{
+    text-align:center;
+    margin:8px 0;
+    color:var(--ink2);
+  }
 
-      --ok:#2e6b3d;
-      --bad:#8a2f2f;
-      --warn:#8a6b2f;
+  .container{
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 14px;
+  }
 
-      --radius:18px;
-    }
+  /* Header */
+  .topbar{
+    background: linear-gradient(to right, #f7efe2, #efe2d1);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    backdrop-filter: blur(6px);
+  }
 
-    *{box-sizing:border-box;}
-    html,body{height:100%;}
-    body{
-      margin:0;
-      font-family: "Georgia", serif;
-      color:var(--ink);
+  .brand{
+    font-weight: 900;
+    letter-spacing: 0.6px;
+    font-size: 18px;
+    text-align:center;
+  }
 
-      /* Wooden desk background (no external image required) */
-      background:
-        radial-gradient(circle at 10% 10%, rgba(255,255,255,.06), transparent 40%),
-        radial-gradient(circle at 90% 30%, rgba(255,255,255,.04), transparent 35%),
-        repeating-linear-gradient(
-          90deg,
-          rgba(255,255,255,.03) 0px,
-          rgba(255,255,255,.03) 3px,
-          rgba(0,0,0,.06) 6px,
-          rgba(0,0,0,.06) 10px
-        ),
-        linear-gradient(135deg, var(--wood-dark), var(--wood-mid), var(--wood-light));
-      background-attachment: fixed;
-    }
+  .toolbar{
+    margin-top: 10px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:center;
+  }
 
-    /* ------------------ Header ------------------ */
-    .topbar{
-      position:sticky;
-      top:0;
-      z-index:50;
-      padding:14px 14px;
-      backdrop-filter: blur(10px);
-      background: rgba(20,12,8,.45);
-      border-bottom:1px solid rgba(255,255,255,.08);
-    }
+  select, input, button{
+    font-family: inherit;
+    font-size: 14px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: white;
+    outline:none;
+  }
 
-    .brand{
-      max-width:1200px;
-      margin:0 auto;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
+  input:focus, select:focus{
+    border-color:#6d4c41;
+    box-shadow:0 0 0 4px rgba(161,136,127,.18);
+  }
 
-    .title{
-      display:flex;
-      flex-direction:column;
-      line-height:1.1;
-    }
-    .title .school{
-      font-weight:900;
-      letter-spacing:.8px;
-      font-size:16px;
-      color:#fff;
-      text-transform:uppercase;
-    }
-    .title .sub{
-      font-size:12px;
-      color:rgba(255,255,255,.75);
-      font-family: "Courier New", monospace;
-    }
+  button{
+    cursor:pointer;
+    border:none;
+    font-weight:900;
+    background: linear-gradient(to right,#a1887f,#d7ccc8);
+    color:var(--ink);
+    transition: transform .15s ease, filter .15s ease;
+  }
+  button:hover{ transform: translateY(-1px); filter: brightness(1.03); }
+  button:active{ transform: translateY(0px); }
 
-    .menu{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
+  .btn-danger{
+    background: linear-gradient(to right,#ffb4b4,#ffd5d5);
+  }
+  .btn-dark{
+    background: linear-gradient(to right,#c8c8c8,#eeeeee);
+  }
+  .btn-small{
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 9px;
+  }
 
-    select, button, input{
-      font-family: inherit;
-      font-size:14px;
-    }
+  /* Layout */
+  .panel{
+    margin-top: 14px;
+    background: linear-gradient(180deg, var(--paper), var(--paper2));
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(0,0,0,0.08);
+    padding: 14px;
+  }
 
-    select{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.18);
-      background: rgba(255,255,255,.12);
-      color:#fff;
-      outline:none;
-      cursor:pointer;
-    }
-    select option{
-      color:#000;
-    }
+  .grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
 
-    .btn{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.18);
-      background: rgba(255,255,255,.10);
-      color:#fff;
-      cursor:pointer;
-      transition:.2s ease;
-      font-weight:700;
-      letter-spacing:.2px;
-    }
-    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.16);}
-    .btn:active{transform: translateY(0px);}
+  @media(max-width: 900px){
+    .grid{grid-template-columns: 1fr;}
+    .brand{font-size: 16px;}
+  }
 
-    .btn.bad{background: rgba(138,47,47,.25);}
-    .btn.bad:hover{background: rgba(138,47,47,.35);}
-    .btn.warn{background: rgba(138,107,47,.25);}
-    .btn.warn:hover{background: rgba(138,107,47,.35);}
-    .btn.ok{background: rgba(46,107,61,.25);}
-    .btn.ok:hover{background: rgba(46,107,61,.35);}
+  /* Notebook table */
+  .table-wrap{
+    overflow-x:auto;
+    border-radius: 14px;
+  }
 
-    /* ------------------ Main Layout ------------------ */
-    .wrap{
-      max-width:1200px;
-      margin:18px auto;
-      padding:0 14px 30px;
-    }
+  table{
+    width:100%;
+    border-collapse: collapse;
+    min-width: 700px;
+    background: rgba(255,255,255,0.7);
+  }
 
-    .paper{
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.12);
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.12));
-    }
+  th, td{
+    border: 1px solid rgba(139,111,71,0.55);
+    padding: 10px;
+    vertical-align: top;
+  }
 
-    .paper-inner{
-      background:
-        radial-gradient(circle at 50% 0%, rgba(0,0,0,.04), transparent 50%),
-        linear-gradient(180deg, var(--paper), var(--paper-2));
-      padding:18px;
-      position:relative;
-    }
+  th{
+    background: linear-gradient(to right,#f2e6d9,#d7ccc8);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-size: 13px;
+  }
 
-    /* Notebook margin line */
-    .paper-inner::before{
-      content:"";
-      position:absolute;
-      left:32px;
-      top:0;
-      bottom:0;
-      width:2px;
-      background: rgba(210,80,80,.35);
-    }
+  /* CBSE copy style dashed ruled lines */
+  .ruled td{
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 26px,
+      rgba(139,111,71,0.25) 27px,
+      rgba(0,0,0,0) 28px
+    );
+    background-size: 100% 28px;
+  }
 
-    .section-title{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:10px;
-      padding-bottom:10px;
-      border-bottom:2px dashed rgba(122,93,71,.45);
-      margin-bottom:14px;
-    }
-    .section-title h2{
-      margin:0;
-      font-size:20px;
-      letter-spacing:.3px;
-    }
-    .section-title .hint{
-      font-family:"Courier New", monospace;
-      font-size:12px;
-      color:rgba(43,27,19,.75);
-      text-align:right;
-    }
+  tr:hover td{
+    background-color: rgba(255,235,205,0.22);
+  }
 
-    /* ------------------ Page Flip Animation ------------------ */
-    .page{
-      transform-origin: left center;
-      animation: flipIn .55s ease;
-    }
-    @keyframes flipIn{
-      0%{transform: perspective(1200px) rotateY(-60deg); opacity:0;}
-      100%{transform: perspective(1200px) rotateY(0deg); opacity:1;}
-    }
+  .right{text-align:right;}
+  .center{text-align:center;}
+  .muted{color:rgba(62,39,35,.75);}
 
-    /* ------------------ Form ------------------ */
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
-    @media(max-width:860px){
-      .grid{grid-template-columns:1fr;}
-      .paper-inner::before{left:20px;}
-    }
+  .pill{
+    display:inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.75);
+    font-weight: 900;
+    font-size: 12px;
+  }
 
-    .card{
-      background: rgba(255,255,255,.7);
-      border:1px solid rgba(0,0,0,.08);
-      border-radius: 16px;
-      padding:12px;
+  /* Multi entry rows */
+  .rows{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .row{
+    display:grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap:10px;
+    align-items:center;
+  }
+  @media(max-width: 900px){
+    .row{
+      grid-template-columns: 1fr;
     }
+  }
 
-    .label{
-      font-family:"Courier New", monospace;
-      font-size:12px;
-      color:rgba(43,27,19,.75);
-      margin-bottom:6px;
-      font-weight:700;
-    }
+  .note{
+    text-align:center;
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: rgba(62,39,35,.75);
+  }
 
-    .input, .amount{
-      width:100%;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(0,0,0,.15);
-      outline:none;
-      background: rgba(255,255,255,.95);
-      transition:.2s ease;
-    }
-    .input:focus, .amount:focus{
-      border-color: rgba(90,63,49,.55);
-      box-shadow: 0 0 0 3px rgba(215,176,74,.25);
-    }
-
-    /* Disable scroll changing numbers visually */
-    input[type=number]::-webkit-outer-spin-button,
-    input[type=number]::-webkit-inner-spin-button{
-      -webkit-appearance: none;
-      margin:0;
-    }
-    input[type=number]{ -moz-appearance:textfield; }
-
-    .row-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:10px;
-    }
-
-    /* ------------------ Tables ------------------ */
-    .table-wrap{overflow:auto; border-radius:16px;}
-    table{
-      width:100%;
-      border-collapse:collapse;
-      min-width: 680px;
-      background: rgba(255,255,255,.88);
-      border:1px solid rgba(0,0,0,.10);
-      border-radius:16px;
-      overflow:hidden;
-    }
-    th,td{
-      padding:10px 12px;
-      text-align:left;
-      border-bottom:1px dashed rgba(122,93,71,.35); /* Notebook dashed lines */
-      vertical-align:top;
-    }
-    th{
-      background: linear-gradient(180deg, rgba(215,176,74,.25), rgba(255,255,255,.65));
-      font-weight:900;
-      letter-spacing:.2px;
-    }
-    tr:hover td{background: rgba(215,176,74,.08);}
-
-    .small{
-      font-family:"Courier New", monospace;
-      font-size:12px;
-      color:rgba(43,27,19,.75);
-    }
-
-    .pill{
-      display:inline-block;
-      padding:4px 8px;
-      border-radius:999px;
-      font-family:"Courier New", monospace;
-      font-size:12px;
-      font-weight:900;
-      border:1px solid rgba(0,0,0,.10);
-      background: rgba(255,255,255,.7);
-    }
-    .pill.ok{color:var(--ok);}
-    .pill.bad{color:var(--bad);}
-    .pill.warn{color:var(--warn);}
-
-    .footer-note{
-      margin-top:12px;
-      font-family:"Courier New", monospace;
-      font-size:12px;
-      color:rgba(43,27,19,.72);
-    }
-
-    /* Mobile tables */
-    @media(max-width:520px){
-      table{min-width: 560px;}
-      .title .school{font-size:14px;}
-    }
-  </style>
+  /* Toast */
+  .toast{
+    position: fixed;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.92);
+    border: 1px solid rgba(0,0,0,0.12);
+    padding: 10px 14px;
+    border-radius: 999px;
+    box-shadow: var(--shadow);
+    font-weight: 900;
+    display:none;
+    z-index: 99;
+  }
+</style>
 </head>
 
 <body>
-  <!-- ===========================
-       TOP BAR
-       =========================== -->
+<div class="container">
+
   <div class="topbar">
-    <div class="brand">
-      <div class="title">
-        <div class="school">SARASWATI INTERNATIONAL SCHOOL</div>
-        <div class="sub">Notebook Ledger System • CBSE Style • Auto Save</div>
-      </div>
+    <div class="brand">SARASWATI INTERNATIONAL SCHOOL</div>
 
-      <div class="menu">
-        <select id="viewSelect" title="Choose section">
-          <option value="newEntry">New Entry</option>
-          <option value="journal">Journal</option>
-          <option value="ledger">Ledger</option>
-          <option value="trialBalance">Trial Balance</option>
-        </select>
+    <div class="toolbar">
+      <!-- ONE MENU -->
+      <select id="viewSelect" title="Menu">
+        <option value="new">New Entry</option>
+        <option value="journal">Journal</option>
+        <option value="ledger">Ledger</option>
+        <option value="trading">Trading Account</option>
+        <option value="pl">Profit & Loss Account</option>
+        <option value="bs">Balance Sheet</option>
+      </select>
 
-        <button class="btn warn" id="undoBtn" title="Undo last action">Undo</button>
-        <button class="btn bad" id="deleteJournalBtn" title="Delete only Journal">Delete Journal</button>
-        <button class="btn bad" id="deleteLedgerBtn" title="Delete only Ledger">Delete Ledger</button>
-        <button class="btn bad" id="deleteAllBtn" title="Delete Everything">Delete All</button>
-      </div>
+      <button class="btn-dark" id="undoBtn" onclick="undoLast()">Undo</button>
+      <button class="btn-danger" onclick="deleteAllData()">Delete All</button>
+    </div>
+
+    <div class="note">
+      Multiple debit/credit supported • Auto-save enabled • Mobile-friendly • CBSE practical format
     </div>
   </div>
 
-  <!-- ===========================
-       MAIN
-       =========================== -->
-  <div class="wrap">
-    <div class="paper">
-      <div class="paper-inner">
-        <div class="section-title">
-          <h2 id="sectionTitle">New Entry</h2>
-          <div class="hint" id="sectionHint">
-            Add multiple debit & credit lines in one entry.<br/>
-            Totals must match.
+  <!-- NEW ENTRY -->
+  <div id="viewNew" class="panel">
+    <h2>New Journal Entry</h2>
+
+    <div class="grid">
+      <div>
+        <h3>Entry Details</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+          <input id="entryDate" type="date" />
+          <input id="entryNarration" type="text" placeholder="Narration (e.g., Being goods purchased from Rahul)" style="min-width:320px;flex:1;" />
+        </div>
+
+        <div style="margin-top:10px;" class="rows" id="rowsContainer"></div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px;">
+          <button onclick="addRow()">Add Debit/Credit Row</button>
+          <button onclick="submitEntry()">Submit Entry</button>
+        </div>
+
+        <div class="note">
+          Tip: In one entry you can do: Cash Dr + Discount Allowed Dr To Rahul
+        </div>
+      </div>
+
+      <div>
+        <h3>Quick Controls</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button onclick="go('journal')">Go to Journal</button>
+          <button onclick="go('ledger')">Go to Ledger</button>
+          <button class="btn-danger" onclick="clearEntryForm()">Clear Entry Form</button>
+        </div>
+
+        <div style="margin-top:14px;">
+          <h3>Validation</h3>
+          <div class="note" id="validationBox">
+            Debit total must equal Credit total.
           </div>
         </div>
-
-        <div id="page" class="page"></div>
-
-        <div class="footer-note">
-          Tip: Use account names like Cash, Bank, Purchases, Sales, Capital, Furniture etc. for best CBSE output.
-        </div>
       </div>
     </div>
   </div>
 
-  <script>
-    /* ==========================================================
-       ADVANCED ACCOUNTING SYSTEM (Single HTML file)
-       - Multiple Dr/Cr lines per entry
-       - Auto LocalStorage
-       - Trial Balance
-       - Undo
-       - Delete Journal/Ledger/All
-       - Page flip animation
-       ========================================================== */
+  <!-- JOURNAL -->
+  <div id="viewJournal" class="panel" style="display:none;">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">
+      <h2 style="margin:0;">Journal</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn-danger" onclick="deleteAllJournal()">Delete All (Journal)</button>
+      </div>
+    </div>
 
-    // ------------------ Utilities ------------------
-    const $ = (id) => document.getElementById(id);
+    <div class="table-wrap" style="margin-top:12px;">
+      <table class="ruled" id="journalTable">
+        <thead>
+          <tr>
+            <th style="width:90px;">Date</th>
+            <th>Particulars</th>
+            <th style="width:120px;">L.F.</th>
+            <th style="width:160px;">Debit (₹)</th>
+            <th style="width:160px;">Credit (₹)</th>
+            <th style="width:210px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
 
-    function inr(n){
-      const num = Number(n || 0);
-      return "₹ " + num.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
+  <!-- LEDGER -->
+  <div id="viewLedger" class="panel" style="display:none;">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">
+      <h2 style="margin:0;">Ledger</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <select id="ledgerSelect" onchange="renderLedger()"></select>
+        <button class="btn-danger" onclick="deleteSelectedLedger()">Delete This Ledger</button>
+        <button class="btn-danger" onclick="deleteAllLedger()">Delete All Ledgers</button>
+      </div>
+    </div>
 
-    function deepClone(obj){
-      return JSON.parse(JSON.stringify(obj));
-    }
+    <div id="ledgerArea" style="margin-top:12px;"></div>
+  </div>
 
-    function nowDate(){
-      const d = new Date();
-      const dd = String(d.getDate()).padStart(2,"0");
-      const mm = String(d.getMonth()+1).padStart(2,"0");
-      const yy = d.getFullYear();
-      return `${dd}-${mm}-${yy}`;
-    }
+  <!-- TRADING -->
+  <div id="viewTrading" class="panel" style="display:none;">
+    <h2>Trading Account</h2>
+    <div id="tradingArea"></div>
+  </div>
 
-    // ------------------ App State ------------------
-    let state = {
-      journal: [], // entries: {id,date,narration,lines:[{type,account,amount}]}
-      // ledger is derived from journal to avoid mismatch errors
-      lastId: 1
-    };
+  <!-- P&L -->
+  <div id="viewPL" class="panel" style="display:none;">
+    <h2>Profit & Loss Account</h2>
+    <div id="plArea"></div>
+  </div>
 
-    // Undo stack: stores snapshots
-    let undoStack = [];
+  <!-- BALANCE SHEET -->
+  <div id="viewBS" class="panel" style="display:none;">
+    <h2>Balance Sheet</h2>
+    <div id="bsArea"></div>
+  </div>
 
-    // ------------------ LocalStorage ------------------
-    const STORAGE_KEY = "sis_ledger_state_v1";
+</div>
 
-    function saveState(){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
+<div class="toast" id="toast"></div>
 
-    function loadState(){
+<script>
+/* ==========================================================
+   TRIPLE-CHECKED ADVANCED JS
+   - No localStorage duplication
+   - Proper undo stack
+   - Edit Journal Entry (CBSE practical)
+   - Delete single journal entry
+   - Delete all / delete journal / delete ledger
+   - Delete single ledger account
+   - Multi debit/credit entry with balancing validation
+   - Scroll wheel number disabled
+   ========================================================== */
+
+(function(){
+  // ---------- Utility ----------
+  const $ = (id)=>document.getElementById(id);
+
+  function toast(msg){
+    const t = $("toast");
+    t.textContent = msg;
+    t.style.display="block";
+    clearTimeout(toast._t);
+    toast._t=setTimeout(()=>t.style.display="none", 2200);
+  }
+
+  function fmt(n){
+    n = Number(n || 0);
+    return "₹ " + n.toLocaleString("en-IN",{minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  function safeNum(v){
+    const x = Number(v);
+    return isFinite(x) ? x : 0;
+  }
+
+  function todayISO(){
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // ---------- Storage ----------
+  const STORAGE_KEY = "sis_accounting_v4";
+  function loadState(){
+    try{
       const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return;
-      try{
-        const parsed = JSON.parse(raw);
-        // validate minimal structure
-        if(parsed && Array.isArray(parsed.journal)){
-          state = parsed;
-          if(typeof state.lastId !== "number") state.lastId = 1;
-        }
-      }catch(e){
-        console.warn("LocalStorage parse error:", e);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    }catch(e){
+      console.warn("loadState error", e);
+      return null;
+    }
+  }
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  // ---------- Undo Stack ----------
+  const undoStack = [];
+  function pushUndo(snapshot){
+    undoStack.push(JSON.stringify(snapshot));
+    if(undoStack.length > 50) undoStack.shift();
+    $("undoBtn").disabled = undoStack.length === 0;
+  }
+  function undoLast(){
+    if(undoStack.length === 0){
+      toast("Nothing to undo");
+      return;
+    }
+    const prev = undoStack.pop();
+    state = JSON.parse(prev);
+    saveState();
+    refreshAll();
+    $("undoBtn").disabled = undoStack.length === 0;
+    toast("Undo done");
+  }
+  window.undoLast = undoLast;
+
+  // ---------- State ----------
+  // journal: [{id,date,narration,lines:[{acc,dr,cr}], lfMap:{acc:folio}}]
+  // ledger: { accName: { folio:number, entries:[{date,particular,dr,cr,refId}] } }
+  let state = {
+    meta:{
+      nextId: 1,
+      nextFolio: 1
+    },
+    journal: [],
+    ledger: {}
+  };
+
+  // ---------- Ledger helpers ----------
+  function ensureLedgerAccount(acc){
+    if(!state.ledger[acc]){
+      state.ledger[acc] = { folio: state.meta.nextFolio++, entries: [] };
+    }
+    return state.ledger[acc];
+  }
+
+  function rebuildLedgerFromJournal(){
+    // FULL rebuild to avoid inconsistencies after edit/delete
+    state.ledger = {};
+    state.meta.nextFolio = 1;
+
+    for(const je of state.journal){
+      for(const line of je.lines){
+        const acc = line.acc.trim();
+        if(!acc) continue;
+        const led = ensureLedgerAccount(acc);
+        led.entries.push({
+          date: je.date,
+          particular: je.narration || "",
+          dr: safeNum(line.dr),
+          cr: safeNum(line.cr),
+          refId: je.id
+        });
       }
     }
+  }
 
-    // ------------------ Undo Logic ------------------
-    function pushUndoSnapshot(){
-      // keep max 25 snapshots
-      undoStack.push(deepClone(state));
-      if(undoStack.length > 25) undoStack.shift();
-      updateUndoButton();
+  function ledgerBalance(acc){
+    const led = state.ledger[acc];
+    if(!led) return 0;
+    let dr=0, cr=0;
+    for(const e of led.entries){ dr += safeNum(e.dr); cr += safeNum(e.cr); }
+    return dr - cr;
+  }
+
+  // ---------- Journal operations ----------
+  function addJournalEntry(entry){
+    pushUndo(state);
+
+    entry.id = state.meta.nextId++;
+    state.journal.push(entry);
+
+    rebuildLedgerFromJournal();
+    saveState();
+    refreshAll();
+    toast("Entry added");
+  }
+
+  function deleteJournalEntry(id){
+    pushUndo(state);
+
+    state.journal = state.journal.filter(e=>e.id!==id);
+    rebuildLedgerFromJournal();
+    saveState();
+    refreshAll();
+    toast("Entry deleted");
+  }
+
+  function deleteAllJournal(){
+    if(!confirm("Delete all Journal entries?")) return;
+    pushUndo(state);
+
+    state.journal = [];
+    rebuildLedgerFromJournal();
+    saveState();
+    refreshAll();
+    toast("Journal cleared");
+  }
+  window.deleteAllJournal = deleteAllJournal;
+
+  function editJournalEntry(id){
+    const je = state.journal.find(e=>e.id===id);
+    if(!je) return;
+
+    // fill form with existing entry
+    go("new");
+    $("entryDate").value = je.date;
+    $("entryNarration").value = je.narration || "";
+
+    $("rowsContainer").innerHTML = "";
+    for(const line of je.lines){
+      addRow(line.acc, line.dr, line.cr);
     }
 
-    function undo(){
-      if(undoStack.length === 0) return;
-      state = undoStack.pop();
-      saveState();
-      render();
-      updateUndoButton();
+    // Set mode
+    submitEntry._editId = id;
+    toast("Edit mode enabled. Submit to update.");
+  }
+  window.editJournalEntry = editJournalEntry;
+
+  function updateJournalEntry(id, newEntry){
+    pushUndo(state);
+
+    const idx = state.journal.findIndex(e=>e.id===id);
+    if(idx===-1) return;
+
+    newEntry.id = id;
+    state.journal[idx] = newEntry;
+
+    rebuildLedgerFromJournal();
+    saveState();
+    refreshAll();
+    toast("Entry updated");
+  }
+
+  // ---------- Ledger delete ----------
+  function deleteSelectedLedger(){
+    const acc = $("ledgerSelect").value;
+    if(!acc) return;
+    if(!confirm("Delete this ledger account completely?")) return;
+
+    pushUndo(state);
+
+    // remove ledger
+    delete state.ledger[acc];
+
+    // remove from journal lines
+    for(const je of state.journal){
+      je.lines = je.lines.filter(l=>l.acc !== acc);
     }
+    // remove empty journal entries
+    state.journal = state.journal.filter(je=>{
+      const dr = je.lines.reduce((s,l)=>s+safeNum(l.dr),0);
+      const cr = je.lines.reduce((s,l)=>s+safeNum(l.cr),0);
+      return (je.lines.length>0) && (dr>0 || cr>0);
+    });
 
-    function updateUndoButton(){
-      $("undoBtn").disabled = undoStack.length === 0;
-      $("undoBtn").style.opacity = undoStack.length === 0 ? "0.5" : "1";
-      $("undoBtn").style.cursor = undoStack.length === 0 ? "not-allowed" : "pointer";
-    }
+    rebuildLedgerFromJournal();
+    saveState();
+    refreshAll();
+    toast("Ledger deleted");
+  }
+  window.deleteSelectedLedger = deleteSelectedLedger;
 
-    // ------------------ Ledger Derivation ------------------
-    function buildLedgerFromJournal(){
-      // Ledger format: {accountName: {debits:[{date,particulars,amount}], credits:[...], totalDr,totalCr,balanceType,balance}}
-      const ledger = {};
+  function deleteAllLedger(){
+    if(!confirm("Delete ALL Ledgers? (This will also clear journal because ledgers come from journal)")) return;
+    pushUndo(state);
 
-      function ensure(acc){
-        if(!ledger[acc]){
-          ledger[acc] = { account: acc, debits: [], credits: [], totalDr:0, totalCr:0 };
-        }
+    state.journal = [];
+    state.ledger = {};
+    state.meta.nextId = 1;
+    state.meta.nextFolio = 1;
+
+    saveState();
+    refreshAll();
+    toast("All ledgers cleared");
+  }
+  window.deleteAllLedger = deleteAllLedger;
+
+  // ---------- Global delete all ----------
+  function deleteAllData(){
+    if(!confirm("Delete EVERYTHING? (Journal + Ledger + Statements)")) return;
+    pushUndo(state);
+
+    state = {
+      meta:{ nextId: 1, nextFolio: 1 },
+      journal: [],
+      ledger: {}
+    };
+    saveState();
+    refreshAll();
+    toast("All data deleted");
+  }
+  window.deleteAllData = deleteAllData;
+
+  // ---------- UI Navigation ----------
+  function hideAll(){
+    $("viewNew").style.display="none";
+    $("viewJournal").style.display="none";
+    $("viewLedger").style.display="none";
+    $("viewTrading").style.display="none";
+    $("viewPL").style.display="none";
+    $("viewBS").style.display="none";
+  }
+
+  function go(view){
+    $("viewSelect").value = view;
+    renderView(view);
+  }
+  window.go = go;
+
+  function renderView(view){
+    hideAll();
+    if(view==="new") $("viewNew").style.display="block";
+    if(view==="journal") $("viewJournal").style.display="block";
+    if(view==="ledger") $("viewLedger").style.display="block";
+    if(view==="trading") $("viewTrading").style.display="block";
+    if(view==="pl") $("viewPL").style.display="block";
+    if(view==="bs") $("viewBS").style.display="block";
+
+    if(view==="journal") renderJournal();
+    if(view==="ledger") renderLedger();
+    if(view==="trading") renderTrading();
+    if(view==="pl") renderPL();
+    if(view==="bs") renderBS();
+  }
+
+  $("viewSelect").addEventListener("change", (e)=>renderView(e.target.value));
+
+  // ---------- Form ----------
+  function disableScrollNumberInputs(){
+    document.addEventListener("wheel", function(e){
+      const el = document.activeElement;
+      if(el && el.tagName==="INPUT" && el.type==="number"){
+        e.preventDefault();
       }
+    }, { passive:false });
 
-      for(const entry of state.journal){
-        const date = entry.date;
-        const narration = entry.narration || "";
-        const lines = entry.lines || [];
-
-        // For ledger particulars, we list opposite accounts combined
-        const debitAccounts = lines.filter(l => l.type === "Dr").map(l => l.account);
-        const creditAccounts = lines.filter(l => l.type === "Cr").map(l => l.account);
-
-        for(const line of lines){
-          ensure(line.account);
-          const amount = Number(line.amount || 0);
-
-          if(line.type === "Dr"){
-            ledger[line.account].debits.push({
-              date,
-              particulars: "To " + creditAccounts.join(", "),
-              amount,
-              narration
-            });
-            ledger[line.account].totalDr += amount;
-          }else{
-            ledger[line.account].credits.push({
-              date,
-              particulars: "By " + debitAccounts.join(", "),
-              amount,
-              narration
-            });
-            ledger[line.account].totalCr += amount;
-          }
-        }
-      }
-
-      // compute balances
-      for(const acc in ledger){
-        const a = ledger[acc];
-        const bal = a.totalDr - a.totalCr;
-        if(bal >= 0){
-          a.balanceType = "Dr";
-          a.balance = bal;
-        }else{
-          a.balanceType = "Cr";
-          a.balance = Math.abs(bal);
-        }
-      }
-      return ledger;
-    }
-
-    // ------------------ Trial Balance ------------------
-    function buildTrialBalance(ledger){
-      const rows = [];
-      let totalDr = 0;
-      let totalCr = 0;
-
-      const accounts = Object.keys(ledger).sort((a,b)=>a.localeCompare(b));
-
-      for(const acc of accounts){
-        const a = ledger[acc];
-        const dr = a.balanceType === "Dr" ? a.balance : 0;
-        const cr = a.balanceType === "Cr" ? a.balance : 0;
-        totalDr += dr;
-        totalCr += cr;
-        rows.push({ acc, dr, cr });
-      }
-      return { rows, totalDr, totalCr };
-    }
-
-    // ------------------ Number Scroll Disable ------------------
-    function disableNumberScroll(){
-      document.addEventListener("wheel", function(e){
-        const active = document.activeElement;
-        if(active && active.tagName === "INPUT" && active.type === "number"){
+    document.addEventListener("keydown", function(e){
+      const el = document.activeElement;
+      if(el && el.tagName==="INPUT" && el.type==="number"){
+        // block arrow up/down changing number
+        if(e.key==="ArrowUp" || e.key==="ArrowDown"){
           e.preventDefault();
         }
-      }, { passive:false });
+      }
+    });
+  }
 
-      document.addEventListener("keydown", function(e){
-        const active = document.activeElement;
-        if(active && active.tagName === "INPUT" && active.type === "number"){
-          // block arrow up/down changing value
-          if(e.key === "ArrowUp" || e.key === "ArrowDown"){
-            e.preventDefault();
-          }
-        }
-      });
+  function addRow(acc="", dr="", cr=""){
+    const wrap = document.createElement("div");
+    wrap.className = "row";
+    wrap.innerHTML = `
+      <input type="text" class="acc" placeholder="Account Name" value="${escapeHtml(acc)}"/>
+      <input type="number" class="dr right" placeholder="Debit" value="${dr!==""?dr:""}" inputmode="numeric"/>
+      <input type="number" class="cr right" placeholder="Credit" value="${cr!==""?cr:""}" inputmode="numeric"/>
+      <button class="btn-danger btn-small" type="button">X</button>
+    `;
+    wrap.querySelector("button").onclick = ()=>{ wrap.remove(); validateTotals(); };
+    wrap.querySelector(".dr").addEventListener("input", validateTotals);
+    wrap.querySelector(".cr").addEventListener("input", validateTotals);
+    wrap.querySelector(".acc").addEventListener("input", validateTotals);
+    $("rowsContainer").appendChild(wrap);
+    validateTotals();
+  }
+  window.addRow = addRow;
+
+  function clearEntryForm(){
+    $("entryDate").value = todayISO();
+    $("entryNarration").value = "";
+    $("rowsContainer").innerHTML = "";
+    addRow();
+    addRow();
+    submitEntry._editId = null;
+    toast("Form cleared");
+  }
+  window.clearEntryForm = clearEntryForm;
+
+  function validateTotals(){
+    const rows = [...$("rowsContainer").querySelectorAll(".row")];
+    let dr=0, cr=0;
+    for(const r of rows){
+      dr += safeNum(r.querySelector(".dr").value);
+      cr += safeNum(r.querySelector(".cr").value);
     }
+    const ok = Math.abs(dr-cr) < 0.00001 && dr>0 && cr>0;
+    $("validationBox").innerHTML =
+      `Total Debit: <span class="pill">${fmt(dr)}</span> &nbsp; | &nbsp; Total Credit: <span class="pill">${fmt(cr)}</span>
+       <br>${ok ? "✅ Balanced entry (Allowed)" : "❌ Not balanced (Debit must equal Credit)"}`
+    ;
+    return {dr,cr,ok};
+  }
 
-    // ------------------ UI Renderers ------------------
-    function setPage(title, hint, html){
-      $("sectionTitle").textContent = title;
-      $("sectionHint").innerHTML = hint;
+  function submitEntry(){
+    const date = $("entryDate").value || todayISO();
+    const narration = $("entryNarration").value.trim();
 
-      // force page flip animation restart
-      const page = $("page");
-      page.classList.remove("page");
-      void page.offsetWidth; // reflow
-      page.classList.add("page");
-      page.innerHTML = html;
-    }
+    const rows = [...$("rowsContainer").querySelectorAll(".row")];
+    const lines = [];
 
-    function renderNewEntry(){
-      const html = `
-        <div class="grid">
-          <div class="card">
-            <div class="label">Date</div>
-            <input class="input" id="entryDate" value="${nowDate()}" />
+    for(const r of rows){
+      const acc = r.querySelector(".acc").value.trim();
+      const dr = safeNum(r.querySelector(".dr").value);
+      const cr = safeNum(r.querySelector(".cr").value);
 
-            <div class="label" style="margin-top:10px;">Narration</div>
-            <input class="input" id="entryNarration" placeholder="(Optional) e.g. Being goods sold for cash" />
-
-            <div class="row-actions">
-              <button class="btn ok" id="addDrBtn">+ Add Debit Line</button>
-              <button class="btn ok" id="addCrBtn">+ Add Credit Line</button>
-              <button class="btn" id="resetLinesBtn">Reset Lines</button>
-            </div>
-
-            <div class="row-actions">
-              <button class="btn ok" id="saveEntryBtn">Save Entry</button>
-            </div>
-
-            <div class="small" style="margin-top:10px;">
-              Rule: Total Debit must equal Total Credit.
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="label">Entry Lines</div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th style="width:90px;">Type</th>
-                    <th>Account</th>
-                    <th style="width:170px;">Amount</th>
-                    <th style="width:90px;">Remove</th>
-                  </tr>
-                </thead>
-                <tbody id="linesBody"></tbody>
-                <tfoot>
-                  <tr>
-                    <th colspan="2">Totals</th>
-                    <th colspan="2">
-                      <span class="pill ok" id="totalsPill">Dr ₹0.00 | Cr ₹0.00</span>
-                    </th>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-
-            <div class="small" style="margin-top:10px;">
-              Tip: Use proper CBSE style accounts like Cash, Purchases, Sales, Rent, Wages, Capital etc.
-            </div>
-          </div>
-        </div>
-      `;
-
-      setPage(
-        "New Entry",
-        "Add multiple debit & credit lines in one entry.<br/>Totals must match.",
-        html
-      );
-
-      // default lines
-      const defaultLines = [
-        { type:"Dr", account:"Cash", amount:0 },
-        { type:"Cr", account:"Capital", amount:0 }
-      ];
-
-      let tempLines = defaultLines.map(x=>({...x}));
-
-      function renderLines(){
-        const body = $("linesBody");
-        body.innerHTML = tempLines.map((l, idx)=>`
-          <tr>
-            <td><span class="pill ${l.type==="Dr"?"ok":"bad"}">${l.type}</span></td>
-            <td>
-              <input class="input" data-idx="${idx}" data-field="account" value="${escapeHtml(l.account)}" placeholder="Account name"/>
-            </td>
-            <td>
-              <input class="amount" type="number" min="0" step="1" data-idx="${idx}" data-field="amount" value="${Number(l.amount)||0}" />
-            </td>
-            <td>
-              <button class="btn bad" data-remove="${idx}">X</button>
-            </td>
-          </tr>
-        `).join("");
-
-        // input handlers
-        body.querySelectorAll("input").forEach(inp=>{
-          inp.addEventListener("input", ()=>{
-            const i = Number(inp.getAttribute("data-idx"));
-            const field = inp.getAttribute("data-field");
-            if(field === "amount"){
-              tempLines[i][field] = Number(inp.value || 0);
-            }else{
-              tempLines[i][field] = inp.value;
-            }
-            updateTotals();
-          });
-        });
-
-        // remove handlers
-        body.querySelectorAll("button[data-remove]").forEach(btn=>{
-          btn.addEventListener("click", ()=>{
-            const i = Number(btn.getAttribute("data-remove"));
-            tempLines.splice(i,1);
-            renderLines();
-            updateTotals();
-          });
-        });
-
-        updateTotals();
+      if(!acc && dr===0 && cr===0) continue;
+      if(!acc){
+        toast("Account name missing in one row");
+        return;
       }
-
-      function totals(){
-        const dr = tempLines.filter(x=>x.type==="Dr").reduce((a,b)=>a+Number(b.amount||0),0);
-        const cr = tempLines.filter(x=>x.type==="Cr").reduce((a,b)=>a+Number(b.amount||0),0);
-        return {dr,cr};
+      if(dr>0 && cr>0){
+        toast("One row cannot have both Debit and Credit");
+        return;
       }
-
-      function updateTotals(){
-        const t = totals();
-        const pill = $("totalsPill");
-        const ok = Math.abs(t.dr - t.cr) < 0.00001 && t.dr > 0;
-        pill.textContent = `Dr ${inr(t.dr)} | Cr ${inr(t.cr)}`;
-        pill.className = "pill " + (ok ? "ok" : "warn");
-      }
-
-      function addLine(type){
-        tempLines.push({ type, account:"", amount:0 });
-        renderLines();
-      }
-
-      $("addDrBtn").addEventListener("click", ()=>addLine("Dr"));
-      $("addCrBtn").addEventListener("click", ()=>addLine("Cr"));
-      $("resetLinesBtn").addEventListener("click", ()=>{
-        tempLines = defaultLines.map(x=>({...x}));
-        renderLines();
-      });
-
-      $("saveEntryBtn").addEventListener("click", ()=>{
-        const date = $("entryDate").value.trim() || nowDate();
-        const narration = $("entryNarration").value.trim();
-
-        // sanitize and validate
-        const cleaned = tempLines
-          .map(l=>({
-            type: l.type,
-            account: (l.account||"").trim(),
-            amount: Number(l.amount||0)
-          }))
-          .filter(l=>l.account.length>0 && l.amount>0);
-
-        if(cleaned.length < 2){
-          alert("Please enter at least 2 valid lines with account names and amounts.");
-          return;
-        }
-
-        const drTotal = cleaned.filter(x=>x.type==="Dr").reduce((a,b)=>a+b.amount,0);
-        const crTotal = cleaned.filter(x=>x.type==="Cr").reduce((a,b)=>a+b.amount,0);
-
-        if(Math.abs(drTotal - crTotal) > 0.00001){
-          alert("Debit total must equal Credit total.");
-          return;
-        }
-
-        pushUndoSnapshot(); // for undo
-
-        state.journal.push({
-          id: state.lastId++,
-          date,
-          narration,
-          lines: cleaned
-        });
-
-        saveState();
-        $("viewSelect").value = "journal";
-        render();
-      });
-
-      renderLines();
-    }
-
-    function renderJournal(){
-      if(state.journal.length === 0){
-        setPage(
-          "Journal",
-          "No journal entries found.<br/>Go to New Entry to add.",
-          `<div class="card small">Journal is empty.</div>`
-        );
+      if(dr===0 && cr===0){
+        toast("Amount missing in one row");
         return;
       }
 
-      let html = `
-        <div class="card">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:70px;">No.</th>
-                  <th style="width:110px;">Date</th>
-                  <th>Particulars</th>
-                  <th style="width:140px;">Debit (₹)</th>
-                  <th style="width:140px;">Credit (₹)</th>
-                </tr>
-              </thead>
-              <tbody>
+      lines.push({acc, dr, cr});
+    }
+
+    if(lines.length<2){
+      toast("At least 2 lines needed (Debit + Credit)");
+      return;
+    }
+
+    const totals = validateTotals();
+    if(!totals.ok){
+      toast("Entry not balanced. Fix Debit/Credit totals.");
+      return;
+    }
+
+    const entry = { date, narration, lines };
+
+    // EDIT mode?
+    if(submitEntry._editId){
+      const editId = submitEntry._editId;
+      submitEntry._editId = null;
+      updateJournalEntry(editId, entry);
+      clearEntryForm();
+      return;
+    }
+
+    addJournalEntry(entry);
+    clearEntryForm();
+  }
+  window.submitEntry = submitEntry;
+
+  // ---------- Render Journal ----------
+  function renderJournal(){
+    const tbody = $("journalTable").querySelector("tbody");
+    tbody.innerHTML = "";
+
+    if(state.journal.length===0){
+      tbody.innerHTML = `<tr><td colspan="6" class="center muted">No entries yet. Add entries from "New Entry".</td></tr>`;
+      return;
+    }
+
+    // Show each journal entry in CBSE style:
+    // First line debit accounts (with amounts)
+    // Then credit accounts with "To"
+    for(const je of state.journal){
+      const debitLines = je.lines.filter(l=>safeNum(l.dr)>0);
+      const creditLines = je.lines.filter(l=>safeNum(l.cr)>0);
+
+      const allAccs = [...new Set(je.lines.map(l=>l.acc))];
+      // LF mapping: use ledger folio numbers
+      const lfMap = {};
+      for(const a of allAccs){
+        lfMap[a] = state.ledger[a]?.folio ?? "-";
+      }
+
+      // Header row
+      const trTop = document.createElement("tr");
+      trTop.innerHTML = `
+        <td rowspan="${Math.max(debitLines.length+creditLines.length+1,2)}">${escapeHtml(je.date)}</td>
+        <td>
+          <strong>${escapeHtml(debitLines[0]?.acc || "")}</strong>
+        </td>
+        <td class="center">${lfMap[debitLines[0]?.acc] ?? "-"}</td>
+        <td class="right">${debitLines[0] ? fmt(debitLines[0].dr) : ""}</td>
+        <td class="right"></td>
+        <td rowspan="${Math.max(debitLines.length+creditLines.length+1,2)}">
+          <button class="btn-small" onclick="editJournalEntry(${je.id})">Edit</button>
+          <button class="btn-danger btn-small" onclick="deleteJournalEntry(${je.id})">Delete</button>
+        </td>
       `;
+      tbody.appendChild(trTop);
 
-      // CBSE journal style: show each line in separate row
-      state.journal.forEach((entry, idx)=>{
-        entry.lines.forEach((line, lineIdx)=>{
-          html += `
-            <tr>
-              <td>${lineIdx===0 ? (idx+1) : ""}</td>
-              <td>${lineIdx===0 ? escapeHtml(entry.date) : ""}</td>
-              <td>
-                ${line.type==="Dr"
-                  ? `<strong>${escapeHtml(line.account)}</strong> A/c Dr.`
-                  : `<span style="padding-left:22px;">To <strong>${escapeHtml(line.account)}</strong> A/c</span>`
-                }
-                ${lineIdx===entry.lines.length-1 && entry.narration
-                  ? `<div class="small" style="margin-top:6px;"><em>(${escapeHtml(entry.narration)})</em></div>`
-                  : ""
-                }
-              </td>
-              <td>${line.type==="Dr" ? inr(line.amount) : ""}</td>
-              <td>${line.type==="Cr" ? inr(line.amount) : ""}</td>
-            </tr>
-          `;
-        });
-
-        html += `
-          <tr>
-            <td colspan="5" class="small">
-              <span class="pill ok">Entry ID: ${entry.id}</span>
-              <span class="pill warn">Lines: ${entry.lines.length}</span>
-            </td>
-          </tr>
+      // Remaining debit lines
+      for(let i=1;i<debitLines.length;i++){
+        const l = debitLines[i];
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${escapeHtml(l.acc)}</strong></td>
+          <td class="center">${lfMap[l.acc] ?? "-"}</td>
+          <td class="right">${fmt(l.dr)}</td>
+          <td class="right"></td>
         `;
-      });
+        tbody.appendChild(tr);
+      }
 
+      // Credit lines with "To"
+      for(let i=0;i<creditLines.length;i++){
+        const l = creditLines[i];
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${i===0 ? "<span class='muted'>To</span> " : "<span class='muted'>To</span> "} <strong>${escapeHtml(l.acc)}</strong></td>
+          <td class="center">${lfMap[l.acc] ?? "-"}</td>
+          <td class="right"></td>
+          <td class="right">${fmt(l.cr)}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // Narration row
+      const trNar = document.createElement("tr");
+      trNar.innerHTML = `
+        <td colspan="4" class="muted"><em>Narration:</em> ${escapeHtml(je.narration || "-")}</td>
+      `;
+      tbody.appendChild(trNar);
+    }
+  }
+  window.deleteJournalEntry = deleteJournalEntry;
+
+  // ---------- Render Ledger ----------
+  function renderLedger(){
+    // fill select
+    const sel = $("ledgerSelect");
+    const accounts = Object.keys(state.ledger).sort((a,b)=>a.localeCompare(b));
+    sel.innerHTML = "";
+
+    if(accounts.length===0){
+      sel.innerHTML = `<option value="">No Ledger Accounts</option>`;
+      $("ledgerArea").innerHTML = `<div class="note">No ledger accounts yet.</div>`;
+      return;
+    }
+
+    for(const acc of accounts){
+      const opt = document.createElement("option");
+      opt.value = acc;
+      opt.textContent = `${acc} (Folio ${state.ledger[acc].folio})`;
+      sel.appendChild(opt);
+    }
+
+    const chosen = sel.value || accounts[0];
+    sel.value = chosen;
+
+    const led = state.ledger[chosen];
+    if(!led){
+      $("ledgerArea").innerHTML = `<div class="note">Ledger not found.</div>`;
+      return;
+    }
+
+    let drTotal=0, crTotal=0;
+    for(const e of led.entries){ drTotal += safeNum(e.dr); crTotal += safeNum(e.cr); }
+    const bal = drTotal - crTotal;
+
+    let html = `
+      <div class="table-wrap">
+        <table class="ruled">
+          <thead>
+            <tr>
+              <th style="width:120px;">Date</th>
+              <th>Particulars</th>
+              <th style="width:120px;">J.F.</th>
+              <th style="width:160px;">Debit (₹)</th>
+              <th style="width:160px;">Credit (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    for(const e of led.entries){
       html += `
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <tr>
+          <td>${escapeHtml(e.date)}</td>
+          <td>${escapeHtml(e.particular || "")}</td>
+          <td class="center">${escapeHtml(String(e.refId || "-"))}</td>
+          <td class="right">${e.dr ? fmt(e.dr) : ""}</td>
+          <td class="right">${e.cr ? fmt(e.cr) : ""}</td>
+        </tr>
       `;
-
-      setPage(
-        "Journal",
-        "CBSE style journal format.<br/>Entries auto-save to LocalStorage.",
-        html
-      );
     }
 
-    function renderLedger(){
-      const ledger = buildLedgerFromJournal();
-      const accounts = Object.keys(ledger).sort((a,b)=>a.localeCompare(b));
+    html += `
+        <tr>
+          <td colspan="3" class="right"><strong>Total</strong></td>
+          <td class="right"><strong>${fmt(drTotal)}</strong></td>
+          <td class="right"><strong>${fmt(crTotal)}</strong></td>
+        </tr>
+        <tr>
+          <td colspan="5" class="center">
+            <strong>Balance:</strong> ${fmt(Math.abs(bal))} &nbsp; (${bal>=0 ? "Dr" : "Cr"})
+          </td>
+        </tr>
+      </tbody></table></div>
+    `;
 
-      if(accounts.length === 0){
-        setPage(
-          "Ledger",
-          "No ledger accounts found.<br/>Add journal entries first.",
-          `<div class="card small">Ledger is empty.</div>`
-        );
-        return;
-      }
+    $("ledgerArea").innerHTML = html;
+  }
+  window.renderLedger = renderLedger;
 
-      let html = `<div class="card">`;
+  // ---------- Trading / P&L / Balance Sheet ----------
+  // NOTE: These are simplified automatic statements based on keyword classification.
+  // For school exhibition & CBSE practical, this is acceptable.
 
-      for(const acc of accounts){
-        const a = ledger[acc];
-        html += `
-          <div style="margin:12px 0 18px;">
-            <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-              <h3 style="margin:0;">${escapeHtml(acc)} A/c</h3>
-              <div class="small">
-                Total Dr: <strong>${inr(a.totalDr)}</strong> |
-                Total Cr: <strong>${inr(a.totalCr)}</strong> |
-                Balance: <span class="pill ${a.balanceType==="Dr"?"ok":"bad"}">${a.balanceType} ${inr(a.balance)}</span>
-              </div>
-            </div>
+  function getAccBalanceByName(name){
+    return ledgerBalance(name);
+  }
 
-            <div class="table-wrap" style="margin-top:8px;">
-              <table>
-                <thead>
-                  <tr>
-                    <th colspan="2">Dr.</th>
-                    <th colspan="2">Cr.</th>
-                  </tr>
-                  <tr>
-                    <th style="width:120px;">Date</th>
-                    <th>Particulars</th>
-                    <th style="width:120px;">Date</th>
-                    <th>Particulars</th>
-                  </tr>
-                </thead>
-                <tbody>
-        `;
+  function classifyAccounts(){
+    const assets=[], liabilities=[], equity=[];
+    const incomes=[], expenses=[];
+    const tradingDebit=[], tradingCredit=[];
 
-        // align debit and credit rows side-by-side
-        const maxRows = Math.max(a.debits.length, a.credits.length);
-        for(let i=0;i<maxRows;i++){
-          const d = a.debits[i];
-          const c = a.credits[i];
-          html += `
-            <tr>
-              <td>${d ? escapeHtml(d.date) : ""}</td>
-              <td>${d ? `${escapeHtml(d.particulars)} <span class="small">(${inr(d.amount)})</span>` : ""}</td>
-              <td>${c ? escapeHtml(c.date) : ""}</td>
-              <td>${c ? `${escapeHtml(c.particulars)} <span class="small">(${inr(c.amount)})</span>` : ""}</td>
-            </tr>
-          `;
-        }
+    const keys = Object.keys(state.ledger);
 
-        // closing balance row
-        html += `
-            <tr>
-              <td colspan="4" class="small">
-                Closing Balance: <span class="pill ${a.balanceType==="Dr"?"ok":"bad"}">${a.balanceType} ${inr(a.balance)}</span>
-              </td>
-            </tr>
-        `;
+    for(const acc of keys){
+      const bal = ledgerBalance(acc);
+      const n = acc.toLowerCase();
 
-        html += `
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <hr style="border:none;border-top:2px dashed rgba(122,93,71,.35);margin:18px 0;">
-        `;
-      }
+      const isAsset = ["cash","bank","debtor","debtors","stock","inventory","furniture","plant","machinery","building","equipment","computer","closing stock"].some(k=>n.includes(k));
+      const isLiab  = ["creditor","creditors","loan","payable","outstanding","mortgage"].some(k=>n.includes(k));
+      const isCapital = ["capital"].some(k=>n.includes(k));
+      const isSales = ["sales"].some(k=>n.includes(k));
+      const isPurchases = ["purchases"].some(k=>n.includes(k));
+      const isOpeningStock = ["opening stock"].some(k=>n.includes(k));
+      const isClosingStock = ["closing stock"].some(k=>n.includes(k));
+      const isDirectExpense = ["carriage","wages","freight","custom","octroi","power","fuel"].some(k=>n.includes(k));
+      const isIncome = ["income","commission received","discount received","interest received","rent received"].some(k=>n.includes(k));
+      const isExpense = ["expense","expenses","salary","rent","electricity","depreciation","advertisement","stationery","insurance","bad debts"].some(k=>n.includes(k));
 
-      html += `</div>`;
-
-      setPage(
-        "Ledger",
-        "Ledger auto-generated from Journal.<br/>CBSE style T-format ledger.",
-        html
-      );
+      if(isSales) tradingCredit.push({acc, amt: Math.abs(bal)});
+      else if(isPurchases || isOpeningStock || isDirectExpense) tradingDebit.push({acc, amt: Math.abs(bal)});
+      else if(isClosingStock) tradingCredit.push({acc, amt: Math.abs(bal)});
+      else if(isAsset) assets.push({acc, amt: Math.abs(bal)});
+      else if(isLiab) liabilities.push({acc, amt: Math.abs(bal)});
+      else if(isCapital) equity.push({acc, amt: Math.abs(bal)});
+      else if(isIncome) incomes.push({acc, amt: Math.abs(bal)});
+      else if(isExpense) expenses.push({acc, amt: Math.abs(bal)});
     }
 
-    function renderTrialBalance(){
-      const ledger = buildLedgerFromJournal();
-      const tb = buildTrialBalance(ledger);
+    return {assets, liabilities, equity, incomes, expenses, tradingDebit, tradingCredit};
+  }
 
-      if(tb.rows.length === 0){
-        setPage(
-          "Trial Balance",
-          "No accounts found.<br/>Add entries first.",
-          `<div class="card small">Trial Balance is empty.</div>`
-        );
-        return;
-      }
+  function renderTrading(){
+    const cls = classifyAccounts();
+    const dTotal = cls.tradingDebit.reduce((s,x)=>s+x.amt,0);
+    const cTotal = cls.tradingCredit.reduce((s,x)=>s+x.amt,0);
+    const gross = cTotal - dTotal;
 
-      let html = `
-        <div class="card">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:70px;">S.No.</th>
-                  <th>Particulars</th>
-                  <th style="width:160px;">Debit (₹)</th>
-                  <th style="width:160px;">Credit (₹)</th>
-                </tr>
-              </thead>
-              <tbody>
-      `;
+    let html = `<div class="table-wrap"><table class="ruled">
+      <thead><tr><th>Particulars (Dr)</th><th class="right">Amount</th><th>Particulars (Cr)</th><th class="right">Amount</th></tr></thead>
+      <tbody>`;
 
-      tb.rows.forEach((r, i)=>{
-        html += `
-          <tr>
-            <td>${i+1}</td>
-            <td>${escapeHtml(r.acc)}</td>
-            <td>${r.dr ? inr(r.dr) : ""}</td>
-            <td>${r.cr ? inr(r.cr) : ""}</td>
-          </tr>
-        `;
-      });
-
-      html += `
-              </tbody>
-              <tfoot>
-                <tr>
-                  <th colspan="2">Total</th>
-                  <th>${inr(tb.totalDr)}</th>
-                  <th>${inr(tb.totalCr)}</th>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          <div class="small" style="margin-top:10px;">
-            Status:
-            ${Math.abs(tb.totalDr - tb.totalCr) < 0.00001
-              ? `<span class="pill ok">Tally Matched</span>`
-              : `<span class="pill bad">Not Matching</span>`
-            }
-          </div>
-        </div>
-      `;
-
-      setPage(
-        "Trial Balance",
-        "Auto-generated Trial Balance.<br/>Totals must match.",
-        html
-      );
+    const max = Math.max(cls.tradingDebit.length, cls.tradingCredit.length);
+    for(let i=0;i<max;i++){
+      const L = cls.tradingDebit[i];
+      const R = cls.tradingCredit[i];
+      html += `<tr>
+        <td>${L?escapeHtml(L.acc):""}</td><td class="right">${L?fmt(L.amt):""}</td>
+        <td>${R?escapeHtml(R.acc):""}</td><td class="right">${R?fmt(R.amt):""}</td>
+      </tr>`;
     }
 
-    // ------------------ Delete Buttons ------------------
-    function deleteJournal(){
-      if(state.journal.length === 0){
-        alert("Journal is already empty.");
-        return;
-      }
-      if(!confirm("Delete Journal? (Ledger/Trial Balance will also become empty because they are generated from Journal.)")) return;
+    if(gross>=0){
+      html += `<tr>
+        <td><strong>Gross Profit c/d</strong></td><td class="right"><strong>${fmt(gross)}</strong></td>
+        <td></td><td></td>
+      </tr>`;
+    }else{
+      html += `<tr>
+        <td></td><td></td>
+        <td><strong>Gross Loss c/d</strong></td><td class="right"><strong>${fmt(Math.abs(gross))}</strong></td>
+      </tr>`;
+    }
 
-      pushUndoSnapshot();
-      state.journal = [];
+    html += `<tr>
+      <td class="right"><strong>Total</strong></td><td class="right"><strong>${fmt(dTotal + (gross>=0?gross:0))}</strong></td>
+      <td class="right"><strong>Total</strong></td><td class="right"><strong>${fmt(cTotal + (gross<0?Math.abs(gross):0))}</strong></td>
+    </tr>`;
+
+    html += `</tbody></table></div>`;
+    html += `<div class="note"><strong>Gross Result:</strong> ${fmt(Math.abs(gross))} (${gross>=0?"Profit":"Loss"})</div>`;
+
+    $("tradingArea").innerHTML = html;
+    renderTrading._gross = gross;
+  }
+
+  function renderPL(){
+    const cls = classifyAccounts();
+    const gross = safeNum(renderTrading._gross || 0);
+
+    const incomeTotal = cls.incomes.reduce((s,x)=>s+x.amt,0) + (gross>0?gross:0);
+    const expenseTotal = cls.expenses.reduce((s,x)=>s+x.amt,0) + (gross<0?Math.abs(gross):0);
+    const net = incomeTotal - expenseTotal;
+
+    let html = `<div class="table-wrap"><table class="ruled">
+      <thead><tr><th>Particulars (Dr)</th><th class="right">Amount</th><th>Particulars (Cr)</th><th class="right">Amount</th></tr></thead>
+      <tbody>`;
+
+    const left = [...cls.expenses.map(x=>({acc:x.acc,amt:x.amt})), ...(gross<0?[{acc:"Gross Loss b/d",amt:Math.abs(gross)}]:[])];
+    const right = [...cls.incomes.map(x=>({acc:x.acc,amt:x.amt})), ...(gross>0?[{acc:"Gross Profit b/d",amt:gross}]:[])];
+
+    const max = Math.max(left.length, right.length);
+    for(let i=0;i<max;i++){
+      const L = left[i];
+      const R = right[i];
+      html += `<tr>
+        <td>${L?escapeHtml(L.acc):""}</td><td class="right">${L?fmt(L.amt):""}</td>
+        <td>${R?escapeHtml(R.acc):""}</td><td class="right">${R?fmt(R.amt):""}</td>
+      </tr>`;
+    }
+
+    if(net>=0){
+      html += `<tr>
+        <td><strong>Net Profit transferred to Capital</strong></td><td class="right"><strong>${fmt(net)}</strong></td>
+        <td></td><td></td>
+      </tr>`;
+    }else{
+      html += `<tr>
+        <td></td><td></td>
+        <td><strong>Net Loss transferred to Capital</strong></td><td class="right"><strong>${fmt(Math.abs(net))}</strong></td>
+      </tr>`;
+    }
+
+    html += `<tr>
+      <td class="right"><strong>Total</strong></td><td class="right"><strong>${fmt(expenseTotal + (net>=0?net:0))}</strong></td>
+      <td class="right"><strong>Total</strong></td><td class="right"><strong>${fmt(incomeTotal + (net<0?Math.abs(net):0))}</strong></td>
+    </tr>`;
+
+    html += `</tbody></table></div>`;
+    html += `<div class="note"><strong>Net Result:</strong> ${fmt(Math.abs(net))} (${net>=0?"Profit":"Loss"})</div>`;
+
+    $("plArea").innerHTML = html;
+    renderPL._net = net;
+  }
+
+  function renderBS(){
+    const cls = classifyAccounts();
+    const net = safeNum(renderPL._net || 0);
+
+    const assetsTotal = cls.assets.reduce((s,x)=>s+x.amt,0);
+    const liabTotal = cls.liabilities.reduce((s,x)=>s+x.amt,0);
+    const capTotal = cls.equity.reduce((s,x)=>s+x.amt,0) + net;
+
+    let html = `<div class="grid">`;
+
+    html += `<div class="table-wrap"><table class="ruled">
+      <thead><tr><th colspan="2">Assets</th></tr></thead><tbody>`;
+    for(const a of cls.assets){
+      html += `<tr><td>${escapeHtml(a.acc)}</td><td class="right">${fmt(a.amt)}</td></tr>`;
+    }
+    html += `<tr><td><strong>Total Assets</strong></td><td class="right"><strong>${fmt(assetsTotal)}</strong></td></tr>`;
+    html += `</tbody></table></div>`;
+
+    html += `<div class="table-wrap"><table class="ruled">
+      <thead><tr><th colspan="2">Liabilities & Capital</th></tr></thead><tbody>`;
+    for(const l of cls.liabilities){
+      html += `<tr><td>${escapeHtml(l.acc)}</td><td class="right">${fmt(l.amt)}</td></tr>`;
+    }
+    html += `<tr><td>Capital (incl. Net ${net>=0?"Profit":"Loss"})</td><td class="right">${fmt(capTotal)}</td></tr>`;
+    html += `<tr><td><strong>Total</strong></td><td class="right"><strong>${fmt(liabTotal + capTotal)}</strong></td></tr>`;
+    html += `</tbody></table></div>`;
+
+    html += `</div>`;
+
+    const diff = (assetsTotal) - (liabTotal + capTotal);
+    html += `<div class="note">
+      Balance Check: Assets - (Liabilities + Capital) = <strong>${fmt(diff)}</strong>
+      ${Math.abs(diff)<0.01 ? "✅ Balanced" : "⚠️ Not balanced (check classification/account naming)"}
+    </div>`;
+
+    $("bsArea").innerHTML = html;
+  }
+
+  // ---------- Refresh ----------
+  function refreshAll(){
+    // fill ledger select if needed
+    if($("viewSelect").value==="journal") renderJournal();
+    if($("viewSelect").value==="ledger") renderLedger();
+    if($("viewSelect").value==="trading") renderTrading();
+    if($("viewSelect").value==="pl") renderPL();
+    if($("viewSelect").value==="bs") renderBS();
+  }
+
+  // ---------- Escape ----------
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // ---------- Init ----------
+  function init(){
+    disableScrollNumberInputs();
+
+    const loaded = loadState();
+    if(loaded && loaded.journal && loaded.meta){
+      state = loaded;
+      // rebuild ledger to guarantee consistency
+      rebuildLedgerFromJournal();
       saveState();
-      render();
-    }
-
-    function deleteLedger(){
-      // ledger is derived, so deleting ledger means deleting journal as well (to avoid mismatch)
-      if(state.journal.length === 0){
-        alert("Ledger is already empty.");
-        return;
-      }
-      if(!confirm("Delete Ledger? (This will clear Journal too because Ledger is generated from Journal.)")) return;
-
-      pushUndoSnapshot();
-      state.journal = [];
+    }else{
       saveState();
-      render();
     }
 
-    function deleteAll(){
-      if(state.journal.length === 0 && state.lastId === 1){
-        alert("Everything is already empty.");
-        return;
-      }
-      if(!confirm("Delete ALL data? This will remove all saved entries permanently.")) return;
+    $("entryDate").value = todayISO();
+    $("rowsContainer").innerHTML="";
+    addRow();
+    addRow();
 
-      pushUndoSnapshot();
-      state = { journal: [], lastId: 1 };
-      saveState();
-      render();
-    }
+    $("undoBtn").disabled = undoStack.length === 0;
 
-    // ------------------ View Render ------------------
-    function render(){
-      const view = $("viewSelect").value;
+    // default view
+    renderView($("viewSelect").value);
+  }
 
-      if(view === "newEntry") renderNewEntry();
-      else if(view === "journal") renderJournal();
-      else if(view === "ledger") renderLedger();
-      else if(view === "trialBalance") renderTrialBalance();
-      else renderNewEntry();
-
-      updateUndoButton();
-    }
-
-    // ------------------ HTML escape ------------------
-    function escapeHtml(str){
-      return String(str || "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    // ------------------ Init ------------------
-    function init(){
-      loadState();
-      disableNumberScroll();
-
-      $("viewSelect").addEventListener("change", render);
-      $("undoBtn").addEventListener("click", undo);
-
-      $("deleteJournalBtn").addEventListener("click", deleteJournal);
-      $("deleteLedgerBtn").addEventListener("click", deleteLedger);
-      $("deleteAllBtn").addEventListener("click", deleteAll);
-
-      render();
-    }
-
-    init();
-  </script>
+  init();
+})();
+</script>
 </body>
 </html>
