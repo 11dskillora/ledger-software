@@ -1,1154 +1,2046 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SARASWATI INTERNATIONAL SCHOOL - Accounting Dashboard</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SARASWATI INTERNATIONAL SCHOOL - Accounting System</title>
 
-<style>
-  /* ==========================================================
-     OLD UI (Clean Notebook + Premium Simple)
-     ========================================================== */
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 
-  :root{
-    --bg1:#fefcf5;
-    --bg2:#f4eee0;
-    --ink:#3e2723;
-    --ink2:#5c4033;
-    --muted:#8b6f47;
-    --border:#a1887f;
-    --paper:#fffdf7;
-    --paper2:#f7f0e4;
-    --shadow:0 10px 30px rgba(0,0,0,0.08);
-  }
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    font-family: "Courier New", monospace;
-    background: linear-gradient(135deg,var(--bg1),var(--bg2));
-    color:var(--ink);
-  }
+  <style>
+    /* =========================================================
+       SARASWATI INTERNATIONAL SCHOOL - ACCOUNTING SYSTEM
+       Light Woody Premium UI + Glassmorphism + CBSE Notebook Tables
+       Features:
+       - Single dropdown menu navigation
+       - Dashboard, New Entry, Journal, Ledger
+       - Trading A/c + Profit & Loss A/c auto-generation
+       - Multiple debit/credit per entry
+       - Auto-save LocalStorage + Undo
+       - Delete All / Delete Journal / Delete Ledger
+       - Delete single journal entry
+       - Edit journal entry (CBSE practical feature)
+       - Delete single ledger account (one ledger page)
+       - Page flip animation between sections
+       - Notebook dashed ruled lines in tables
+       - Mobile friendly responsive UI
+       ========================================================= */
 
-  h1,h2,h3{
-    text-align:center;
-    margin:8px 0;
-    color:var(--ink2);
-  }
+    :root {
+      --text-main: #3e2723;
+      --text-muted: #6d5d52;
+      --gold: #bfa176;
+      --gold-hover: #a68b5b;
 
-  .container{
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 14px;
-  }
+      --glass: rgba(255, 255, 255, 0.65);
+      --glass-strong: rgba(255, 255, 255, 0.78);
+      --glass-border: rgba(255, 255, 255, 0.5);
 
-  /* Header */
-  .topbar{
-    background: linear-gradient(to right, #f7efe2, #efe2d1);
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 14px;
-    box-shadow: var(--shadow);
-    padding: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    backdrop-filter: blur(6px);
-  }
+      --shadow-soft: 0 15px 35px rgba(62, 39, 35, 0.12);
+      --shadow-strong: 0 18px 60px rgba(62, 39, 35, 0.18);
 
-  .brand{
-    font-weight: 900;
-    letter-spacing: 0.6px;
-    font-size: 18px;
-    text-align:center;
-  }
+      --font-heading: 'Playfair Display', serif;
+      --font-body: 'Lato', sans-serif;
 
-  .toolbar{
-    margin-top: 10px;
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    justify-content:center;
-    align-items:center;
-  }
+      --paper-line: rgba(62,39,35,0.12);
+      --paper-line-2: rgba(62,39,35,0.08);
 
-  select, input, button{
-    font-family: inherit;
-    font-size: 14px;
-    padding: 9px 12px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: white;
-    outline:none;
-  }
+      --danger: #b3261e;
+      --ok: #1b5e20;
 
-  input:focus, select:focus{
-    border-color:#6d4c41;
-    box-shadow:0 0 0 4px rgba(161,136,127,.18);
-  }
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
 
-  button{
-    cursor:pointer;
-    border:none;
-    font-weight:900;
-    background: linear-gradient(to right,#a1887f,#d7ccc8);
-    color:var(--ink);
-    transition: transform .15s ease, filter .15s ease;
-  }
-  button:hover{ transform: translateY(-1px); filter: brightness(1.03); }
-  button:active{ transform: translateY(0px); }
-
-  .btn-danger{
-    background: linear-gradient(to right,#ffb4b4,#ffd5d5);
-  }
-  .btn-dark{
-    background: linear-gradient(to right,#c8c8c8,#eeeeee);
-  }
-  .btn-small{
-    padding: 6px 10px;
-    font-size: 13px;
-    border-radius: 9px;
-  }
-
-  /* Layout */
-  .panel{
-    margin-top: 14px;
-    background: linear-gradient(180deg, var(--paper), var(--paper2));
-    border-radius: 16px;
-    box-shadow: var(--shadow);
-    border: 1px solid rgba(0,0,0,0.08);
-    padding: 14px;
-  }
-
-  .grid{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-
-  @media(max-width: 900px){
-    .grid{grid-template-columns: 1fr;}
-    .brand{font-size: 16px;}
-  }
-
-  /* Notebook table */
-  .table-wrap{
-    overflow-x:auto;
-    border-radius: 14px;
-  }
-
-  table{
-    width:100%;
-    border-collapse: collapse;
-    min-width: 700px;
-    background: rgba(255,255,255,0.7);
-  }
-
-  th, td{
-    border: 1px solid rgba(139,111,71,0.55);
-    padding: 10px;
-    vertical-align: top;
-  }
-
-  th{
-    background: linear-gradient(to right,#f2e6d9,#d7ccc8);
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    font-size: 13px;
-  }
-
-  /* CBSE copy style dashed ruled lines */
-  .ruled td{
-    background-image: repeating-linear-gradient(
-      to bottom,
-      rgba(0,0,0,0) 0px,
-      rgba(0,0,0,0) 26px,
-      rgba(139,111,71,0.25) 27px,
-      rgba(0,0,0,0) 28px
-    );
-    background-size: 100% 28px;
-  }
-
-  tr:hover td{
-    background-color: rgba(255,235,205,0.22);
-  }
-
-  .right{text-align:right;}
-  .center{text-align:center;}
-  .muted{color:rgba(62,39,35,.75);}
-
-  .pill{
-    display:inline-block;
-    padding: 3px 10px;
-    border-radius: 999px;
-    border: 1px solid rgba(0,0,0,0.12);
-    background: rgba(255,255,255,0.75);
-    font-weight: 900;
-    font-size: 12px;
-  }
-
-  /* Multi entry rows */
-  .rows{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-  }
-  .row{
-    display:grid;
-    grid-template-columns: 2fr 1fr 1fr auto;
-    gap:10px;
-    align-items:center;
-  }
-  @media(max-width: 900px){
-    .row{
-      grid-template-columns: 1fr;
+      --flip-time: 520ms;
     }
-  }
 
-  .note{
-    text-align:center;
-    margin: 8px 0 0;
-    font-size: 13px;
-    color: rgba(62,39,35,.75);
-  }
+    * { box-sizing: border-box; cursor: none; }
 
-  /* Toast */
-  .toast{
-    position: fixed;
-    bottom: 14px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255,255,255,0.92);
-    border: 1px solid rgba(0,0,0,0.12);
-    padding: 10px 14px;
-    border-radius: 999px;
-    box-shadow: var(--shadow);
-    font-weight: 900;
-    display:none;
-    z-index: 99;
-  }
-</style>
+    body {
+      margin: 0; padding: 0;
+      font-family: var(--font-body);
+      color: var(--text-main);
+      overflow-x: hidden;
+      background: #f0e6d2;
+    }
+
+    /* --- Custom Cursor --- */
+    .cursor-dot, .cursor-outline {
+      position: fixed; top: 0; left: 0;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .cursor-dot { width: 8px; height: 8px; background: var(--text-main); }
+    .cursor-outline {
+      width: 40px; height: 40px;
+      border: 1px solid rgba(62,39,35,0.2);
+      transition: width 0.2s, height 0.2s, background 0.2s;
+    }
+    body:hover .cursor-outline.hovered {
+      width: 60px; height: 60px;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(2px);
+      border: none;
+    }
+
+    /* --- 1. Full-Screen Shader Background --- */
+    #canvas-container {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+    }
+
+    /* --- 2. Bottom Scrolling Light Effect --- */
+    .bottom-glow {
+      position: fixed; bottom: 0; left: 0;
+      width: 100%; height: 300px;
+      background: radial-gradient(circle at 50% 100%, rgba(255, 245, 230, 0.8), transparent 70%);
+      pointer-events: none; z-index: 0;
+      mix-blend-mode: overlay;
+      opacity: 0.5;
+      transition: opacity 0.5s ease, background 0.5s ease;
+    }
+
+    /* --- Layout --- */
+    .app { min-height: 100vh; padding: 20px; position: relative; z-index: 1; }
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    /* --- Topbar --- */
+    .topbar {
+      background: rgba(255,255,255,0.3);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 50px;
+      padding: 10px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 34px;
+      box-shadow: var(--shadow-soft);
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 240px;
+    }
+
+    .brand .title {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand .subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    /* --- Magnetic Wrapping --- */
+    .magnetic-wrap {
+      display: inline-block;
+      transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    /* --- Buttons --- */
+    .btn {
+      background: transparent;
+      border: 1px solid rgba(62,39,35,0.2);
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-family: var(--font-body);
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 1px;
+      user-select: none;
+    }
+    .btn:hover, .btn.active {
+      background: var(--text-main);
+      color: white;
+      border-color: var(--text-main);
+      transform: scale(1.04);
+      box-shadow: 0 5px 15px rgba(62,39,35,0.15);
+    }
+
+    .btn-danger {
+      border-color: rgba(179,38,30,0.35);
+      color: var(--danger);
+    }
+    .btn-danger:hover {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #fff;
+    }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.35);
+      border: 1px solid rgba(62,39,35,0.14);
+    }
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.65);
+      color: var(--text-main);
+      border-color: rgba(62,39,35,0.18);
+      transform: translateY(-1px);
+    }
+
+    .btn-action {
+      padding: 12px 30px;
+      background: var(--text-main);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 5px 18px rgba(62,39,35,0.22);
+      transition: transform 0.15s ease;
+      user-select: none;
+    }
+    .btn-action:active { transform: scale(0.97); }
+
+    /* --- Dropdown Menu (single menu) --- */
+    .menu {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .menu-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 30px;
+      border: 1px solid rgba(62,39,35,0.2);
+      background: rgba(255,255,255,0.35);
+      backdrop-filter: blur(10px);
+      font-weight: 800;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      user-select: none;
+      transition: 0.25s ease;
+      white-space: nowrap;
+    }
+    .menu-toggle:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 28px rgba(62,39,35,0.12);
+      border-color: rgba(62,39,35,0.28);
+    }
+
+    .menu-toggle .chev {
+      width: 10px; height: 10px;
+      border-right: 2px solid rgba(62,39,35,0.8);
+      border-bottom: 2px solid rgba(62,39,35,0.8);
+      transform: rotate(45deg);
+      transition: transform 0.2s ease;
+      margin-top: -2px;
+    }
+    .menu.open .menu-toggle .chev { transform: rotate(-135deg); margin-top: 3px; }
+
+    .menu-panel {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 10px);
+      width: min(320px, calc(100vw - 40px));
+      border-radius: 18px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(62,39,35,0.16);
+      box-shadow: var(--shadow-strong);
+      overflow: hidden;
+      transform-origin: top right;
+      transform: scale(0.98) translateY(-6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.22s ease;
+      z-index: 50;
+    }
+    .menu.open .menu-panel {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .menu-head {
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid rgba(62,39,35,0.08);
+    }
+    .menu-head .menu-title {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    .menu-head .menu-sub {
+      margin: 6px 0 0;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .menu-items { padding: 10px; display: grid; gap: 10px; }
+    .menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(62,39,35,0.10);
+      background: rgba(255,255,255,0.55);
+      cursor: pointer;
+      transition: 0.18s ease;
+      user-select: none;
+    }
+    .menu-item:hover {
+      transform: translateY(-1px);
+      border-color: rgba(62,39,35,0.18);
+      background: rgba(255,255,255,0.78);
+    }
+    .menu-item.active {
+      border-color: rgba(62,39,35,0.35);
+      background: rgba(62,39,35,0.08);
+    }
+    .menu-item .left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .menu-item .label {
+      font-weight: 900;
+      letter-spacing: 0.03em;
+    }
+    .menu-item .hint {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 240px;
+    }
+    .pill {
+      font-size: 0.75rem;
+      font-weight: 900;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(62,39,35,0.18);
+      background: rgba(255,255,255,0.65);
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+
+    /* --- Page flip animation container --- */
+    .flip-wrap {
+      position: relative;
+      perspective: 1200px;
+    }
+
+    .flip-page {
+      transform-style: preserve-3d;
+      transition: transform var(--flip-time) cubic-bezier(0.2, 0.85, 0.25, 1), opacity var(--flip-time) ease;
+      opacity: 1;
+    }
+
+    .flip-out {
+      transform: rotateY(-88deg) translateX(-10px);
+      opacity: 0;
+    }
+    .flip-in {
+      transform: rotateY(0deg);
+      opacity: 1;
+    }
+
+    /* --- Dashboard Cards --- */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 22px;
+      margin-bottom: 32px;
+    }
+
+    .card-3d {
+      height: 200px;
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      transform: perspective(1000px);
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.4);
+      backdrop-filter: blur(10px);
+    }
+
+    .card-bg-img {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0.58;
+      transition: transform 0.5s;
+    }
+    .card-3d:hover .card-bg-img { transform: scale(1.05); }
+
+    .card-content {
+      position: relative; z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 20px;
+      transform: translateZ(30px);
+    }
+    .card-title { font-family: var(--font-heading); font-size: 1.2rem; margin-bottom: 5px; }
+    .card-value { font-family: var(--font-body); font-size: 1.55rem; font-weight: 900; }
+    .card-glare {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(125deg, rgba(255,255,255,0.4), transparent 60%);
+      opacity: 0; pointer-events: none;
+      mix-blend-mode: overlay;
+    }
+
+    /* --- Content Paper --- */
+    .paper {
+      background: var(--glass);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border-radius: var(--radius-xl);
+      padding: 26px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--glass-border);
+      min-height: 380px;
+      animation: fadeIn 0.55s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* notebook margin line */
+    .paper:before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: rgba(191,161,118,0.35);
+      filter: blur(0.2px);
+      pointer-events: none;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      margin: 0 0 18px;
+      border-bottom: 2px solid var(--gold);
+      display: inline-block;
+      padding-bottom: 5px;
+    }
+
+    .muted { color: var(--text-muted); }
+
+    /* --- Forms --- */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+    label { font-weight: 800; font-size: 0.85rem; letter-spacing: 0.02em; color: rgba(62,39,35,0.95); }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 12px;
+      border: 1px solid rgba(62,39,35,0.2);
+      background: rgba(255,255,255,0.72);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      outline: none;
+      transition: 0.25s ease;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 4px rgba(191, 161, 118, 0.2);
+    }
+
+    .entry-lines { display: flex; flex-direction: column; gap: 10px; }
+    .entry-row {
+      display: grid;
+      grid-template-columns: 2.2fr 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .tiny-actions {
+      display: inline-flex;
+      gap: 8px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .icon-btn {
+      border-radius: 12px;
+      border: 1px solid rgba(62,39,35,0.18);
+      background: rgba(255,255,255,0.62);
+      padding: 9px 12px;
+      cursor: pointer;
+      font-weight: 900;
+      transition: 0.2s ease;
+      user-select: none;
+    }
+    .icon-btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.85); }
+    .icon-btn.danger { border-color: rgba(179,38,30,0.28); color: var(--danger); }
+    .icon-btn.danger:hover { background: rgba(179,38,30,0.10); }
+
+    .row-divider {
+      margin: 18px 0;
+      border: none;
+      border-top: 1px dashed rgba(62,39,35,0.18);
+    }
+
+    /* --- Tables (CBSE notebook style) --- */
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    thead th {
+      text-align: left;
+      padding: 14px;
+      background: rgba(62,39,35,0.05);
+      color: var(--text-main);
+      font-weight: 900;
+      font-family: var(--font-heading);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      backdrop-filter: blur(10px);
+    }
+    td {
+      padding: 14px;
+      border-bottom: 1px solid rgba(62,39,35,0.10);
+      font-family: var(--font-body);
+      vertical-align: top;
+    }
+
+    /* dashed ruled lines effect */
+    tbody tr td {
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 26px,
+        var(--paper-line) 26px,
+        var(--paper-line) 27px
+      );
+      background-size: 100% 27px;
+      background-position: 0 0;
+    }
+
+    tr:hover td { background-color: rgba(255,255,255,0.45); }
+
+    .mono { font-family: 'Courier New', monospace; letter-spacing: -0.3px; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(62,39,35,0.14);
+      background: rgba(255,255,255,0.55);
+      font-weight: 900;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .status {
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(62,39,35,0.12);
+      background: rgba(255,255,255,0.55);
+      margin-top: 18px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .notice {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(62,39,35,0.12);
+      background: rgba(255,255,255,0.52);
+    }
+
+    .notice strong { font-weight: 900; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    /* Ledger selection */
+    .ledger-toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .ledger-toolbar .left {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search {
+      min-width: 240px;
+    }
+
+    .kbd {
+      font-family: 'Courier New', monospace;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(62,39,35,0.18);
+      background: rgba(255,255,255,0.55);
+      font-size: 0.8rem;
+    }
+
+    /* Responsive */
+    @media(max-width: 920px) {
+      .brand { min-width: 0; }
+      .search { min-width: 0; width: 100%; }
+      .nav-right { width: 100%; justify-content: space-between; }
+    }
+
+    @media(max-width: 768px) {
+      .topbar { flex-direction: column; align-items: stretch; border-radius: 26px; }
+      .nav-right { justify-content: space-between; }
+      .form-grid { grid-template-columns: 1fr; }
+      .entry-row { grid-template-columns: 1fr; }
+      .two-col { grid-template-columns: 1fr; }
+      .cursor-dot, .cursor-outline { display: none; }
+      * { cursor: auto; }
+      thead th { position: static; }
+    }
+
+    /* Small phones */
+    @media(max-width: 420px) {
+      .paper { padding: 18px; }
+      .section-title { font-size: 1.6rem; }
+      .btn, .menu-toggle { width: 100%; justify-content: center; }
+      .menu { width: 100%; }
+      .menu-panel { left: 0; right: 0; width: 100%; }
+    }
+  </style>
 </head>
 
 <body>
-<div class="container">
+  <!-- Shader Background -->
+  <div id="canvas-container"></div>
 
-  <div class="topbar">
-    <div class="brand">SARASWATI INTERNATIONAL SCHOOL</div>
+  <!-- Bottom Glow -->
+  <div class="bottom-glow" id="bottom-glow"></div>
 
-    <div class="toolbar">
-      <!-- ONE MENU -->
-      <select id="viewSelect" title="Menu">
-        <option value="new">New Entry</option>
-        <option value="journal">Journal</option>
-        <option value="ledger">Ledger</option>
-        <option value="trading">Trading Account</option>
-        <option value="pl">Profit & Loss Account</option>
-        <option value="bs">Balance Sheet</option>
-      </select>
+  <!-- Cursor -->
+  <div class="cursor-dot" id="cursor-dot"></div>
+  <div class="cursor-outline" id="cursor-outline"></div>
 
-      <button class="btn-dark" id="undoBtn" onclick="undoLast()">Undo</button>
-      <button class="btn-danger" onclick="deleteAllData()">Delete All</button>
-    </div>
+  <div class="app">
+    <div class="container">
 
-    <div class="note">
-      Multiple debit/credit supported • Auto-save enabled • Mobile-friendly • CBSE practical format
-    </div>
-  </div>
-
-  <!-- NEW ENTRY -->
-  <div id="viewNew" class="panel">
-    <h2>New Journal Entry</h2>
-
-    <div class="grid">
-      <div>
-        <h3>Entry Details</h3>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-          <input id="entryDate" type="date" />
-          <input id="entryNarration" type="text" placeholder="Narration (e.g., Being goods purchased from Rahul)" style="min-width:320px;flex:1;" />
+      <!-- Top Bar -->
+      <nav class="topbar">
+        <div class="brand magnetic-area">
+          <div class="magnetic-wrap">
+            <div class="title">SARASWATI INTERNATIONAL SCHOOL</div>
+            <div class="subtitle">Accounting System • Journal → Ledger → Final Accounts</div>
+          </div>
         </div>
 
-        <div style="margin-top:10px;" class="rows" id="rowsContainer"></div>
+        <div class="nav-right">
+          <!-- Single Dropdown Menu -->
+          <div class="menu magnetic-area" id="menu">
+            <div class="menu-toggle magnetic-wrap" id="menuToggle" role="button" tabindex="0" aria-expanded="false">
+              <span id="menuCurrent">Dashboard</span>
+              <span class="chev"></span>
+            </div>
 
-        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px;">
-          <button onclick="addRow()">Add Debit/Credit Row</button>
-          <button onclick="submitEntry()">Submit Entry</button>
+            <div class="menu-panel" id="menuPanel" aria-label="Main Menu">
+              <div class="menu-head">
+                <p class="menu-title">Menu</p>
+                <p class="menu-sub">Choose section to view / work on</p>
+              </div>
+
+              <div class="menu-items">
+                <div class="menu-item active" data-view="dashboard" onclick="switchView('dashboard')">
+                  <div class="left">
+                    <div class="label">Dashboard</div>
+                    <div class="hint">Overview and totals</div>
+                  </div>
+                  <div class="pill" id="pillEntries">0 Entries</div>
+                </div>
+
+                <div class="menu-item" data-view="new" onclick="switchView('new')">
+                  <div class="left">
+                    <div class="label">New Entry</div>
+                    <div class="hint">Multiple debit/credit in one entry</div>
+                  </div>
+                  <div class="pill">Ctrl + N</div>
+                </div>
+
+                <div class="menu-item" data-view="journal" onclick="switchView('journal')">
+                  <div class="left">
+                    <div class="label">Journal</div>
+                    <div class="hint">Edit / delete single entry</div>
+                  </div>
+                  <div class="pill">CBSE</div>
+                </div>
+
+                <div class="menu-item" data-view="ledger" onclick="switchView('ledger')">
+                  <div class="left">
+                    <div class="label">Ledger</div>
+                    <div class="hint">Search accounts • delete one ledger account</div>
+                  </div>
+                  <div class="pill" id="pillAccounts">0 A/c</div>
+                </div>
+
+                <div class="menu-item" data-view="final" onclick="switchView('final')">
+                  <div class="left">
+                    <div class="label">Final Accounts</div>
+                    <div class="hint">Trading A/c + P&L A/c (auto)</div>
+                  </div>
+                  <div class="pill">Auto</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-ghost magnetic-area" onclick="undoLastAction()" title="Undo last action (Ctrl+Z)">
+            <span class="magnetic-wrap">Undo</span>
+          </button>
+
+          <button class="btn btn-danger magnetic-area" onclick="openDangerActions()" title="Delete options">
+            <span class="magnetic-wrap">Delete</span>
+          </button>
         </div>
+      </nav>
 
-        <div class="note">
-          Tip: In one entry you can do: Cash Dr + Discount Allowed Dr To Rahul
-        </div>
-      </div>
+      <!-- Main -->
+      <main class="flip-wrap">
+        <div id="main-content" class="flip-page flip-in"></div>
+      </main>
 
-      <div>
-        <h3>Quick Controls</h3>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <button onclick="go('journal')">Go to Journal</button>
-          <button onclick="go('ledger')">Go to Ledger</button>
-          <button class="btn-danger" onclick="clearEntryForm()">Clear Entry Form</button>
-        </div>
+      <!-- Danger Actions Modal -->
+      <div id="dangerModal" style="display:none; position:fixed; inset:0; z-index:80;">
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.25); backdrop-filter: blur(4px);" onclick="closeDangerActions()"></div>
+        <div style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(520px, calc(100vw - 28px));">
+          <div class="paper" style="min-height:auto; box-shadow: var(--shadow-strong); border-radius: 22px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+              <div>
+                <div class="section-title" style="font-size:1.6rem; margin-bottom:6px;">Delete Options</div>
+                <div class="muted" style="font-weight:700;">These actions affect saved data (LocalStorage).</div>
+              </div>
+              <button class="btn" onclick="closeDangerActions()">Close</button>
+            </div>
 
-        <div style="margin-top:14px;">
-          <h3>Validation</h3>
-          <div class="note" id="validationBox">
-            Debit total must equal Credit total.
+            <hr class="row-divider"/>
+
+            <div class="two-col">
+              <button class="btn btn-danger" onclick="deleteAllData()">Delete ALL Data</button>
+              <button class="btn btn-danger" onclick="deleteJournalOnly()">Delete Journal Only</button>
+              <button class="btn btn-danger" onclick="deleteLedgerOnly()">Delete Ledger Only</button>
+              <button class="btn btn-ghost" onclick="exportBackup()">Export Backup</button>
+            </div>
+
+            <div class="notice">
+              <strong>Tip:</strong> Use <span class="kbd">Undo</span> immediately after accidental deletion.
+            </div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
-  <!-- JOURNAL -->
-  <div id="viewJournal" class="panel" style="display:none;">
-    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">
-      <h2 style="margin:0;">Journal</h2>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="btn-danger" onclick="deleteAllJournal()">Delete All (Journal)</button>
-      </div>
-    </div>
+  <script>
+    /* =========================================================
+       SIS ACCOUNTING ENGINE
+       ========================================================= */
 
-    <div class="table-wrap" style="margin-top:12px;">
-      <table class="ruled" id="journalTable">
-        <thead>
-          <tr>
-            <th style="width:90px;">Date</th>
-            <th>Particulars</th>
-            <th style="width:120px;">L.F.</th>
-            <th style="width:160px;">Debit (₹)</th>
-            <th style="width:160px;">Credit (₹)</th>
-            <th style="width:210px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+    const LS_KEY = "SIS_ACCOUNTING_V6";
+    const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
 
-  <!-- LEDGER -->
-  <div id="viewLedger" class="panel" style="display:none;">
-    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">
-      <h2 style="margin:0;">Ledger</h2>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <select id="ledgerSelect" onchange="renderLedger()"></select>
-        <button class="btn-danger" onclick="deleteSelectedLedger()">Delete This Ledger</button>
-        <button class="btn-danger" onclick="deleteAllLedger()">Delete All Ledgers</button>
-      </div>
-    </div>
+    // ---------- State ----------
+    const state = {
+      view: "dashboard",
+      entries: [],
+      ledger: {},
+      folioNext: 1,
 
-    <div id="ledgerArea" style="margin-top:12px;"></div>
-  </div>
+      // Undo stack (store snapshots)
+      undo: [],
 
-  <!-- TRADING -->
-  <div id="viewTrading" class="panel" style="display:none;">
-    <h2>Trading Account</h2>
-    <div id="tradingArea"></div>
-  </div>
-
-  <!-- P&L -->
-  <div id="viewPL" class="panel" style="display:none;">
-    <h2>Profit & Loss Account</h2>
-    <div id="plArea"></div>
-  </div>
-
-  <!-- BALANCE SHEET -->
-  <div id="viewBS" class="panel" style="display:none;">
-    <h2>Balance Sheet</h2>
-    <div id="bsArea"></div>
-  </div>
-
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-/* ==========================================================
-   TRIPLE-CHECKED ADVANCED JS
-   - No localStorage duplication
-   - Proper undo stack
-   - Edit Journal Entry (CBSE practical)
-   - Delete single journal entry
-   - Delete all / delete journal / delete ledger
-   - Delete single ledger account
-   - Multi debit/credit entry with balancing validation
-   - Scroll wheel number disabled
-   ========================================================== */
-
-(function(){
-  // ---------- Utility ----------
-  const $ = (id)=>document.getElementById(id);
-
-  function toast(msg){
-    const t = $("toast");
-    t.textContent = msg;
-    t.style.display="block";
-    clearTimeout(toast._t);
-    toast._t=setTimeout(()=>t.style.display="none", 2200);
-  }
-
-  function fmt(n){
-    n = Number(n || 0);
-    return "₹ " + n.toLocaleString("en-IN",{minimumFractionDigits:2, maximumFractionDigits:2});
-  }
-
-  function safeNum(v){
-    const x = Number(v);
-    return isFinite(x) ? x : 0;
-  }
-
-  function todayISO(){
-    const d = new Date();
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth()+1).padStart(2,"0");
-    const dd = String(d.getDate()).padStart(2,"0");
-    return `${yyyy}-${mm}-${dd}`;
-  }
-
-  // ---------- Storage ----------
-  const STORAGE_KEY = "sis_accounting_v4";
-  function loadState(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return null;
-      return JSON.parse(raw);
-    }catch(e){
-      console.warn("loadState error", e);
-      return null;
-    }
-  }
-  function saveState(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }
-
-  // ---------- Undo Stack ----------
-  const undoStack = [];
-  function pushUndo(snapshot){
-    undoStack.push(JSON.stringify(snapshot));
-    if(undoStack.length > 50) undoStack.shift();
-    $("undoBtn").disabled = undoStack.length === 0;
-  }
-  function undoLast(){
-    if(undoStack.length === 0){
-      toast("Nothing to undo");
-      return;
-    }
-    const prev = undoStack.pop();
-    state = JSON.parse(prev);
-    saveState();
-    refreshAll();
-    $("undoBtn").disabled = undoStack.length === 0;
-    toast("Undo done");
-  }
-  window.undoLast = undoLast;
-
-  // ---------- State ----------
-  // journal: [{id,date,narration,lines:[{acc,dr,cr}], lfMap:{acc:folio}}]
-  // ledger: { accName: { folio:number, entries:[{date,particular,dr,cr,refId}] } }
-  let state = {
-    meta:{
-      nextId: 1,
-      nextFolio: 1
-    },
-    journal: [],
-    ledger: {}
-  };
-
-  // ---------- Ledger helpers ----------
-  function ensureLedgerAccount(acc){
-    if(!state.ledger[acc]){
-      state.ledger[acc] = { folio: state.meta.nextFolio++, entries: [] };
-    }
-    return state.ledger[acc];
-  }
-
-  function rebuildLedgerFromJournal(){
-    // FULL rebuild to avoid inconsistencies after edit/delete
-    state.ledger = {};
-    state.meta.nextFolio = 1;
-
-    for(const je of state.journal){
-      for(const line of je.lines){
-        const acc = line.acc.trim();
-        if(!acc) continue;
-        const led = ensureLedgerAccount(acc);
-        led.entries.push({
-          date: je.date,
-          particular: je.narration || "",
-          dr: safeNum(line.dr),
-          cr: safeNum(line.cr),
-          refId: je.id
-        });
-      }
-    }
-  }
-
-  function ledgerBalance(acc){
-    const led = state.ledger[acc];
-    if(!led) return 0;
-    let dr=0, cr=0;
-    for(const e of led.entries){ dr += safeNum(e.dr); cr += safeNum(e.cr); }
-    return dr - cr;
-  }
-
-  // ---------- Journal operations ----------
-  function addJournalEntry(entry){
-    pushUndo(state);
-
-    entry.id = state.meta.nextId++;
-    state.journal.push(entry);
-
-    rebuildLedgerFromJournal();
-    saveState();
-    refreshAll();
-    toast("Entry added");
-  }
-
-  function deleteJournalEntry(id){
-    pushUndo(state);
-
-    state.journal = state.journal.filter(e=>e.id!==id);
-    rebuildLedgerFromJournal();
-    saveState();
-    refreshAll();
-    toast("Entry deleted");
-  }
-
-  function deleteAllJournal(){
-    if(!confirm("Delete all Journal entries?")) return;
-    pushUndo(state);
-
-    state.journal = [];
-    rebuildLedgerFromJournal();
-    saveState();
-    refreshAll();
-    toast("Journal cleared");
-  }
-  window.deleteAllJournal = deleteAllJournal;
-
-  function editJournalEntry(id){
-    const je = state.journal.find(e=>e.id===id);
-    if(!je) return;
-
-    // fill form with existing entry
-    go("new");
-    $("entryDate").value = je.date;
-    $("entryNarration").value = je.narration || "";
-
-    $("rowsContainer").innerHTML = "";
-    for(const line of je.lines){
-      addRow(line.acc, line.dr, line.cr);
-    }
-
-    // Set mode
-    submitEntry._editId = id;
-    toast("Edit mode enabled. Submit to update.");
-  }
-  window.editJournalEntry = editJournalEntry;
-
-  function updateJournalEntry(id, newEntry){
-    pushUndo(state);
-
-    const idx = state.journal.findIndex(e=>e.id===id);
-    if(idx===-1) return;
-
-    newEntry.id = id;
-    state.journal[idx] = newEntry;
-
-    rebuildLedgerFromJournal();
-    saveState();
-    refreshAll();
-    toast("Entry updated");
-  }
-
-  // ---------- Ledger delete ----------
-  function deleteSelectedLedger(){
-    const acc = $("ledgerSelect").value;
-    if(!acc) return;
-    if(!confirm("Delete this ledger account completely?")) return;
-
-    pushUndo(state);
-
-    // remove ledger
-    delete state.ledger[acc];
-
-    // remove from journal lines
-    for(const je of state.journal){
-      je.lines = je.lines.filter(l=>l.acc !== acc);
-    }
-    // remove empty journal entries
-    state.journal = state.journal.filter(je=>{
-      const dr = je.lines.reduce((s,l)=>s+safeNum(l.dr),0);
-      const cr = je.lines.reduce((s,l)=>s+safeNum(l.cr),0);
-      return (je.lines.length>0) && (dr>0 || cr>0);
-    });
-
-    rebuildLedgerFromJournal();
-    saveState();
-    refreshAll();
-    toast("Ledger deleted");
-  }
-  window.deleteSelectedLedger = deleteSelectedLedger;
-
-  function deleteAllLedger(){
-    if(!confirm("Delete ALL Ledgers? (This will also clear journal because ledgers come from journal)")) return;
-    pushUndo(state);
-
-    state.journal = [];
-    state.ledger = {};
-    state.meta.nextId = 1;
-    state.meta.nextFolio = 1;
-
-    saveState();
-    refreshAll();
-    toast("All ledgers cleared");
-  }
-  window.deleteAllLedger = deleteAllLedger;
-
-  // ---------- Global delete all ----------
-  function deleteAllData(){
-    if(!confirm("Delete EVERYTHING? (Journal + Ledger + Statements)")) return;
-    pushUndo(state);
-
-    state = {
-      meta:{ nextId: 1, nextFolio: 1 },
-      journal: [],
-      ledger: {}
+      // Ledger UI
+      ledgerSelected: "",
+      ledgerSearch: ""
     };
-    saveState();
-    refreshAll();
-    toast("All data deleted");
-  }
-  window.deleteAllData = deleteAllData;
 
-  // ---------- UI Navigation ----------
-  function hideAll(){
-    $("viewNew").style.display="none";
-    $("viewJournal").style.display="none";
-    $("viewLedger").style.display="none";
-    $("viewTrading").style.display="none";
-    $("viewPL").style.display="none";
-    $("viewBS").style.display="none";
-  }
+    // ---------- Utilities ----------
+    function safeText(s) { return String(s ?? "").replace(/[<>]/g, ""); }
 
-  function go(view){
-    $("viewSelect").value = view;
-    renderView(view);
-  }
-  window.go = go;
-
-  function renderView(view){
-    hideAll();
-    if(view==="new") $("viewNew").style.display="block";
-    if(view==="journal") $("viewJournal").style.display="block";
-    if(view==="ledger") $("viewLedger").style.display="block";
-    if(view==="trading") $("viewTrading").style.display="block";
-    if(view==="pl") $("viewPL").style.display="block";
-    if(view==="bs") $("viewBS").style.display="block";
-
-    if(view==="journal") renderJournal();
-    if(view==="ledger") renderLedger();
-    if(view==="trading") renderTrading();
-    if(view==="pl") renderPL();
-    if(view==="bs") renderBS();
-  }
-
-  $("viewSelect").addEventListener("change", (e)=>renderView(e.target.value));
-
-  // ---------- Form ----------
-  function disableScrollNumberInputs(){
-    document.addEventListener("wheel", function(e){
-      const el = document.activeElement;
-      if(el && el.tagName==="INPUT" && el.type==="number"){
-        e.preventDefault();
-      }
-    }, { passive:false });
-
-    document.addEventListener("keydown", function(e){
-      const el = document.activeElement;
-      if(el && el.tagName==="INPUT" && el.type==="number"){
-        // block arrow up/down changing number
-        if(e.key==="ArrowUp" || e.key==="ArrowDown"){
-          e.preventDefault();
-        }
-      }
-    });
-  }
-
-  function addRow(acc="", dr="", cr=""){
-    const wrap = document.createElement("div");
-    wrap.className = "row";
-    wrap.innerHTML = `
-      <input type="text" class="acc" placeholder="Account Name" value="${escapeHtml(acc)}"/>
-      <input type="number" class="dr right" placeholder="Debit" value="${dr!==""?dr:""}" inputmode="numeric"/>
-      <input type="number" class="cr right" placeholder="Credit" value="${cr!==""?cr:""}" inputmode="numeric"/>
-      <button class="btn-danger btn-small" type="button">X</button>
-    `;
-    wrap.querySelector("button").onclick = ()=>{ wrap.remove(); validateTotals(); };
-    wrap.querySelector(".dr").addEventListener("input", validateTotals);
-    wrap.querySelector(".cr").addEventListener("input", validateTotals);
-    wrap.querySelector(".acc").addEventListener("input", validateTotals);
-    $("rowsContainer").appendChild(wrap);
-    validateTotals();
-  }
-  window.addRow = addRow;
-
-  function clearEntryForm(){
-    $("entryDate").value = todayISO();
-    $("entryNarration").value = "";
-    $("rowsContainer").innerHTML = "";
-    addRow();
-    addRow();
-    submitEntry._editId = null;
-    toast("Form cleared");
-  }
-  window.clearEntryForm = clearEntryForm;
-
-  function validateTotals(){
-    const rows = [...$("rowsContainer").querySelectorAll(".row")];
-    let dr=0, cr=0;
-    for(const r of rows){
-      dr += safeNum(r.querySelector(".dr").value);
-      cr += safeNum(r.querySelector(".cr").value);
+    function toPaise(str) {
+      if (str === "" || str === null || str === undefined) return 0;
+      const n = Number(str);
+      if (!Number.isFinite(n)) return 0;
+      return Math.round(n * 100);
     }
-    const ok = Math.abs(dr-cr) < 0.00001 && dr>0 && cr>0;
-    $("validationBox").innerHTML =
-      `Total Debit: <span class="pill">${fmt(dr)}</span> &nbsp; | &nbsp; Total Credit: <span class="pill">${fmt(cr)}</span>
-       <br>${ok ? "✅ Balanced entry (Allowed)" : "❌ Not balanced (Debit must equal Credit)"}`
-    ;
-    return {dr,cr,ok};
-  }
 
-  function submitEntry(){
-    const date = $("entryDate").value || todayISO();
-    const narration = $("entryNarration").value.trim();
+    function paiseToStr(p) {
+      return (p / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
 
-    const rows = [...$("rowsContainer").querySelectorAll(".row")];
-    const lines = [];
+    function todayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    }
 
-    for(const r of rows){
-      const acc = r.querySelector(".acc").value.trim();
-      const dr = safeNum(r.querySelector(".dr").value);
-      const cr = safeNum(r.querySelector(".cr").value);
+    function pushUndoSnapshot(label = "Action") {
+      // keep last 30 snapshots
+      const snap = {
+        label,
+        ts: Date.now(),
+        entries: JSON.parse(JSON.stringify(state.entries)),
+        folioNext: state.folioNext
+      };
+      state.undo.push(snap);
+      if (state.undo.length > 30) state.undo.shift();
+      saveLocal();
+    }
 
-      if(!acc && dr===0 && cr===0) continue;
-      if(!acc){
-        toast("Account name missing in one row");
+    function undoLastAction() {
+      if (!state.undo.length) {
+        alert("Nothing to undo.");
         return;
       }
-      if(dr>0 && cr>0){
-        toast("One row cannot have both Debit and Credit");
-        return;
+      const snap = state.undo.pop();
+      state.entries = snap.entries || [];
+      state.folioNext = snap.folioNext || 1;
+      saveLocal();
+      render();
+      toast(`Undo: ${snap.label}`);
+    }
+
+    function toast(msg) {
+      // minimal toast
+      const t = document.createElement("div");
+      t.textContent = msg;
+      t.style.position = "fixed";
+      t.style.left = "50%";
+      t.style.bottom = "26px";
+      t.style.transform = "translateX(-50%)";
+      t.style.padding = "12px 16px";
+      t.style.borderRadius = "999px";
+      t.style.background = "rgba(255,255,255,0.85)";
+      t.style.border = "1px solid rgba(62,39,35,0.18)";
+      t.style.boxShadow = "0 14px 40px rgba(62,39,35,0.18)";
+      t.style.fontWeight = "900";
+      t.style.zIndex = "99999";
+      t.style.backdropFilter = "blur(10px)";
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 1600);
+    }
+
+    // ---------- Local Storage ----------
+    function saveLocal() {
+      const payload = {
+        entries: state.entries,
+        folioNext: state.folioNext,
+        undo: state.undo
+      };
+      localStorage.setItem(LS_KEY, JSON.stringify(payload));
+    }
+
+    function loadLocal() {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+        state.entries = Array.isArray(data.entries) ? data.entries : [];
+        state.folioNext = Number.isFinite(data.folioNext) ? data.folioNext : 1;
+        state.undo = Array.isArray(data.undo) ? data.undo : [];
+      } catch (e) {
+        console.warn("LocalStorage load failed:", e);
       }
-      if(dr===0 && cr===0){
-        toast("Amount missing in one row");
-        return;
-      }
-
-      lines.push({acc, dr, cr});
     }
 
-    if(lines.length<2){
-      toast("At least 2 lines needed (Debit + Credit)");
-      return;
+    // ---------- Accounting Helpers ----------
+    function normalizeAccountName(name) {
+      return String(name ?? "")
+        .trim()
+        .replace(/\s+/g, " ")
+        .replace(/\s*A\/C\s*$/i, " A/c");
     }
 
-    const totals = validateTotals();
-    if(!totals.ok){
-      toast("Entry not balanced. Fix Debit/Credit totals.");
-      return;
+    function entryTotals(entry) {
+      const dr = (entry.debits || []).reduce((a, b) => a + (b.amtPaise || 0), 0);
+      const cr = (entry.credits || []).reduce((a, b) => a + (b.amtPaise || 0), 0);
+      return { dr, cr };
     }
 
-    const entry = { date, narration, lines };
+    function buildLedger() {
+      state.ledger = {};
+      const ensure = (acc) => {
+        const a = normalizeAccountName(acc);
+        if (!state.ledger[a]) state.ledger[a] = { dr: 0, cr: 0, lf: state.folioNext++ };
+        return a;
+      };
 
-    // EDIT mode?
-    if(submitEntry._editId){
-      const editId = submitEntry._editId;
-      submitEntry._editId = null;
-      updateJournalEntry(editId, entry);
-      clearEntryForm();
-      return;
+      state.entries.forEach(e => {
+        (e.debits || []).forEach(d => {
+          const a = ensure(d.acc);
+          state.ledger[a].dr += d.amtPaise || 0;
+        });
+        (e.credits || []).forEach(c => {
+          const a = ensure(c.acc);
+          state.ledger[a].cr += c.amtPaise || 0;
+        });
+      });
     }
 
-    addJournalEntry(entry);
-    clearEntryForm();
-  }
-  window.submitEntry = submitEntry;
-
-  // ---------- Render Journal ----------
-  function renderJournal(){
-    const tbody = $("journalTable").querySelector("tbody");
-    tbody.innerHTML = "";
-
-    if(state.journal.length===0){
-      tbody.innerHTML = `<tr><td colspan="6" class="center muted">No entries yet. Add entries from "New Entry".</td></tr>`;
-      return;
+    function getLedgerBalance(acc) {
+      buildLedger();
+      const a = normalizeAccountName(acc);
+      const data = state.ledger[a];
+      if (!data) return { bal: 0, type: "Dr" };
+      const bal = (data.dr || 0) - (data.cr || 0);
+      return { bal, type: bal >= 0 ? "Dr" : "Cr" };
     }
 
-    // Show each journal entry in CBSE style:
-    // First line debit accounts (with amounts)
-    // Then credit accounts with "To"
-    for(const je of state.journal){
-      const debitLines = je.lines.filter(l=>safeNum(l.dr)>0);
-      const creditLines = je.lines.filter(l=>safeNum(l.cr)>0);
+    // ---------- Final Accounts Auto-Generation ----------
+    // NOTE: This is a CBSE practical style approximation.
+    // It classifies accounts based on keywords.
+    function classifyAccount(name) {
+      const n = normalizeAccountName(name).toLowerCase();
 
-      const allAccs = [...new Set(je.lines.map(l=>l.acc))];
-      // LF mapping: use ledger folio numbers
-      const lfMap = {};
-      for(const a of allAccs){
-        lfMap[a] = state.ledger[a]?.folio ?? "-";
-      }
+      const isSales = /sales/.test(n);
+      const isPurchase = /purchase/.test(n);
+      const isReturnInward = /(return\s*inward|sales\s*return)/.test(n);
+      const isReturnOutward = /(return\s*outward|purchase\s*return)/.test(n);
 
-      // Header row
-      const trTop = document.createElement("tr");
-      trTop.innerHTML = `
-        <td rowspan="${Math.max(debitLines.length+creditLines.length+1,2)}">${escapeHtml(je.date)}</td>
-        <td>
-          <strong>${escapeHtml(debitLines[0]?.acc || "")}</strong>
-        </td>
-        <td class="center">${lfMap[debitLines[0]?.acc] ?? "-"}</td>
-        <td class="right">${debitLines[0] ? fmt(debitLines[0].dr) : ""}</td>
-        <td class="right"></td>
-        <td rowspan="${Math.max(debitLines.length+creditLines.length+1,2)}">
-          <button class="btn-small" onclick="editJournalEntry(${je.id})">Edit</button>
-          <button class="btn-danger btn-small" onclick="deleteJournalEntry(${je.id})">Delete</button>
-        </td>
+      const isOpeningStock = /(opening\s*stock)/.test(n);
+      const isClosingStock = /(closing\s*stock)/.test(n);
+
+      const isDirectExpense = /(carriage\s*inward|wages|freight|factory|manufacturing|power|fuel|octroi|custom|dock)/.test(n);
+      const isDirectIncome = /(direct\s*income)/.test(n);
+
+      const isIndirectExpense = /(rent|salary|salaries|office|advert|advertisement|carriage\s*outward|printing|stationery|insurance|depreciation|bad\s*debts|discount\s*allowed|commission|travelling|repairs|audit)/.test(n);
+      const isIndirectIncome = /(discount\s*received|commission\s*received|interest\s*received|rent\s*received)/.test(n);
+
+      if (isSales) return "sales";
+      if (isPurchase) return "purchase";
+      if (isReturnInward) return "returnInward";
+      if (isReturnOutward) return "returnOutward";
+      if (isOpeningStock) return "openingStock";
+      if (isClosingStock) return "closingStock";
+      if (isDirectExpense) return "directExpense";
+      if (isDirectIncome) return "directIncome";
+      if (isIndirectExpense) return "indirectExpense";
+      if (isIndirectIncome) return "indirectIncome";
+
+      return "other";
+    }
+
+    function computeFinalAccounts() {
+      buildLedger();
+      const accounts = Object.keys(state.ledger);
+
+      let openingStock = 0;
+      let closingStock = 0;
+
+      let sales = 0;
+      let purchases = 0;
+      let returnInward = 0;
+      let returnOutward = 0;
+
+      let directExp = 0;
+      let directInc = 0;
+
+      let indirectExp = 0;
+      let indirectInc = 0;
+
+      accounts.forEach(acc => {
+        const { bal } = getLedgerBalance(acc);
+        const cls = classifyAccount(acc);
+
+        // NOTE: We treat "balance Dr" as expense/asset; "balance Cr" as income/liability.
+        // For Trading / P&L classification we use abs(bal) and sign via Dr/Cr.
+        const abs = Math.abs(bal);
+
+        if (cls === "openingStock") openingStock += abs;
+        if (cls === "closingStock") closingStock += abs;
+
+        if (cls === "sales") sales += abs;
+        if (cls === "purchase") purchases += abs;
+
+        if (cls === "returnInward") returnInward += abs;
+        if (cls === "returnOutward") returnOutward += abs;
+
+        if (cls === "directExpense") directExp += abs;
+        if (cls === "directIncome") directInc += abs;
+
+        if (cls === "indirectExpense") indirectExp += abs;
+        if (cls === "indirectIncome") indirectInc += abs;
+      });
+
+      const netSales = Math.max(0, sales - returnInward);
+      const netPurchases = Math.max(0, purchases - returnOutward);
+
+      // Trading A/c:
+      // Debit: Opening Stock + Net Purchases + Direct Expenses
+      // Credit: Net Sales + Closing Stock + Direct Incomes
+      const tradingDebit = openingStock + netPurchases + directExp;
+      const tradingCredit = netSales + closingStock + directInc;
+      const grossProfit = Math.max(0, tradingCredit - tradingDebit);
+      const grossLoss = Math.max(0, tradingDebit - tradingCredit);
+
+      // P&L A/c:
+      // Debit: Indirect Expenses + Gross Loss
+      // Credit: Indirect Incomes + Gross Profit
+      const plDebit = indirectExp + grossLoss;
+      const plCredit = indirectInc + grossProfit;
+      const netProfit = Math.max(0, plCredit - plDebit);
+      const netLoss = Math.max(0, plDebit - plCredit);
+
+      return {
+        openingStock, closingStock,
+        sales, purchases, returnInward, returnOutward,
+        directExp, directInc,
+        indirectExp, indirectInc,
+        netSales, netPurchases,
+        tradingDebit, tradingCredit, grossProfit, grossLoss,
+        plDebit, plCredit, netProfit, netLoss
+      };
+    }
+
+    // ---------- Views Rendering ----------
+    const mainContent = document.getElementById("main-content");
+
+    function setMenuActive(v) {
+      document.querySelectorAll(".menu-item").forEach(x => x.classList.remove("active"));
+      const item = document.querySelector(`.menu-item[data-view="${v}"]`);
+      if (item) item.classList.add("active");
+      const current = document.getElementById("menuCurrent");
+      const names = {
+        dashboard: "Dashboard",
+        new: "New Entry",
+        journal: "Journal",
+        ledger: "Ledger",
+        final: "Final Accounts"
+      };
+      current.textContent = names[v] || "Menu";
+    }
+
+    function switchView(v) {
+      // page flip animation
+      const page = document.getElementById("main-content");
+      page.classList.add("flip-out");
+      closeMenu();
+
+      setTimeout(() => {
+        state.view = v;
+        setMenuActive(v);
+        render();
+        page.classList.remove("flip-out");
+        page.classList.add("flip-in");
+        setTimeout(() => page.classList.remove("flip-in"), 120);
+      }, 220);
+    }
+
+    function render() {
+      buildLedger();
+      updatePills();
+
+      mainContent.innerHTML = "";
+
+      if (state.view === "dashboard") renderDashboard();
+      else if (state.view === "new") renderNewEntry();
+      else if (state.view === "journal") renderJournal();
+      else if (state.view === "ledger") renderLedger();
+      else if (state.view === "final") renderFinalAccounts();
+      else renderDashboard();
+
+      initMagnetic();
+      init3DCards();
+    }
+
+    function updatePills() {
+      const pillEntries = document.getElementById("pillEntries");
+      const pillAccounts = document.getElementById("pillAccounts");
+      if (pillEntries) pillEntries.textContent = `${state.entries.length} Entries`;
+      if (pillAccounts) pillAccounts.textContent = `${Object.keys(state.ledger).length} A/c`;
+    }
+
+    // ---------- Dashboard ----------
+    function renderDashboard() {
+      let totalEntries = state.entries.length;
+      let totalDr = 0;
+      let totalCr = 0;
+
+      state.entries.forEach(e => {
+        (e.debits || []).forEach(d => totalDr += (d.amtPaise || 0));
+        (e.credits || []).forEach(c => totalCr += (c.amtPaise || 0));
+      });
+
+      const html = `
+        <div class="dashboard-grid">
+          <div class="card-3d tilt-card">
+            <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600" class="card-bg-img" alt="">
+            <div class="card-glare"></div>
+            <div class="card-content">
+              <div class="card-title">Total Entries</div>
+              <div class="card-value">${totalEntries}</div>
+            </div>
+          </div>
+
+          <div class="card-3d tilt-card">
+            <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&grayscale" class="card-bg-img" alt="">
+            <div class="card-glare"></div>
+            <div class="card-content">
+              <div class="card-title">Total Debit</div>
+              <div class="card-value">${paiseToStr(totalDr)}</div>
+            </div>
+          </div>
+
+          <div class="card-3d tilt-card">
+            <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&grayscale" class="card-bg-img" alt="">
+            <div class="card-glare"></div>
+            <div class="card-content">
+              <div class="card-title">Total Credit</div>
+              <div class="card-value">${paiseToStr(totalCr)}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="paper">
+          <h2 class="section-title">Overview</h2>
+
+          <div class="status">
+            <div><span class="tag">Auto-save</span> <span class="muted">LocalStorage enabled</span></div>
+            <div><span class="tag">CBSE</span> <span class="muted">Journal → Ledger → Final Accounts</span></div>
+          </div>
+
+          <div class="notice">
+            <strong>How to use:</strong>
+            <ul style="margin:10px 0 0 18px;">
+              <li>Open <b>New Entry</b> and enter multiple debit/credit lines.</li>
+              <li>Save entry → it auto updates <b>Journal</b> + <b>Ledger</b>.</li>
+              <li>Open <b>Final Accounts</b> for <b>Trading A/c</b> and <b>P&L A/c</b> auto-generation.</li>
+              <li>Use <b>Undo</b> if you delete something accidentally.</li>
+            </ul>
+          </div>
+
+          <div class="notice">
+            <strong>Keyboard shortcuts:</strong>
+            <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+              <span class="kbd">Ctrl + N</span> New Entry
+              <span class="kbd">Ctrl + J</span> Journal
+              <span class="kbd">Ctrl + L</span> Ledger
+              <span class="kbd">Ctrl + F</span> Final Accounts
+              <span class="kbd">Ctrl + Z</span> Undo
+            </div>
+          </div>
+        </div>
       `;
-      tbody.appendChild(trTop);
+      mainContent.innerHTML = html;
+    }
 
-      // Remaining debit lines
-      for(let i=1;i<debitLines.length;i++){
-        const l = debitLines[i];
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td><strong>${escapeHtml(l.acc)}</strong></td>
-          <td class="center">${lfMap[l.acc] ?? "-"}</td>
-          <td class="right">${fmt(l.dr)}</td>
-          <td class="right"></td>
-        `;
-        tbody.appendChild(tr);
+    // ---------- New Entry ----------
+    let tempDebits = [{ id: uid(), acc: "", amt: "" }];
+    let tempCredits = [{ id: uid(), acc: "", amt: "" }];
+
+    function renderNewEntry(editId = null) {
+      const isEdit = Boolean(editId);
+      const entry = isEdit ? state.entries.find(e => e.id === editId) : null;
+
+      if (isEdit && !entry) {
+        alert("Entry not found.");
+        switchView("journal");
+        return;
       }
 
-      // Credit lines with "To"
-      for(let i=0;i<creditLines.length;i++){
-        const l = creditLines[i];
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${i===0 ? "<span class='muted'>To</span> " : "<span class='muted'>To</span> "} <strong>${escapeHtml(l.acc)}</strong></td>
-          <td class="center">${lfMap[l.acc] ?? "-"}</td>
-          <td class="right"></td>
-          <td class="right">${fmt(l.cr)}</td>
-        `;
-        tbody.appendChild(tr);
-      }
+      // prefill
+      const dateVal = isEdit ? entry.date : todayISO();
+      const narrVal = isEdit ? entry.narration : "";
 
-      // Narration row
-      const trNar = document.createElement("tr");
-      trNar.innerHTML = `
-        <td colspan="4" class="muted"><em>Narration:</em> ${escapeHtml(je.narration || "-")}</td>
+      tempDebits = isEdit ? (entry.debits || []).map(x => ({ id: uid(), acc: x.acc, amt: (x.amtPaise || 0) / 100 })) : [{ id: uid(), acc: "", amt: "" }];
+      tempCredits = isEdit ? (entry.credits || []).map(x => ({ id: uid(), acc: x.acc, amt: (x.amtPaise || 0) / 100 })) : [{ id: uid(), acc: "", amt: "" }];
+
+      const html = `
+        <div class="paper">
+          <h2 class="section-title">${isEdit ? "Edit Journal Entry" : "New Journal Entry"}</h2>
+
+          <div class="form-grid">
+            <div>
+              <label>Date</label>
+              <input type="date" id="entryDate" value="${safeText(dateVal)}">
+            </div>
+            <div>
+              <label>Narration</label>
+              <input type="text" id="entryNarr" value="${safeText(narrVal)}" placeholder="Description...">
+            </div>
+          </div>
+
+          <div class="notice">
+            <strong>Rule:</strong> Total Debit must equal Total Credit (Double Entry System).
+          </div>
+
+          <hr class="row-divider"/>
+
+          <div class="two-col">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                <h3 style="margin:0; font-family:var(--font-heading);">Debits</h3>
+                <button class="btn" onclick="addLine('debit')">+ Add Debit</button>
+              </div>
+              <div class="entry-lines" id="debitLines" style="margin-top:12px;"></div>
+            </div>
+
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                <h3 style="margin:0; font-family:var(--font-heading);">Credits</h3>
+                <button class="btn" onclick="addLine('credit')">+ Add Credit</button>
+              </div>
+              <div class="entry-lines" id="creditLines" style="margin-top:12px;"></div>
+            </div>
+          </div>
+
+          <div class="status">
+            <div class="muted"><b>Tip:</b> Write account names like <b>Cash A/c</b>, <b>Sales A/c</b>, <b>Purchases A/c</b>, <b>Wages A/c</b>.</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              ${isEdit ? `<button class="btn btn-ghost" onclick="switchView('journal')">Cancel</button>` : ``}
+              <button class="btn-action" onclick="${isEdit ? `updateEntry('${entry.id}')` : `saveEntry()`}">
+                ${isEdit ? "Update Entry" : "Save Entry"}
+              </button>
+            </div>
+          </div>
+        </div>
       `;
-      tbody.appendChild(trNar);
-    }
-  }
-  window.deleteJournalEntry = deleteJournalEntry;
+      mainContent.innerHTML = html;
 
-  // ---------- Render Ledger ----------
-  function renderLedger(){
-    // fill select
-    const sel = $("ledgerSelect");
-    const accounts = Object.keys(state.ledger).sort((a,b)=>a.localeCompare(b));
-    sel.innerHTML = "";
-
-    if(accounts.length===0){
-      sel.innerHTML = `<option value="">No Ledger Accounts</option>`;
-      $("ledgerArea").innerHTML = `<div class="note">No ledger accounts yet.</div>`;
-      return;
+      renderLines("debit", tempDebits);
+      renderLines("credit", tempCredits);
     }
 
-    for(const acc of accounts){
-      const opt = document.createElement("option");
-      opt.value = acc;
-      opt.textContent = `${acc} (Folio ${state.ledger[acc].folio})`;
-      sel.appendChild(opt);
+    function addLine(side) {
+      if (side === "debit") tempDebits.push({ id: uid(), acc: "", amt: "" });
+      else tempCredits.push({ id: uid(), acc: "", amt: "" });
+      renderLines(side, side === "debit" ? tempDebits : tempCredits);
     }
 
-    const chosen = sel.value || accounts[0];
-    sel.value = chosen;
-
-    const led = state.ledger[chosen];
-    if(!led){
-      $("ledgerArea").innerHTML = `<div class="note">Ledger not found.</div>`;
-      return;
+    function removeLine(side, index) {
+      if (side === "debit") {
+        if (tempDebits.length <= 1) return;
+        tempDebits.splice(index, 1);
+      } else {
+        if (tempCredits.length <= 1) return;
+        tempCredits.splice(index, 1);
+      }
+      renderLines(side, side === "debit" ? tempDebits : tempCredits);
     }
 
-    let drTotal=0, crTotal=0;
-    for(const e of led.entries){ drTotal += safeNum(e.dr); crTotal += safeNum(e.cr); }
-    const bal = drTotal - crTotal;
+    function renderLines(side, arr) {
+      const container = document.getElementById(side + "Lines");
+      if (!container) return;
 
-    let html = `
-      <div class="table-wrap">
-        <table class="ruled">
+      container.innerHTML = arr.map((line, i) => `
+        <div class="entry-row" data-id="${line.id}" data-side="${side}">
+          <div>
+            <label style="display:block; margin-bottom:6px;">Account</label>
+            <input type="text" class="inp-acc" placeholder="Account Name (e.g., Cash A/c)" value="${safeText(line.acc)}">
+          </div>
+          <div>
+            <label style="display:block; margin-bottom:6px;">Amount (₹)</label>
+            <input type="number" class="inp-amt" placeholder="0" min="0" step="0.01" value="${safeText(line.amt)}">
+          </div>
+          <div class="tiny-actions" style="margin-top:22px;">
+            <button class="icon-btn danger" onclick="removeLine('${side}', ${i})" title="Remove line">✕</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function collectLines() {
+      const date = document.getElementById("entryDate")?.value || todayISO();
+      const narr = document.getElementById("entryNarr")?.value || "";
+
+      const debRows = document.querySelectorAll("#debitLines .entry-row");
+      const debits = [];
+      debRows.forEach(r => {
+        const acc = normalizeAccountName(r.querySelector(".inp-acc").value);
+        const amt = toPaise(r.querySelector(".inp-amt").value);
+        if (acc && amt > 0) debits.push({ id: uid(), acc, amtPaise: amt });
+      });
+
+      const credRows = document.querySelectorAll("#creditLines .entry-row");
+      const credits = [];
+      credRows.forEach(r => {
+        const acc = normalizeAccountName(r.querySelector(".inp-acc").value);
+        const amt = toPaise(r.querySelector(".inp-amt").value);
+        if (acc && amt > 0) credits.push({ id: uid(), acc, amtPaise: amt });
+      });
+
+      const drTotal = debits.reduce((a, b) => a + b.amtPaise, 0);
+      const crTotal = credits.reduce((a, b) => a + b.amtPaise, 0);
+
+      return { date, narr, debits, credits, drTotal, crTotal };
+    }
+
+    function saveEntry() {
+      const { date, narr, debits, credits, drTotal, crTotal } = collectLines();
+
+      if (!debits.length || !credits.length) {
+        alert("Please enter at least 1 Debit line and 1 Credit line.");
+        return;
+      }
+
+      if (drTotal !== crTotal) {
+        alert(`Debit Total (${paiseToStr(drTotal)}) must match Credit Total (${paiseToStr(crTotal)}).`);
+        return;
+      }
+
+      pushUndoSnapshot("Add Entry");
+
+      state.entries.push({
+        id: uid(),
+        date,
+        narration: narr,
+        debits,
+        credits,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      });
+
+      saveLocal();
+      toast("Entry saved");
+      switchView("journal");
+    }
+
+    function updateEntry(id) {
+      const idx = state.entries.findIndex(e => e.id === id);
+      if (idx === -1) return;
+
+      const { date, narr, debits, credits, drTotal, crTotal } = collectLines();
+
+      if (!debits.length || !credits.length) {
+        alert("Please enter at least 1 Debit line and 1 Credit line.");
+        return;
+      }
+
+      if (drTotal !== crTotal) {
+        alert(`Debit Total (${paiseToStr(drTotal)}) must match Credit Total (${paiseToStr(crTotal)}).`);
+        return;
+      }
+
+      pushUndoSnapshot("Edit Entry");
+
+      state.entries[idx] = {
+        ...state.entries[idx],
+        date,
+        narration: narr,
+        debits,
+        credits,
+        updatedAt: Date.now()
+      };
+
+      saveLocal();
+      toast("Entry updated");
+      switchView("journal");
+    }
+
+    // ---------- Journal ----------
+    function renderJournal() {
+      const rows = [...state.entries].sort((a, b) => (b.updatedAt || b.createdAt) - (a.updatedAt || a.createdAt));
+
+      let html = `
+        <div class="paper">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+            <h2 class="section-title">Journal Entries</h2>
+            <div class="tag">Total: ${rows.length}</div>
+          </div>
+      `;
+
+      if (!rows.length) {
+        html += `<p class="muted" style="font-weight:700;">No entries found. Create a new entry from the menu.</p>`;
+      } else {
+        html += `
+          <table>
+            <thead>
+              <tr>
+                <th style="width:130px;">Date</th>
+                <th>Particulars</th>
+                <th class="text-right" style="width:160px;">Debit (₹)</th>
+                <th class="text-right" style="width:160px;">Credit (₹)</th>
+                <th class="text-center" style="width:170px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        rows.forEach(e => {
+          const { dr, cr } = entryTotals(e);
+
+          // Debit lines
+          (e.debits || []).forEach((d, i) => {
+            html += `
+              <tr>
+                <td>${i === 0 ? safeText(e.date) : ""}</td>
+                <td><b>${safeText(d.acc)}</b>${i === 0 ? `<br><small class="muted">${safeText(e.narration || "")}</small>` : ""}</td>
+                <td class="text-right mono">${paiseToStr(d.amtPaise || 0)}</td>
+                <td class="text-right mono"></td>
+                <td class="text-center" rowspan="${Math.max(1, (e.debits?.length || 0) + (e.credits?.length || 0) + 1)}" style="background:none;">
+                  <div style="display:grid; gap:10px;">
+                    <button class="btn" onclick="editEntry('${e.id}')">Edit</button>
+                    <button class="btn btn-danger" onclick="deleteSingleEntry('${e.id}')">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          });
+
+          // Credit lines
+          (e.credits || []).forEach(c => {
+            html += `
+              <tr>
+                <td></td>
+                <td style="padding-left:22px;">To <b>${safeText(c.acc)}</b></td>
+                <td class="text-right mono"></td>
+                <td class="text-right mono">${paiseToStr(c.amtPaise || 0)}</td>
+              </tr>
+            `;
+          });
+
+          // Totals
+          html += `
+            <tr style="background:rgba(0,0,0,0.02); font-weight:900;">
+              <td colspan="2" class="text-right">Total</td>
+              <td class="text-right mono">${paiseToStr(dr)}</td>
+              <td class="text-right mono">${paiseToStr(cr)}</td>
+            </tr>
+          `;
+        });
+
+        html += `</tbody></table>`;
+      }
+
+      html += `
+        <div class="notice">
+          <strong>CBSE Practical Tip:</strong> Always write narration and ensure totals match.
+        </div>
+      </div>
+      `;
+
+      mainContent.innerHTML = html;
+    }
+
+    function editEntry(id) {
+      state.view = "new";
+      setMenuActive("new");
+      renderNewEntry(id);
+    }
+
+    function deleteSingleEntry(id) {
+      const entry = state.entries.find(e => e.id === id);
+      if (!entry) return;
+
+      const ok = confirm("Delete this journal entry?");
+      if (!ok) return;
+
+      pushUndoSnapshot("Delete Single Entry");
+      state.entries = state.entries.filter(e => e.id !== id);
+      saveLocal();
+      toast("Entry deleted");
+      render();
+    }
+
+    // ---------- Ledger ----------
+    function renderLedger() {
+      buildLedger();
+      const accounts = Object.keys(state.ledger).sort((a, b) => a.localeCompare(b));
+
+      // pick selected
+      if (!state.ledgerSelected && accounts.length) state.ledgerSelected = accounts[0];
+      if (state.ledgerSelected && !state.ledger[state.ledgerSelected]) state.ledgerSelected = accounts[0] || "";
+
+      const filtered = accounts.filter(a => a.toLowerCase().includes((state.ledgerSearch || "").toLowerCase()));
+
+      let html = `
+        <div class="paper">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+            <h2 class="section-title">General Ledger</h2>
+            <div class="tag">Accounts: ${accounts.length}</div>
+          </div>
+
+          <div class="ledger-toolbar">
+            <div class="left">
+              <label style="font-weight:900;">Search:</label>
+              <input class="search" type="text" placeholder="Type account name..." value="${safeText(state.ledgerSearch)}"
+                oninput="setLedgerSearch(this.value)">
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn btn-ghost" onclick="clearLedgerSearch()">Clear</button>
+              <button class="btn btn-danger" onclick="deleteSelectedLedgerAccount()">Delete Selected A/c</button>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div style="min-height:260px;">
+              <div class="notice">
+                <strong>Select Account</strong>
+                <div class="muted" style="margin-top:6px;">(Only one ledger page shown at a time)</div>
+              </div>
+
+              <div style="margin-top:12px; display:grid; gap:10px;">
+                ${filtered.length ? filtered.map(a => `
+                  <div class="menu-item ${a === state.ledgerSelected ? "active" : ""}" onclick="selectLedger('${safeText(a)}')">
+                    <div class="left">
+                      <div class="label">${safeText(a)}</div>
+                      <div class="hint">LF: ${state.ledger[a].lf}</div>
+                    </div>
+                    <div class="pill">${ledgerBalancePill(a)}</div>
+                  </div>
+                `).join("") : `<div class="notice">No accounts match search.</div>`}
+              </div>
+            </div>
+
+            <div>
+              ${renderLedgerPage(state.ledgerSelected)}
+            </div>
+          </div>
+        </div>
+      `;
+
+      mainContent.innerHTML = html;
+    }
+
+    function ledgerBalancePill(acc) {
+      const { bal, type } = getLedgerBalance(acc);
+      const abs = Math.abs(bal);
+      if (!abs) return "Nil";
+      return `${paiseToStr(abs)} ${type}`;
+    }
+
+    function setLedgerSearch(v) {
+      state.ledgerSearch = v;
+      render();
+    }
+
+    function clearLedgerSearch() {
+      state.ledgerSearch = "";
+      render();
+    }
+
+    function selectLedger(acc) {
+      state.ledgerSelected = normalizeAccountName(acc);
+      render();
+    }
+
+    function deleteSelectedLedgerAccount() {
+      const acc = state.ledgerSelected;
+      if (!acc) return;
+      const ok = confirm(`Delete ledger account "${acc}"?\n\nThis will remove all journal lines containing this account.`);
+      if (!ok) return;
+
+      pushUndoSnapshot("Delete Single Ledger Account");
+
+      // Remove lines in entries that reference this account
+      state.entries = state.entries
+        .map(e => {
+          const debits = (e.debits || []).filter(d => normalizeAccountName(d.acc) !== normalizeAccountName(acc));
+          const credits = (e.credits || []).filter(c => normalizeAccountName(c.acc) !== normalizeAccountName(acc));
+          return { ...e, debits, credits };
+        })
+        .filter(e => {
+          // remove entries that become empty or invalid
+          const { dr, cr } = entryTotals(e);
+          return dr > 0 && cr > 0 && dr === cr;
+        });
+
+      saveLocal();
+      toast("Ledger account deleted");
+      render();
+    }
+
+    function renderLedgerPage(acc) {
+      if (!acc) {
+        return `<div class="notice"><strong>No ledger selected.</strong></div>`;
+      }
+
+      buildLedger();
+      const data = state.ledger[acc];
+      if (!data) return `<div class="notice"><strong>Ledger not found.</strong></div>`;
+
+      const bal = (data.dr || 0) - (data.cr || 0);
+      const balType = bal >= 0 ? "Dr" : "Cr";
+
+      return `
+        <div class="notice">
+          <strong>${safeText(acc)}</strong>
+          <div class="muted" style="margin-top:6px;">Ledger Folio (LF): ${data.lf}</div>
+        </div>
+
+        <table>
           <thead>
             <tr>
-              <th style="width:120px;">Date</th>
               <th>Particulars</th>
-              <th style="width:120px;">J.F.</th>
-              <th style="width:160px;">Debit (₹)</th>
-              <th style="width:160px;">Credit (₹)</th>
+              <th class="text-right">Debit (₹)</th>
+              <th class="text-right">Credit (₹)</th>
             </tr>
           </thead>
           <tbody>
-    `;
+            <tr>
+              <td>Total</td>
+              <td class="text-right mono">${paiseToStr(data.dr || 0)}</td>
+              <td class="text-right mono">${paiseToStr(data.cr || 0)}</td>
+            </tr>
+            <tr style="font-weight:900;">
+              <td>Balance</td>
+              <td class="text-right mono" colspan="2">${paiseToStr(Math.abs(bal))} ${balType}</td>
+            </tr>
+          </tbody>
+        </table>
 
-    for(const e of led.entries){
-      html += `
-        <tr>
-          <td>${escapeHtml(e.date)}</td>
-          <td>${escapeHtml(e.particular || "")}</td>
-          <td class="center">${escapeHtml(String(e.refId || "-"))}</td>
-          <td class="right">${e.dr ? fmt(e.dr) : ""}</td>
-          <td class="right">${e.cr ? fmt(e.cr) : ""}</td>
-        </tr>
+        <div class="notice">
+          <strong>Note:</strong> This is a summary ledger page (CBSE practical style).
+        </div>
       `;
     }
 
-    html += `
-        <tr>
-          <td colspan="3" class="right"><strong>Total</strong></td>
-          <td class="right"><strong>${fmt(drTotal)}</strong></td>
-          <td class="right"><strong>${fmt(crTotal)}</strong></td>
-        </tr>
-        <tr>
-          <td colspan="5" class="center">
-            <strong>Balance:</strong> ${fmt(Math.abs(bal))} &nbsp; (${bal>=0 ? "Dr" : "Cr"})
-          </td>
-        </tr>
-      </tbody></table></div>
-    `;
+    // ---------- Final Accounts ----------
+    function renderFinalAccounts() {
+      const fa = computeFinalAccounts();
 
-    $("ledgerArea").innerHTML = html;
-  }
-  window.renderLedger = renderLedger;
+      const grossStatus = fa.grossProfit > 0 ? `Gross Profit: ₹ ${paiseToStr(fa.grossProfit)}` :
+                         fa.grossLoss > 0 ? `Gross Loss: ₹ ${paiseToStr(fa.grossLoss)}` : `Gross Result: Nil`;
 
-  // ---------- Trading / P&L / Balance Sheet ----------
-  // NOTE: These are simplified automatic statements based on keyword classification.
-  // For school exhibition & CBSE practical, this is acceptable.
+      const netStatus = fa.netProfit > 0 ? `Net Profit: ₹ ${paiseToStr(fa.netProfit)}` :
+                       fa.netLoss > 0 ? `Net Loss: ₹ ${paiseToStr(fa.netLoss)}` : `Net Result: Nil`;
 
-  function getAccBalanceByName(name){
-    return ledgerBalance(name);
-  }
+      const html = `
+        <div class="paper">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+            <h2 class="section-title">Final Accounts</h2>
+            <div class="tag">Auto Generated</div>
+          </div>
 
-  function classifyAccounts(){
-    const assets=[], liabilities=[], equity=[];
-    const incomes=[], expenses=[];
-    const tradingDebit=[], tradingCredit=[];
+          <div class="status">
+            <div><b>${grossStatus}</b></div>
+            <div><b>${netStatus}</b></div>
+          </div>
 
-    const keys = Object.keys(state.ledger);
+          <div class="notice">
+            <strong>Important:</strong> This auto-generation uses keyword-based classification of ledger accounts.
+            For best results use standard names like <b>Sales A/c</b>, <b>Purchases A/c</b>, <b>Wages A/c</b>, <b>Rent A/c</b>, etc.
+          </div>
 
-    for(const acc of keys){
-      const bal = ledgerBalance(acc);
-      const n = acc.toLowerCase();
+          <hr class="row-divider"/>
 
-      const isAsset = ["cash","bank","debtor","debtors","stock","inventory","furniture","plant","machinery","building","equipment","computer","closing stock"].some(k=>n.includes(k));
-      const isLiab  = ["creditor","creditors","loan","payable","outstanding","mortgage"].some(k=>n.includes(k));
-      const isCapital = ["capital"].some(k=>n.includes(k));
-      const isSales = ["sales"].some(k=>n.includes(k));
-      const isPurchases = ["purchases"].some(k=>n.includes(k));
-      const isOpeningStock = ["opening stock"].some(k=>n.includes(k));
-      const isClosingStock = ["closing stock"].some(k=>n.includes(k));
-      const isDirectExpense = ["carriage","wages","freight","custom","octroi","power","fuel"].some(k=>n.includes(k));
-      const isIncome = ["income","commission received","discount received","interest received","rent received"].some(k=>n.includes(k));
-      const isExpense = ["expense","expenses","salary","rent","electricity","depreciation","advertisement","stationery","insurance","bad debts"].some(k=>n.includes(k));
+          <div class="two-col">
+            <div>
+              <h3 style="margin:0 0 10px; font-family:var(--font-heading);">Trading Account</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Debit</th>
+                    <th class="text-right">Amount (₹)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Opening Stock</td><td class="text-right mono">${paiseToStr(fa.openingStock)}</td></tr>
+                  <tr><td>Net Purchases</td><td class="text-right mono">${paiseToStr(fa.netPurchases)}</td></tr>
+                  <tr><td>Direct Expenses</td><td class="text-right mono">${paiseToStr(fa.directExp)}</td></tr>
+                  ${fa.grossProfit > 0 ? `<tr style="font-weight:900;"><td>Gross Profit c/d</td><td class="text-right mono">${paiseToStr(fa.grossProfit)}</td></tr>` : ``}
+                  <tr style="background:rgba(0,0,0,0.02); font-weight:900;">
+                    <td>Total</td><td class="text-right mono">${paiseToStr(Math.max(fa.tradingDebit, fa.tradingCredit))}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-      if(isSales) tradingCredit.push({acc, amt: Math.abs(bal)});
-      else if(isPurchases || isOpeningStock || isDirectExpense) tradingDebit.push({acc, amt: Math.abs(bal)});
-      else if(isClosingStock) tradingCredit.push({acc, amt: Math.abs(bal)});
-      else if(isAsset) assets.push({acc, amt: Math.abs(bal)});
-      else if(isLiab) liabilities.push({acc, amt: Math.abs(bal)});
-      else if(isCapital) equity.push({acc, amt: Math.abs(bal)});
-      else if(isIncome) incomes.push({acc, amt: Math.abs(bal)});
-      else if(isExpense) expenses.push({acc, amt: Math.abs(bal)});
+            <div>
+              <h3 style="margin:0 0 10px; font-family:var(--font-heading);">Trading Account</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Credit</th>
+                    <th class="text-right">Amount (₹)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Net Sales</td><td class="text-right mono">${paiseToStr(fa.netSales)}</td></tr>
+                  <tr><td>Closing Stock</td><td class="text-right mono">${paiseToStr(fa.closingStock)}</td></tr>
+                  <tr><td>Direct Incomes</td><td class="text-right mono">${paiseToStr(fa.directInc)}</td></tr>
+                  ${fa.grossLoss > 0 ? `<tr style="font-weight:900;"><td>Gross Loss c/d</td><td class="text-right mono">${paiseToStr(fa.grossLoss)}</td></tr>` : ``}
+                  <tr style="background:rgba(0,0,0,0.02); font-weight:900;">
+                    <td>Total</td><td class="text-right mono">${paiseToStr(Math.max(fa.tradingDebit, fa.tradingCredit))}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <hr class="row-divider"/>
+
+          <div class="two-col">
+            <div>
+              <h3 style="margin:0 0 10px; font-family:var(--font-heading);">Profit & Loss Account</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Debit</th>
+                    <th class="text-right">Amount (₹)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Indirect Expenses</td><td class="text-right mono">${paiseToStr(fa.indirectExp)}</td></tr>
+                  ${fa.netProfit > 0 ? `<tr style="font-weight:900;"><td>Net Profit</td><td class="text-right mono">${paiseToStr(fa.netProfit)}</td></tr>` : ``}
+                  <tr style="background:rgba(0,0,0,0.02); font-weight:900;">
+                    <td>Total</td><td class="text-right mono">${paiseToStr(Math.max(fa.plDebit, fa.plCredit))}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div>
+              <h3 style="margin:0 0 10px; font-family:var(--font-heading);">Profit & Loss Account</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Credit</th>
+                    <th class="text-right">Amount (₹)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Indirect Incomes</td><td class="text-right mono">${paiseToStr(fa.indirectInc)}</td></tr>
+                  ${fa.netLoss > 0 ? `<tr style="font-weight:900;"><td>Net Loss</td><td class="text-right mono">${paiseToStr(fa.netLoss)}</td></tr>` : ``}
+                  <tr style="background:rgba(0,0,0,0.02); font-weight:900;">
+                    <td>Total</td><td class="text-right mono">${paiseToStr(Math.max(fa.plDebit, fa.plCredit))}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      `;
+      mainContent.innerHTML = html;
     }
 
-    return {assets, liabilities, equity, incomes, expenses, tradingDebit, tradingCredit};
-  }
-
-  function renderTrading(){
-    const cls = classifyAccounts();
-    const dTotal = cls.tradingDebit.reduce((s,x)=>s+x.amt,0);
-    const cTotal = cls.tradingCredit.reduce((s,x)=>s+x.amt,0);
-    const gross = cTotal - dTotal;
-
-    let html = `<div class="table-wrap"><table class="ruled">
-      <thead><tr><th>Particulars (Dr)</th><th class="right">Amount</th><th>Particulars (Cr)</th><th class="right">Amount</th></tr></thead>
-      <tbody>`;
-
-    const max = Math.max(cls.tradingDebit.length, cls.tradingCredit.length);
-    for(let i=0;i<max;i++){
-      const L = cls.tradingDebit[i];
-      const R = cls.tradingCredit[i];
-      html += `<tr>
-        <td>${L?escapeHtml(L.acc):""}</td><td class="right">${L?fmt(L.amt):""}</td>
-        <td>${R?escapeHtml(R.acc):""}</td><td class="right">${R?fmt(R.amt):""}</td>
-      </tr>`;
+    // ---------- Delete / Export ----------
+    function openDangerActions() {
+      document.getElementById("dangerModal").style.display = "block";
+    }
+    function closeDangerActions() {
+      document.getElementById("dangerModal").style.display = "none";
     }
 
-    if(gross>=0){
-      html += `<tr>
-        <td><strong>Gross Profit c/d</strong></td><td class="right"><strong>${fmt(gross)}</strong></td>
-        <td></td><td></td>
-      </tr>`;
-    }else{
-      html += `<tr>
-        <td></td><td></td>
-        <td><strong>Gross Loss c/d</strong></td><td class="right"><strong>${fmt(Math.abs(gross))}</strong></td>
-      </tr>`;
+    function deleteAllData() {
+      const ok = confirm("Delete ALL data (Journal + Ledger + Undo)?");
+      if (!ok) return;
+
+      pushUndoSnapshot("Delete ALL Data");
+      state.entries = [];
+      state.folioNext = 1;
+      saveLocal();
+      closeDangerActions();
+      toast("All data deleted");
+      render();
     }
 
-    html += `<tr>
-      <td class="right"><strong>Total</strong></td><td class="right"><strong>${fmt(dTotal + (gross>=0?gross:0))}</strong></td>
-      <td class="right"><strong>Total</strong></td><td class="right"><strong>${fmt(cTotal + (gross<0?Math.abs(gross):0))}</strong></td>
-    </tr>`;
+    function deleteJournalOnly() {
+      const ok = confirm("Delete all Journal entries?");
+      if (!ok) return;
 
-    html += `</tbody></table></div>`;
-    html += `<div class="note"><strong>Gross Result:</strong> ${fmt(Math.abs(gross))} (${gross>=0?"Profit":"Loss"})</div>`;
-
-    $("tradingArea").innerHTML = html;
-    renderTrading._gross = gross;
-  }
-
-  function renderPL(){
-    const cls = classifyAccounts();
-    const gross = safeNum(renderTrading._gross || 0);
-
-    const incomeTotal = cls.incomes.reduce((s,x)=>s+x.amt,0) + (gross>0?gross:0);
-    const expenseTotal = cls.expenses.reduce((s,x)=>s+x.amt,0) + (gross<0?Math.abs(gross):0);
-    const net = incomeTotal - expenseTotal;
-
-    let html = `<div class="table-wrap"><table class="ruled">
-      <thead><tr><th>Particulars (Dr)</th><th class="right">Amount</th><th>Particulars (Cr)</th><th class="right">Amount</th></tr></thead>
-      <tbody>`;
-
-    const left = [...cls.expenses.map(x=>({acc:x.acc,amt:x.amt})), ...(gross<0?[{acc:"Gross Loss b/d",amt:Math.abs(gross)}]:[])];
-    const right = [...cls.incomes.map(x=>({acc:x.acc,amt:x.amt})), ...(gross>0?[{acc:"Gross Profit b/d",amt:gross}]:[])];
-
-    const max = Math.max(left.length, right.length);
-    for(let i=0;i<max;i++){
-      const L = left[i];
-      const R = right[i];
-      html += `<tr>
-        <td>${L?escapeHtml(L.acc):""}</td><td class="right">${L?fmt(L.amt):""}</td>
-        <td>${R?escapeHtml(R.acc):""}</td><td class="right">${R?fmt(R.amt):""}</td>
-      </tr>`;
+      pushUndoSnapshot("Delete Journal Only");
+      state.entries = [];
+      state.folioNext = 1;
+      saveLocal();
+      closeDangerActions();
+      toast("Journal deleted");
+      render();
     }
 
-    if(net>=0){
-      html += `<tr>
-        <td><strong>Net Profit transferred to Capital</strong></td><td class="right"><strong>${fmt(net)}</strong></td>
-        <td></td><td></td>
-      </tr>`;
-    }else{
-      html += `<tr>
-        <td></td><td></td>
-        <td><strong>Net Loss transferred to Capital</strong></td><td class="right"><strong>${fmt(Math.abs(net))}</strong></td>
-      </tr>`;
+    function deleteLedgerOnly() {
+      // ledger is derived from journal, so this resets folios only
+      const ok = confirm("Reset Ledger (rebuild folios)?\n\nJournal entries will remain.");
+      if (!ok) return;
+
+      pushUndoSnapshot("Delete Ledger Only (Reset folios)");
+      state.folioNext = 1;
+      saveLocal();
+      closeDangerActions();
+      toast("Ledger reset");
+      render();
     }
 
-    html += `<tr>
-      <td class="right"><strong>Total</strong></td><td class="right"><strong>${fmt(expenseTotal + (net>=0?net:0))}</strong></td>
-      <td class="right"><strong>Total</strong></td><td class="right"><strong>${fmt(incomeTotal + (net<0?Math.abs(net):0))}</strong></td>
-    </tr>`;
-
-    html += `</tbody></table></div>`;
-    html += `<div class="note"><strong>Net Result:</strong> ${fmt(Math.abs(net))} (${net>=0?"Profit":"Loss"})</div>`;
-
-    $("plArea").innerHTML = html;
-    renderPL._net = net;
-  }
-
-  function renderBS(){
-    const cls = classifyAccounts();
-    const net = safeNum(renderPL._net || 0);
-
-    const assetsTotal = cls.assets.reduce((s,x)=>s+x.amt,0);
-    const liabTotal = cls.liabilities.reduce((s,x)=>s+x.amt,0);
-    const capTotal = cls.equity.reduce((s,x)=>s+x.amt,0) + net;
-
-    let html = `<div class="grid">`;
-
-    html += `<div class="table-wrap"><table class="ruled">
-      <thead><tr><th colspan="2">Assets</th></tr></thead><tbody>`;
-    for(const a of cls.assets){
-      html += `<tr><td>${escapeHtml(a.acc)}</td><td class="right">${fmt(a.amt)}</td></tr>`;
-    }
-    html += `<tr><td><strong>Total Assets</strong></td><td class="right"><strong>${fmt(assetsTotal)}</strong></td></tr>`;
-    html += `</tbody></table></div>`;
-
-    html += `<div class="table-wrap"><table class="ruled">
-      <thead><tr><th colspan="2">Liabilities & Capital</th></tr></thead><tbody>`;
-    for(const l of cls.liabilities){
-      html += `<tr><td>${escapeHtml(l.acc)}</td><td class="right">${fmt(l.amt)}</td></tr>`;
-    }
-    html += `<tr><td>Capital (incl. Net ${net>=0?"Profit":"Loss"})</td><td class="right">${fmt(capTotal)}</td></tr>`;
-    html += `<tr><td><strong>Total</strong></td><td class="right"><strong>${fmt(liabTotal + capTotal)}</strong></td></tr>`;
-    html += `</tbody></table></div>`;
-
-    html += `</div>`;
-
-    const diff = (assetsTotal) - (liabTotal + capTotal);
-    html += `<div class="note">
-      Balance Check: Assets - (Liabilities + Capital) = <strong>${fmt(diff)}</strong>
-      ${Math.abs(diff)<0.01 ? "✅ Balanced" : "⚠️ Not balanced (check classification/account naming)"}
-    </div>`;
-
-    $("bsArea").innerHTML = html;
-  }
-
-  // ---------- Refresh ----------
-  function refreshAll(){
-    // fill ledger select if needed
-    if($("viewSelect").value==="journal") renderJournal();
-    if($("viewSelect").value==="ledger") renderLedger();
-    if($("viewSelect").value==="trading") renderTrading();
-    if($("viewSelect").value==="pl") renderPL();
-    if($("viewSelect").value==="bs") renderBS();
-  }
-
-  // ---------- Escape ----------
-  function escapeHtml(str){
-    return String(str ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  // ---------- Init ----------
-  function init(){
-    disableScrollNumberInputs();
-
-    const loaded = loadState();
-    if(loaded && loaded.journal && loaded.meta){
-      state = loaded;
-      // rebuild ledger to guarantee consistency
-      rebuildLedgerFromJournal();
-      saveState();
-    }else{
-      saveState();
+    function exportBackup() {
+      const data = {
+        exportedAt: new Date().toISOString(),
+        entries: state.entries,
+        folioNext: state.folioNext
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "SIS_Accounting_Backup.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast("Backup exported");
     }
 
-    $("entryDate").value = todayISO();
-    $("rowsContainer").innerHTML="";
-    addRow();
-    addRow();
+    // ---------- Menu interactions ----------
+    const menu = document.getElementById("menu");
+    const menuToggle = document.getElementById("menuToggle");
 
-    $("undoBtn").disabled = undoStack.length === 0;
+    function openMenu() {
+      menu.classList.add("open");
+      menuToggle.setAttribute("aria-expanded", "true");
+    }
+    function closeMenu() {
+      menu.classList.remove("open");
+      menuToggle.setAttribute("aria-expanded", "false");
+    }
+    function toggleMenu() {
+      if (menu.classList.contains("open")) closeMenu();
+      else openMenu();
+    }
 
-    // default view
-    renderView($("viewSelect").value);
-  }
+    menuToggle.addEventListener("click", toggleMenu);
+    menuToggle.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleMenu();
+      }
+    });
 
-  init();
-})();
-</script>
+    document.addEventListener("click", (e) => {
+      if (!menu.contains(e.target)) closeMenu();
+    });
+
+    // ---------- Keyboard shortcuts ----------
+    document.addEventListener("keydown", (e) => {
+      const isMac = navigator.platform.toUpperCase().includes("MAC");
+      const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
+
+      if (!ctrlOrCmd) return;
+
+      const k = e.key.toLowerCase();
+
+      if (k === "z") { e.preventDefault(); undoLastAction(); }
+      if (k === "n") { e.preventDefault(); switchView("new"); }
+      if (k === "j") { e.preventDefault(); switchView("journal"); }
+      if (k === "l") { e.preventDefault(); switchView("ledger"); }
+      if (k === "f") { e.preventDefault(); switchView("final"); }
+    });
+
+    /* =========================================================
+       VISUAL EFFECTS (Three.js + UI Logic)
+       ========================================================= */
+
+    // --- 1. Three.js Light Woody Shader ---
+    const initThreeJS = () => {
+      const container = document.getElementById('canvas-container');
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      container.appendChild(renderer.domElement);
+
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      const uniforms = {
+        u_time: { value: 0.0 },
+        u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+      };
+
+      const fragmentShader = `
+        uniform float u_time;
+        uniform vec2 u_resolution;
+
+        float random (in vec2 st) {
+          return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+        }
+
+        float noise (in vec2 st) {
+          vec2 i = floor(st);
+          vec2 f = fract(st);
+
+          float a = random(i);
+          float b = random(i + vec2(1.0, 0.0));
+          float c = random(i + vec2(0.0, 1.0));
+          float d = random(i + vec2(1.0, 1.0));
+
+          vec2 u = f * f * (3.0 - 2.0 * f);
+
+          return mix(a, b, u.x) +
+                (c - a) * u.y * (1.0 - u.x) +
+                (d - b) * u.x * u.y;
+        }
+
+        void main() {
+          vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+
+          float n = noise(vec2(uv.x * 20.0, uv.y * 5.0 + u_time * 0.05));
+          float grain = fract(n * 10.0);
+
+          vec3 colorA = vec3(0.94, 0.90, 0.82);
+          vec3 colorB = vec3(0.86, 0.78, 0.65);
+
+          vec3 finalColor = mix(colorA, colorB, grain);
+
+          float light = sin(uv.x * 10.0 + u_time * 0.1) * 0.05;
+          finalColor += light;
+
+          gl_FragColor = vec4(finalColor, 1.0);
+        }
+      `;
+
+      const material = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        fragmentShader: fragmentShader,
+        vertexShader: 'void main(){gl_Position=vec4(position,1.0);}'
+      });
+
+      const plane = new THREE.Mesh(geometry, material);
+      scene.add(plane);
+
+      const animate = () => {
+        requestAnimationFrame(animate);
+        uniforms.u_time.value += 0.01;
+        renderer.render(scene, camera);
+      };
+      animate();
+
+      window.addEventListener('resize', () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        uniforms.u_resolution.value.x = window.innerWidth;
+        uniforms.u_resolution.value.y = window.innerHeight;
+      });
+    };
+
+    // --- 2. Magnetic Buttons ---
+    function initMagnetic() {
+      document.querySelectorAll('.magnetic-area').forEach(magnet => {
+        const wrap = magnet.querySelector('.magnetic-wrap');
+        if (!wrap) return;
+
+        magnet.addEventListener('mousemove', (e) => {
+          const rect = magnet.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          wrap.style.transform = `translate(${x * 0.25}px, ${y * 0.25}px)`;
+        });
+
+        magnet.addEventListener('mouseleave', () => {
+          wrap.style.transform = 'translate(0px, 0px)';
+        });
+      });
+    }
+
+    // --- 3. 3D Tilt Cards ---
+    function init3DCards() {
+      document.querySelectorAll('.card-3d').forEach(card => {
+        const glare = card.querySelector('.card-glare');
+        if (!glare) return;
+
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+
+          const rotateX = ((y - centerY) / centerY) * -10;
+          const rotateY = ((x - centerX) / centerX) * 10;
+
+          card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+          glare.style.opacity = '1';
+          glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.55), transparent 60%)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = `perspective(1000px) rotateX(0) rotateY(0)`;
+          glare.style.opacity = '0';
+        });
+      });
+    }
+
+    // --- 4. Bottom Scrolling Light ---
+    window.addEventListener('scroll', () => {
+      const scroll = window.scrollY;
+      const height = document.body.scrollHeight - window.innerHeight;
+      const pct = height > 0 ? (scroll / height) : 0;
+
+      const glow = document.getElementById('bottom-glow');
+      glow.style.opacity = 0.3 + (pct * 0.5);
+      glow.style.background = `radial-gradient(circle at 50% 100%, rgba(255, 245, 230, ${0.5 + pct*0.4}), transparent 70%)`;
+    });
+
+    // --- 5. Custom Cursor ---
+    const cursorDot = document.getElementById('cursor-dot');
+    const cursorOutline = document.getElementById('cursor-outline');
+
+    window.addEventListener('mousemove', (e) => {
+      cursorDot.style.left = e.clientX + 'px';
+      cursorDot.style.top = e.clientY + 'px';
+
+      cursorOutline.animate({
+        left: e.clientX + 'px',
+        top: e.clientY + 'px'
+      }, { duration: 450, fill: "forwards" });
+    });
+
+    // ---------- Init ----------
+    loadLocal();
+    initThreeJS();
+    setMenuActive(state.view);
+    render();
+
+  </script>
 </body>
 </html>
