@@ -1,3 +1,8 @@
+Got it — this UI is already quite polished, so I’ll keep everything intact and only add a **Delete Selected Entry** action in the edit flow (no layout/theme changes). The button appears only when editing an entry and uses existing styles.
+
+Here’s the full updated HTML (single reply as requested):
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -493,6 +498,7 @@
           <button class="btn" onclick="addLine('credit')">+ Add Credit</button>
 
           <div style="margin-top:30px; text-align:right;">
+            ${state.editingId ? `<button class="btn btn-danger" onclick="deleteSelectedEntry()" style="margin-right:10px;">Delete Selected Entry</button>` : ""}
             <button class="btn" onclick="switchView('journal')" style="margin-right:10px;">Cancel</button>
             <button class="btn-action" onclick="saveEntry()">Save Entry</button>
           </div>
@@ -584,6 +590,17 @@
     function editEntry(id) {
       state.editingId = id;
       switchView('new');
+    }
+
+    function deleteSelectedEntry() {
+      if(!state.editingId) return;
+      if(confirm("Delete this selected entry? This cannot be undone.")) {
+        pushHistory();
+        state.entries = state.entries.filter(e => e.id !== state.editingId);
+        state.editingId = null;
+        saveLocal();
+        switchView('journal');
+      }
     }
 
     // --- Journal View ---
@@ -895,3 +912,4 @@
   </script>
 </body>
 </html>
+```
