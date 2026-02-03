@@ -915,13 +915,22 @@ function rebuild() {
     var entry = journal[i];
     var narrationText = (entry.narration || '').trim();
 
+    var showFooterOnDebit = entry.credits.length === 0;
+
     for (var j = 0; j < entry.debits.length; j++) {
       var d = entry.debits[j];
       totalDr += Number(d.amount);
+
+      var isLastDebit = j === entry.debits.length - 1;
+      var showFooter = showFooterOnDebit && isLastDebit;
+
       var row = tbody.insertRow();
       row.innerHTML =
         '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>' + escapeHtml(d.account) + '</td>' +
+        '<td>' + escapeHtml(d.account) +
+        (showFooter && narrationText ? '<div style="font-size:12px; opacity:0.8;">For ' + escapeHtml(narrationText) + '</div>' : '') +
+        (showFooter ? '<div class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></div>' : '') +
+        '</td>' +
         '<td>' + (i + 1) + '</td>' +
         '<td class="debit-amount">' + Number(d.amount).toFixed(2) + '</td>' +
         '<td></td>';
@@ -941,14 +950,15 @@ function rebuild() {
     for (var k = 0; k < entry.credits.length; k++) {
       var c = entry.credits[k];
       totalCr += Number(c.amount);
-      var row2 = tbody.insertRow();
+
       var isLastCredit = k === entry.credits.length - 1;
       var showFooter = isLastCredit;
 
+      var row2 = tbody.insertRow();
       row2.innerHTML =
         '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>' + escapeHtml(c.account) +
-        (showFooter && narrationText ? '<div style="font-size:12px; opacity:0.8;">' + escapeHtml(narrationText) + '</div>' : '') +
+        '<td>To ' + escapeHtml(c.account) +
+        (showFooter && narrationText ? '<div style="font-size:12px; opacity:0.8;">For ' + escapeHtml(narrationText) + '</div>' : '') +
         (showFooter ? '<div class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></div>' : '') +
         '</td>' +
         '<td>' + (i + 1) + '</td>' +
