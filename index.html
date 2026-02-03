@@ -136,17 +136,27 @@ input:focus, select:focus { outline: none; border-bottom-color: var(--blue-ink);
 .btn-danger { background: var(--red-ink); color: var(--paper); border-color: var(--red-ink); }
 .btn-warning { background: #8b6b3a; color: var(--paper); border-color: #8b6b3a; }
 
-.journal-table {
-  width: 100%; border-collapse: collapse; position: relative; z-index: 1; margin-top: 30px;
+/* Table base */
+.journal-table,
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  position: relative;
+  z-index: 1;
+  margin-top: 30px;
+  table-layout: auto;
 }
-.journal-table thead th {
+.journal-table thead th,
+.ledger-table thead th {
   font-family: 'Courier Prime', monospace; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
   padding: 15px 10px; text-align: center; background: var(--ink-dark); color: var(--paper); border: 1px solid var(--ink-dark);
 }
-.journal-table tbody td {
+.journal-table tbody td,
+.ledger-table tbody td {
   padding: 12px 10px; text-align: center; font-size: 16px; border-bottom: 1px solid var(--line-color); background: rgba(255,255,255,0.3);
 }
-.journal-table tbody tr:hover td { background: rgba(255,255,255,0.5); }
+.journal-table tbody tr:hover td,
+.ledger-table tbody tr:hover td { background: rgba(255,255,255,0.5); }
 .debit-amount { color: var(--red-ink); font-weight: 600; }
 .credit-amount { color: var(--blue-ink); font-weight: 600; }
 
@@ -175,7 +185,12 @@ input:focus, select:focus { outline: none; border-bottom-color: var(--blue-ink);
 .ledger-tformat {
   display: grid; grid-template-columns: 1fr 1fr; gap: 30px; position: relative; z-index: 1;
 }
-.ledger-side { background: rgba(255,255,255,0.25); border: 1px solid rgba(0,0,0,0.08); border-radius: 4px; overflow: hidden; }
+.ledger-side {
+  background: rgba(255,255,255,0.25);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
 .ledger-side-title {
   font-family: 'Courier Prime', monospace; font-size: 13px; font-weight: 700;
   letter-spacing: 2px; text-transform: uppercase; padding: 12px 14px;
@@ -184,19 +199,21 @@ input:focus, select:focus { outline: none; border-bottom-color: var(--blue-ink);
 .ledger-side-title.dr { color: var(--red-ink); }
 .ledger-side-title.cr { color: var(--blue-ink); }
 
-.ledger-table { width: 100%; border-collapse: collapse; }
-.ledger-table thead th {
-  font-family: 'Courier Prime', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-  padding: 10px 8px; text-align: center; background: rgba(0,0,0,0.06); border-bottom: 1px solid rgba(0,0,0,0.08);
-}
-.ledger-table tbody td {
-  padding: 10px 8px; font-size: 15px; border-bottom: 1px solid var(--line-color); text-align: center;
-}
-.ledger-table tbody tr:hover td { background: rgba(255,255,255,0.35); }
 .ledger-table .amt { font-family: 'Courier Prime', monospace; font-weight: 700; text-align: right; }
 
 .action-cell button { padding: 8px 12px; font-size: 11px; margin: 0; box-shadow: none; }
 .utility-bar { display:flex; justify-content:center; gap: 12px; flex-wrap: wrap; margin-bottom: 30px; }
+
+/* Scroll wrapper for tables */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.35);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
+}
 
 /* Mobile friendly */
 @media (max-width: 900px) {
@@ -211,76 +228,28 @@ input:focus, select:focus { outline: none; border-bottom-color: var(--blue-ink);
   .account-balance { font-size: 14px; padding: 6px 12px; }
   .btn { width: 100%; text-align: center; margin-right: 0; }
 
-  /* Responsive table cards */
   .journal-table,
   .ledger-table,
   #trialTable {
-    width: 100%;
-    border: 0;
+    min-width: 720px;
   }
-  .journal-table thead,
-  .ledger-table thead,
-  #trialTable thead {
-    display: none;
-  }
-  .journal-table tbody tr,
-  .ledger-table tbody tr,
-  #trialTable tbody tr {
-    display: block;
-    margin-bottom: 12px;
-    border: 1px solid var(--line-color);
-    background: rgba(255,255,255,0.55);
+
+  .journal-table thead th,
+  .ledger-table thead th {
+    font-size: 11px;
+    padding: 10px 8px;
   }
   .journal-table tbody td,
-  .ledger-table tbody td,
-  #trialTable tbody td {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--line-color);
-    text-align: left;
+  .ledger-table tbody td {
+    font-size: 14px;
+    padding: 10px 8px;
   }
-  .journal-table tbody td:last-child,
-  .ledger-table tbody td:last-child,
-  #trialTable tbody td:last-child {
-    border-bottom: 0;
-  }
-  .journal-table tbody td::before,
-  .ledger-table tbody td::before,
-  #trialTable tbody td::before {
-    content: attr(data-label);
-    font-family: 'Courier Prime', monospace;
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--ink-medium);
-    margin-right: 12px;
-    flex: 0 0 40%;
-  }
-  .journal-table tfoot,
-  #trialTable tfoot {
-    display: block;
-    margin-top: 10px;
-  }
-  .journal-table tfoot tr,
-  #trialTable tfoot tr {
-    display: block;
-    border: 1px solid var(--line-color);
-    background: rgba(255,255,255,0.6);
-  }
-  .journal-table tfoot th,
-  #trialTable tfoot th {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--line-color);
-    font-size: 13px;
-    text-align: left;
-  }
-  .journal-table tfoot th:last-child,
-  #trialTable tfoot th:last-child {
-    border-bottom: 0;
+}
+@media (max-width: 600px) {
+  .journal-table,
+  .ledger-table,
+  #trialTable {
+    min-width: 680px;
   }
 }
 
@@ -357,27 +326,29 @@ input:focus, select:focus { outline: none; border-bottom-color: var(--blue-ink);
 <div class="page" id="journalPage">
   <div class="notebook">
     <h3 class="section-title">Journal Entries</h3>
-    <table class="journal-table" id="journalTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Particulars</th>
-          <th>L.F.</th>
-          <th>Debit Amount</th>
-          <th>Credit Amount</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-      <tfoot>
-        <tr>
-          <th>Total</th>
-          <th></th>
-          <th></th>
-          <th id="journalTotalDr"></th>
-          <th id="journalTotalCr"></th>
-        </tr>
-      </tfoot>
-    </table>
+    <div class="table-wrap">
+      <table class="journal-table" id="journalTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Particulars</th>
+            <th>L.F.</th>
+            <th>Debit Amount</th>
+            <th>Credit Amount</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr>
+            <th>Total</th>
+            <th></th>
+            <th></th>
+            <th id="journalTotalDr"></th>
+            <th id="journalTotalCr"></th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
 
     <div id="journalStatus" style="position:relative; z-index:1; margin-top:14px; font-family:'Courier Prime', monospace; font-size:13px; letter-spacing:1px; text-transform:uppercase;">
       Status: <b id="journalMatchText"></b>
@@ -417,23 +388,25 @@ input:focus, select:focus { outline: none; border-bottom-color: var(--blue-ink);
 <div class="page" id="trialPage">
   <div class="notebook">
     <h3 class="section-title-large">Trial Balance</h3>
-    <table class="journal-table" id="trialTable">
-      <thead>
-        <tr>
-          <th>Account</th>
-          <th>Debit</th>
-          <th>Credit</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-      <tfoot>
-        <tr>
-          <th>Total</th>
-          <th id="trialTotalDr"></th>
-          <th id="trialTotalCr"></th>
-        </tr>
-      </tfoot>
-    </table>
+    <div class="table-wrap">
+      <table class="journal-table" id="trialTable">
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Debit</th>
+            <th>Credit</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr>
+            <th>Total</th>
+            <th id="trialTotalDr"></th>
+            <th id="trialTotalCr"></th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
     <div id="trialEmpty" class="empty-state">
       <div class="empty-state-icon">🧾</div>
       <h3>No Trial Balance Yet</h3>
@@ -715,14 +688,14 @@ function rebuild() {
 
       var row = tbody.insertRow();
       row.innerHTML =
-        '<td data-label="Date">' + escapeHtml(entry.date) + '</td>' +
-        '<td data-label="Particulars">' + escapeHtml(d.account) +
+        '<td>' + escapeHtml(entry.date) + '</td>' +
+        '<td>' + escapeHtml(d.account) +
         (showFooter && narrationText ? '<div style="font-size:12px; opacity:0.8;">For ' + escapeHtml(narrationText) + '</div>' : '') +
         (showFooter ? '<div class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></div>' : '') +
         '</td>' +
-        '<td data-label="L.F.">' + (i + 1) + '</td>' +
-        '<td data-label="Debit Amount" class="debit-amount">' + Number(d.amount).toFixed(2) + '</td>' +
-        '<td data-label="Credit Amount"></td>';
+        '<td>' + (i + 1) + '</td>' +
+        '<td class="debit-amount">' + Number(d.amount).toFixed(2) + '</td>' +
+        '<td></td>';
 
       if (!ledger[d.account]) ledger[d.account] = [];
       ledger[d.account].push({
@@ -745,14 +718,14 @@ function rebuild() {
 
       var row2 = tbody.insertRow();
       row2.innerHTML =
-        '<td data-label="Date">' + escapeHtml(entry.date) + '</td>' +
-        '<td data-label="Particulars">To ' + escapeHtml(c.account) +
+        '<td>' + escapeHtml(entry.date) + '</td>' +
+        '<td>To ' + escapeHtml(c.account) +
         (showFooter && narrationText ? '<div style="font-size:12px; opacity:0.8;">For ' + escapeHtml(narrationText) + '</div>' : '') +
         (showFooter ? '<div class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></div>' : '') +
         '</td>' +
-        '<td data-label="L.F.">' + (i + 1) + '</td>' +
-        '<td data-label="Debit Amount"></td>' +
-        '<td data-label="Credit Amount" class="credit-amount">' + Number(c.amount).toFixed(2) + '</td>';
+        '<td>' + (i + 1) + '</td>' +
+        '<td></td>' +
+        '<td class="credit-amount">' + Number(c.amount).toFixed(2) + '</td>';
 
       if (!ledger[c.account]) ledger[c.account] = [];
       ledger[c.account].push({
@@ -826,26 +799,26 @@ function buildLedger() {
       if (e.type === 'debit') {
         drRows +=
           '<tr>' +
-          '<td data-label="Date">' + escapeHtml(e.date) + '</td>' +
-          '<td data-label="Particulars">' + p + '</td>' +
-          '<td data-label="J.F">' + e.jf + '</td>' +
-          '<td data-label="Amount" class="amt debit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
-          '<td data-label="Action" class="action-cell">' + delBtn + '</td>' +
+          '<td>' + escapeHtml(e.date) + '</td>' +
+          '<td>' + p + '</td>' +
+          '<td>' + e.jf + '</td>' +
+          '<td class="amt debit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
+          '<td class="action-cell">' + delBtn + '</td>' +
           '</tr>';
       } else {
         crRows +=
           '<tr>' +
-          '<td data-label="Date">' + escapeHtml(e.date) + '</td>' +
-          '<td data-label="Particulars">' + p + '</td>' +
-          '<td data-label="J.F">' + e.jf + '</td>' +
-          '<td data-label="Amount" class="amt credit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
-          '<td data-label="Action" class="action-cell">' + delBtn + '</td>' +
+          '<td>' + escapeHtml(e.date) + '</td>' +
+          '<td>' + p + '</td>' +
+          '<td>' + e.jf + '</td>' +
+          '<td class="amt credit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
+          '<td class="action-cell">' + delBtn + '</td>' +
           '</tr>';
       }
     }
 
-    if (!drRows) drRows = '<tr><td data-label="Date">—</td><td data-label="Particulars">—</td><td data-label="J.F">—</td><td data-label="Amount">—</td><td data-label="Action">—</td></tr>';
-    if (!crRows) crRows = '<tr><td data-label="Date">—</td><td data-label="Particulars">—</td><td data-label="J.F">—</td><td data-label="Amount">—</td><td data-label="Action">—</td></tr>';
+    if (!drRows) drRows = '<tr><td colspan="5">—</td></tr>';
+    if (!crRows) crRows = '<tr><td colspan="5">—</td></tr>';
 
     var accountDiv = document.createElement('div');
     accountDiv.className = 'ledger-account';
@@ -858,17 +831,21 @@ function buildLedger() {
       '<div class="ledger-tformat">' +
       '<div class="ledger-side">' +
       '<div class="ledger-side-title dr">Dr.</div>' +
+      '<div class="table-wrap">' +
       '<table class="ledger-table">' +
       '<thead><tr><th>Date</th><th>Particulars</th><th>J.F</th><th>Amount</th><th>Action</th></tr></thead>' +
       '<tbody>' + drRows + '</tbody>' +
       '</table>' +
       '</div>' +
+      '</div>' +
       '<div class="ledger-side">' +
       '<div class="ledger-side-title cr">Cr.</div>' +
+      '<div class="table-wrap">' +
       '<table class="ledger-table">' +
       '<thead><tr><th>Date</th><th>Particulars</th><th>J.F</th><th>Amount</th><th>Action</th></tr></thead>' +
       '<tbody>' + crRows + '</tbody>' +
       '</table>' +
+      '</div>' +
       '</div>' +
       '</div>';
 
@@ -912,9 +889,9 @@ function renderTrialBalance() {
     }
     var row = trialBody.insertRow();
     row.innerHTML =
-      '<td data-label="Account">' + escapeHtml(acc) + '</td>' +
-      '<td data-label="Debit" class="debit-amount">' + (bal > 0 ? bal.toFixed(2) : '') + '</td>' +
-      '<td data-label="Credit" class="credit-amount">' + (bal < 0 ? Math.abs(bal).toFixed(2) : '') + '</td>';
+      '<td>' + escapeHtml(acc) + '</td>' +
+      '<td class="debit-amount">' + (bal > 0 ? bal.toFixed(2) : '') + '</td>' +
+      '<td class="credit-amount">' + (bal < 0 ? Math.abs(bal).toFixed(2) : '') + '</td>';
     if (bal > 0) totalDr += bal;
     if (bal < 0) totalCr += Math.abs(bal);
   }
