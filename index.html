@@ -209,8 +209,79 @@ input:focus, select:focus { outline: none; border-bottom-color: var(--blue-ink);
   .ledger-tformat { grid-template-columns: 1fr; gap: 20px; }
   .account-name { font-size: 26px; }
   .account-balance { font-size: 14px; padding: 6px 12px; }
-  .journal-table, .ledger-table { display: block; overflow-x: auto; white-space: nowrap; }
   .btn { width: 100%; text-align: center; margin-right: 0; }
+
+  /* Responsive table cards */
+  .journal-table,
+  .ledger-table,
+  #trialTable {
+    width: 100%;
+    border: 0;
+  }
+  .journal-table thead,
+  .ledger-table thead,
+  #trialTable thead {
+    display: none;
+  }
+  .journal-table tbody tr,
+  .ledger-table tbody tr,
+  #trialTable tbody tr {
+    display: block;
+    margin-bottom: 12px;
+    border: 1px solid var(--line-color);
+    background: rgba(255,255,255,0.55);
+  }
+  .journal-table tbody td,
+  .ledger-table tbody td,
+  #trialTable tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line-color);
+    text-align: left;
+  }
+  .journal-table tbody td:last-child,
+  .ledger-table tbody td:last-child,
+  #trialTable tbody td:last-child {
+    border-bottom: 0;
+  }
+  .journal-table tbody td::before,
+  .ledger-table tbody td::before,
+  #trialTable tbody td::before {
+    content: attr(data-label);
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-medium);
+    margin-right: 12px;
+    flex: 0 0 40%;
+  }
+  .journal-table tfoot,
+  #trialTable tfoot {
+    display: block;
+    margin-top: 10px;
+  }
+  .journal-table tfoot tr,
+  #trialTable tfoot tr {
+    display: block;
+    border: 1px solid var(--line-color);
+    background: rgba(255,255,255,0.6);
+  }
+  .journal-table tfoot th,
+  #trialTable tfoot th {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line-color);
+    font-size: 13px;
+    text-align: left;
+  }
+  .journal-table tfoot th:last-child,
+  #trialTable tfoot th:last-child {
+    border-bottom: 0;
+  }
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -644,14 +715,14 @@ function rebuild() {
 
       var row = tbody.insertRow();
       row.innerHTML =
-        '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>' + escapeHtml(d.account) +
+        '<td data-label="Date">' + escapeHtml(entry.date) + '</td>' +
+        '<td data-label="Particulars">' + escapeHtml(d.account) +
         (showFooter && narrationText ? '<div style="font-size:12px; opacity:0.8;">For ' + escapeHtml(narrationText) + '</div>' : '') +
         (showFooter ? '<div class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></div>' : '') +
         '</td>' +
-        '<td>' + (i + 1) + '</td>' +
-        '<td class="debit-amount">' + Number(d.amount).toFixed(2) + '</td>' +
-        '<td></td>';
+        '<td data-label="L.F.">' + (i + 1) + '</td>' +
+        '<td data-label="Debit Amount" class="debit-amount">' + Number(d.amount).toFixed(2) + '</td>' +
+        '<td data-label="Credit Amount"></td>';
 
       if (!ledger[d.account]) ledger[d.account] = [];
       ledger[d.account].push({
@@ -674,14 +745,14 @@ function rebuild() {
 
       var row2 = tbody.insertRow();
       row2.innerHTML =
-        '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>To ' + escapeHtml(c.account) +
+        '<td data-label="Date">' + escapeHtml(entry.date) + '</td>' +
+        '<td data-label="Particulars">To ' + escapeHtml(c.account) +
         (showFooter && narrationText ? '<div style="font-size:12px; opacity:0.8;">For ' + escapeHtml(narrationText) + '</div>' : '') +
         (showFooter ? '<div class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></div>' : '') +
         '</td>' +
-        '<td>' + (i + 1) + '</td>' +
-        '<td></td>' +
-        '<td class="credit-amount">' + Number(c.amount).toFixed(2) + '</td>';
+        '<td data-label="L.F.">' + (i + 1) + '</td>' +
+        '<td data-label="Debit Amount"></td>' +
+        '<td data-label="Credit Amount" class="credit-amount">' + Number(c.amount).toFixed(2) + '</td>';
 
       if (!ledger[c.account]) ledger[c.account] = [];
       ledger[c.account].push({
@@ -755,26 +826,26 @@ function buildLedger() {
       if (e.type === 'debit') {
         drRows +=
           '<tr>' +
-          '<td>' + escapeHtml(e.date) + '</td>' +
-          '<td>' + p + '</td>' +
-          '<td>' + e.jf + '</td>' +
-          '<td class="amt debit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
-          '<td class="action-cell">' + delBtn + '</td>' +
+          '<td data-label="Date">' + escapeHtml(e.date) + '</td>' +
+          '<td data-label="Particulars">' + p + '</td>' +
+          '<td data-label="J.F">' + e.jf + '</td>' +
+          '<td data-label="Amount" class="amt debit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
+          '<td data-label="Action" class="action-cell">' + delBtn + '</td>' +
           '</tr>';
       } else {
         crRows +=
           '<tr>' +
-          '<td>' + escapeHtml(e.date) + '</td>' +
-          '<td>' + p + '</td>' +
-          '<td>' + e.jf + '</td>' +
-          '<td class="amt credit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
-          '<td class="action-cell">' + delBtn + '</td>' +
+          '<td data-label="Date">' + escapeHtml(e.date) + '</td>' +
+          '<td data-label="Particulars">' + p + '</td>' +
+          '<td data-label="J.F">' + e.jf + '</td>' +
+          '<td data-label="Amount" class="amt credit-amount">' + Number(e.amount).toFixed(2) + '</td>' +
+          '<td data-label="Action" class="action-cell">' + delBtn + '</td>' +
           '</tr>';
       }
     }
 
-    if (!drRows) drRows = '<tr><td colspan="5">—</td></tr>';
-    if (!crRows) crRows = '<tr><td colspan="5">—</td></tr>';
+    if (!drRows) drRows = '<tr><td data-label="Date">—</td><td data-label="Particulars">—</td><td data-label="J.F">—</td><td data-label="Amount">—</td><td data-label="Action">—</td></tr>';
+    if (!crRows) crRows = '<tr><td data-label="Date">—</td><td data-label="Particulars">—</td><td data-label="J.F">—</td><td data-label="Amount">—</td><td data-label="Action">—</td></tr>';
 
     var accountDiv = document.createElement('div');
     accountDiv.className = 'ledger-account';
@@ -841,9 +912,9 @@ function renderTrialBalance() {
     }
     var row = trialBody.insertRow();
     row.innerHTML =
-      '<td>' + escapeHtml(acc) + '</td>' +
-      '<td class="debit-amount">' + (bal > 0 ? bal.toFixed(2) : '') + '</td>' +
-      '<td class="credit-amount">' + (bal < 0 ? Math.abs(bal).toFixed(2) : '') + '</td>';
+      '<td data-label="Account">' + escapeHtml(acc) + '</td>' +
+      '<td data-label="Debit" class="debit-amount">' + (bal > 0 ? bal.toFixed(2) : '') + '</td>' +
+      '<td data-label="Credit" class="credit-amount">' + (bal < 0 ? Math.abs(bal).toFixed(2) : '') + '</td>';
     if (bal > 0) totalDr += bal;
     if (bal < 0) totalCr += Math.abs(bal);
   }
