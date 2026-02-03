@@ -12,10 +12,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <style>
-/* =========================================================
-   REDESIGNED UI — EDITORIAL GLASS + MODERN LEDGER
-========================================================= */
-
 :root {
   --bg-dark: #101114;
   --bg-deep: #0c0d10;
@@ -44,7 +40,6 @@ body {
   overflow-x: hidden;
 }
 
-/* --- Custom Cursor --- */
 .cursor-dot, .cursor-outline {
   position: fixed; top: 0; left: 0;
   transform: translate(-50%, -50%);
@@ -64,13 +59,8 @@ body:hover .cursor-outline.hovered {
   border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* --- Background Shader Container --- */
-#canvas-container {
-  position: fixed; inset: 0;
-  z-index: -2;
-}
+#canvas-container { position: fixed; inset: 0; z-index: -2; }
 
-/* --- Grain Overlay --- */
 body::before {
   content: "";
   position: fixed; inset: 0;
@@ -80,11 +70,9 @@ body::before {
   z-index: -1;
 }
 
-/* --- Layout --- */
 .app { min-height: 100vh; padding: 24px; }
 .container { max-width: 1200px; margin: 0 auto; }
 
-/* --- Header / Nav --- */
 .topbar {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -145,7 +133,6 @@ body::before {
   border-color: var(--danger);
 }
 
-/* --- Main Paper --- */
 .paper {
   background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
   border: 1px solid var(--glass-border);
@@ -189,7 +176,6 @@ input, select, textarea {
 }
 input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(232,192,125,0.15); }
 
-/* --- Entry Rows --- */
 .entry-lines { display: flex; flex-direction: column; gap: 12px; }
 .entry-row {
   display: grid;
@@ -198,7 +184,6 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(232,192,12
   align-items: center;
 }
 
-/* --- Actions --- */
 .btn-action {
   background: var(--accent);
   color: #111;
@@ -210,7 +195,6 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(232,192,12
 }
 .btn-action:active { transform: scale(0.96); }
 
-/* --- Table --- */
 .table-responsive { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; margin-top: 16px; }
 th, td { padding: 14px 12px; }
@@ -226,7 +210,6 @@ tr:hover td { background: rgba(255,255,255,0.03); }
 .text-right { text-align: right; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
 
-/* --- Responsive --- */
 @media (max-width: 820px) {
   .topbar { grid-template-columns: 1fr; text-align: center; }
   .nav-links, .nav-controls { justify-content: center; flex-wrap: wrap; }
@@ -236,7 +219,6 @@ tr:hover td { background: rgba(255,255,255,0.03); }
   .cursor-dot, .cursor-outline { display: none; }
 }
 
-/* --- Motion Highlights --- */
 .glow-line {
   position: fixed; bottom: 0; left: 0; right: 0; height: 200px;
   background: radial-gradient(circle at 50% 100%, rgba(123,223,242,0.12), transparent 60%);
@@ -292,7 +274,6 @@ function pushHistory() {
   if(historyStack.length > 20) historyStack.shift();
   saveLocal();
 }
-
 function undo() {
   if(historyStack.length === 0) return alert("No actions to undo.");
   const prev = JSON.parse(historyStack.pop());
@@ -309,8 +290,14 @@ function loadLocal() {
 function buildLedger() {
   state.ledger = {};
   state.entries.forEach(e => {
-    e.debits.forEach(d => { if(!state.ledger[d.acc]) state.ledger[d.acc] = { dr:0, cr:0, lf: state.folioNext++ }; state.ledger[d.acc].dr += d.amtPaise; });
-    e.credits.forEach(c => { if(!state.ledger[c.acc]) state.ledger[c.acc] = { dr:0, cr:0, lf: state.folioNext++ }; state.ledger[c.acc].cr += c.amtPaise; });
+    e.debits.forEach(d => {
+      if(!state.ledger[d.acc]) state.ledger[d.acc] = { dr: [], cr: [] };
+      state.ledger[d.acc].dr.push({ date: e.date, particulars: e.narration || d.acc, amt: d.amtPaise });
+    });
+    e.credits.forEach(c => {
+      if(!state.ledger[c.acc]) state.ledger[c.acc] = { dr: [], cr: [] };
+      state.ledger[c.acc].cr.push({ date: e.date, particulars: e.narration || c.acc, amt: c.amtPaise });
+    });
   });
 }
 
@@ -337,10 +324,11 @@ function renderDashboard() {
   mainContent.innerHTML = `
     <div class="paper">
       <h2 class="section-title">Overview</h2>
-      <p>Welcome to the Saraswati International School Accounting System.</p>
+      <p>Keep your school accounts clear and balanced. Record each entry, review journals, and monitor your ledger with confidence.</p>
     </div>`;
 }
 
+/* --- New Entry --- */
 let tempDebits = [{id: uid2(), acc: '', amt: ''}];
 let tempCredits = [{id: uid2(), acc: '', amt: ''}];
 
@@ -410,10 +398,12 @@ function removeLine(side, index) {
 function saveEntry() {
   const date = document.getElementById('entryDate').value;
   const narr = document.getElementById('entryNarr').value;
+
   const debits = [...document.querySelectorAll('#debitLines .entry-row')].map(r => ({
     acc: r.querySelector('.inp-acc').value,
     amtPaise: toPaise(r.querySelector('.inp-amt').value)
   })).filter(d => d.acc && d.amtPaise > 0).map(d => ({...d, id: uid2()}));
+
   const credits = [...document.querySelectorAll('#creditLines .entry-row')].map(r => ({
     acc: r.querySelector('.inp-acc').value,
     amtPaise: toPaise(r.querySelector('.inp-amt').value)
@@ -436,11 +426,13 @@ function saveEntry() {
 
   tempDebits = [{id: uid2(), acc: '', amt: ''}];
   tempCredits = [{id: uid2(), acc: '', amt: ''}];
-  pushHistory(); switchView('journal');
+  pushHistory();
+  switchView('journal');
 }
 
 function editEntry(id) { state.editingId = id; switchView('new'); }
 
+/* --- Journal --- */
 function renderJournal() {
   buildLedger();
   const rows = [...state.entries].sort((a,b)=>b.createdAt-a.createdAt);
@@ -504,38 +496,63 @@ function confirmGlobalDelete() {
   }
 }
 
+/* --- Ledger (Two-Part) --- */
 function renderLedger() {
-  buildLedger();
   const accounts = Object.keys(state.ledger).sort();
   let html = `<div class="paper"><h2 class="section-title">General Ledger</h2>`;
   if(accounts.length === 0) html += `<p>No ledger data.</p>`;
   else {
-    html += `<div style="display:grid; gap:18px;">`;
     accounts.forEach(acc => {
       const data = state.ledger[acc];
-      const bal = data.dr - data.cr;
-      const balType = bal >= 0 ? "Dr" : "Cr";
       html += `
-        <div class="paper" style="min-height:auto; padding:18px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="margin:0;">${acc} <small>(LF: ${data.lf})</small></h3>
+        <div class="paper" style="min-height:auto; margin-bottom:18px; padding:18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <h3 style="margin:0;">${safeText(acc)}</h3>
             <button class="btn btn-danger" onclick="deleteAccount('${safeText(acc)}')">Delete Account</button>
           </div>
-          <div style="display:flex; justify-content:space-between; padding:10px 0;">
-            <span>Total Debit:</span> <span class="mono">${paiseToStr(data.dr)}</span>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th colspan="3">Dr. (Date, Particulars, Amount)</th>
+                  <th colspan="3">Cr. (Date, Particulars, Amount)</th>
+                </tr>
+                <tr>
+                  <th>Date</th><th>Particulars</th><th class="text-right">Amount</th>
+                  <th>Date</th><th>Particulars</th><th class="text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${renderLedgerRows(data.dr, data.cr)}
+              </tbody>
+            </table>
           </div>
-          <div style="display:flex; justify-content:space-between; padding:10px 0;">
-            <span>Total Credit:</span> <span class="mono">${paiseToStr(data.cr)}</span>
-          </div>
-          <div style="margin-top:10px; padding:10px; background:rgba(232,192,125,0.1); border-radius:10px; text-align:center;">
-            <b>Balance: ${paiseToStr(Math.abs(bal))} ${balType}</b>
-          </div>
-        </div>`;
+        </div>
+      `;
     });
-    html += `</div>`;
   }
   html += `</div>`;
   mainContent.innerHTML = html;
+}
+
+function renderLedgerRows(drRows, crRows) {
+  const maxLen = Math.max(drRows.length, crRows.length);
+  let rows = "";
+  for(let i=0;i<maxLen;i++){
+    const dr = drRows[i] || {date:"", particulars:"", amt:null};
+    const cr = crRows[i] || {date:"", particulars:"", amt:null};
+    rows += `
+      <tr>
+        <td>${dr.date || ""}</td>
+        <td>${safeText(dr.particulars || "")}</td>
+        <td class="text-right mono">${dr.amt != null ? paiseToStr(dr.amt) : ""}</td>
+        <td>${cr.date || ""}</td>
+        <td>${safeText(cr.particulars || "")}</td>
+        <td class="text-right mono">${cr.amt != null ? paiseToStr(cr.amt) : ""}</td>
+      </tr>
+    `;
+  }
+  return rows;
 }
 
 function deleteAccount(accName) {
@@ -550,23 +567,26 @@ function deleteAccount(accName) {
   }
 }
 
+/* --- Trial Balance (No LF) --- */
 function renderTrialBalance() {
-  buildLedger();
   const accounts = Object.keys(state.ledger).sort();
   let totalDr = 0, totalCr = 0;
   let html = `<div class="paper"><h2 class="section-title">Trial Balance</h2>`;
   if(accounts.length === 0) html += `<p>No data available. Create entries first.</p>`;
   else {
     html += `<div class="table-responsive"><table>
-      <thead><tr><th>Account Name</th><th class="text-right">L.F.</th><th class="text-right">Debit Balance (₹)</th><th class="text-right">Credit Balance (₹)</th></tr></thead><tbody>`;
+      <thead><tr><th>Account Name</th><th class="text-right">Debit Balance (₹)</th><th class="text-right">Credit Balance (₹)</th></tr></thead><tbody>`;
     accounts.forEach(acc => {
-      const data = state.ledger[acc]; const bal = data.dr - data.cr;
+      const data = state.ledger[acc];
+      const drTotal = data.dr.reduce((a,b)=>a+b.amt,0);
+      const crTotal = data.cr.reduce((a,b)=>a+b.amt,0);
+      const bal = drTotal - crTotal;
       if(bal === 0) return;
-      if(bal > 0){ totalDr += bal; html += `<tr><td><b>${safeText(acc)}</b></td><td class="text-right">${data.lf}</td><td class="text-right mono">${paiseToStr(bal)}</td><td class="text-right"></td></tr>`; }
-      else { totalCr += Math.abs(bal); html += `<tr><td><b>${safeText(acc)}</b></td><td class="text-right">${data.lf}</td><td class="text-right"></td><td class="text-right mono">${paiseToStr(Math.abs(bal))}</td></tr>`; }
+      if(bal > 0){ totalDr += bal; html += `<tr><td><b>${safeText(acc)}</b></td><td class="text-right mono">${paiseToStr(bal)}</td><td class="text-right"></td></tr>`; }
+      else { totalCr += Math.abs(bal); html += `<tr><td><b>${safeText(acc)}</b></td><td class="text-right"></td><td class="text-right mono">${paiseToStr(Math.abs(bal))}</td></tr>`; }
     });
     const matched = totalDr === totalCr;
-    html += `</tbody><tfoot><tr><td colspan="2" class="text-right">Total:</td><td class="text-right mono">${paiseToStr(totalDr)}</td><td class="text-right mono">${paiseToStr(totalCr)}</td></tr></tfoot></table></div>
+    html += `</tbody><tfoot><tr><td class="text-right">Total:</td><td class="text-right mono">${paiseToStr(totalDr)}</td><td class="text-right mono">${paiseToStr(totalCr)}</td></tr></tfoot></table></div>
     <div style="margin-top:16px; text-align:center; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px;">
       Status: <b style="color:${matched ? '#7bdff2' : '#ff5c5c'}">${matched ? '✓ Matched' : '✗ Not Matched'}</b>
     </div>`;
@@ -575,6 +595,7 @@ function renderTrialBalance() {
   mainContent.innerHTML = html;
 }
 
+/* --- Effects --- */
 const initThreeJS = () => {
   const container = document.getElementById('canvas-container');
   const scene = new THREE.Scene();
