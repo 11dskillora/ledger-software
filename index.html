@@ -1,3 +1,6 @@
+Here’s the single updated HTML with a Delete button per Journal entry row (option 2), using the existing `deleteSingleEntry()` and without changing the UI theme or meaning:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -493,7 +496,6 @@
           <button class="btn" onclick="addLine('credit')">+ Add Credit</button>
 
           <div style="margin-top:30px; text-align:right;">
-            ${state.editingId ? `<button class="btn btn-danger" onclick="deleteSelectedEntry()" style="margin-right:10px;">Delete Selected Entry</button>` : ""}
             <button class="btn" onclick="switchView('journal')" style="margin-right:10px;">Cancel</button>
             <button class="btn-action" onclick="saveEntry()">Save Entry</button>
           </div>
@@ -587,17 +589,6 @@
       switchView('new');
     }
 
-    function deleteSelectedEntry() {
-      if(!state.editingId) return;
-      if(confirm("Delete this selected entry? This cannot be undone.")) {
-        pushHistory();
-        state.entries = state.entries.filter(e => e.id !== state.editingId);
-        state.editingId = null;
-        saveLocal();
-        switchView('journal');
-      }
-    }
-
     // --- Journal View ---
     function renderJournal() {
       buildLedger();
@@ -625,7 +616,7 @@
               <td><b>${d.acc}</b> ${i===0?`<br><small class="text-muted">${e.narration}</small>`:''}</td>
               <td class="text-right mono">${paiseToStr(d.amtPaise)}</td>
               <td class="text-right"></td>
-              <td class="text-right">${i===0 ? `<button class="btn" style="padding:4px 8px; font-size:0.7rem;" onclick="editEntry('${e.id}')">Edit</button>` : ""}</td>
+              <td class="text-right">${i===0 ? `<button class="btn" style="padding:4px 8px; font-size:0.7rem;" onclick="editEntry('${e.id}')">Edit</button> <button class="btn btn-danger" style="padding:4px 8px; font-size:0.7rem;" onclick="deleteSingleEntry('${e.id}')">Delete</button>` : ""}</td>
             </tr>`;
           });
           e.credits.forEach(c => {
