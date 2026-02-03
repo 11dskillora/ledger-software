@@ -507,7 +507,7 @@ select:focus {
 <div class="container">
 
 <header>
-<h1>SARASWATI INTERNATIONAL SCHOOL</h1>
+<h1>CLOUD COUNT</h1>
 <p>Double-Entry Bookkeeping</p>
 </header>
 
@@ -519,7 +519,7 @@ select:focus {
 </nav>
 
 <div class="utility-bar">
-  <button type="button" class="btn btn-warning" onclick="undoDelete()">Undo</button>
+  <button type="button" class="btn btn-warning" onclick="undoDelete()">Undo Delete</button>
   <button type="button" class="btn btn-danger" onclick="clearAllData()">Clear All Data</button>
 </div>
 
@@ -572,15 +572,27 @@ select:focus {
 <thead>
 <tr>
 <th>Date</th>
-<th>Account</th>
-<th>J/F</th>
-<th>Debit</th>
-<th>Credit</th>
-<th>Action</th>
+<th>Particulars</th>
+<th>L.F.</th>
+<th>Debit Amount</th>
+<th>Credit Amount</th>
 </tr>
 </thead>
 <tbody></tbody>
+<tfoot>
+<tr>
+<th>Total</th>
+<th></th>
+<th></th>
+<th id="journalTotalDr"></th>
+<th id="journalTotalCr"></th>
+</tr>
+</tfoot>
 </table>
+
+<div id="journalStatus" style="position:relative; z-index:1; margin-top:14px; font-family:'Courier Prime', monospace; font-size:13px; letter-spacing:1px; text-transform:uppercase;">
+Status: <b id="journalMatchText"></b>
+</div>
 
 <div style="position:relative; z-index:1; margin-top:18px;">
   <button type="button" class="btn" onclick="undoDelete()">Undo Delete</button>
@@ -875,16 +887,27 @@ function rebuild() {
   var journalTable = document.getElementById('journalTable');
   var tbody = journalTable.querySelector('tbody');
   var journalEmpty = document.getElementById('journalEmpty');
+  var totalDrEl = document.getElementById('journalTotalDr');
+  var totalCrEl = document.getElementById('journalTotalCr');
+  var statusEl = document.getElementById('journalStatus');
+  var statusText = document.getElementById('journalMatchText');
 
   tbody.innerHTML = '';
 
   if (journal.length === 0) {
     journalEmpty.style.display = 'block';
     journalTable.style.display = 'none';
+    statusEl.style.display = 'none';
+    totalDrEl.textContent = '';
+    totalCrEl.textContent = '';
   } else {
     journalEmpty.style.display = 'none';
     journalTable.style.display = 'table';
+    statusEl.style.display = 'block';
   }
+
+  var totalDr = 0;
+  var totalCr = 0;
 
   for (var i = 0; i < journal.length; i++) {
     var entry = journal[i];
@@ -892,15 +915,16 @@ function rebuild() {
 
     for (var j = 0; j < entry.debits.length; j++) {
       var d = entry.debits[j];
+      totalDr += Number(d.amount);
       var row = tbody.insertRow();
       row.innerHTML =
         '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>' + escapeHtml(d.account) + '</td>' +
-        '<td>' + escapeHtml(d.account) + (narrationText ? '<div style="font-size:12px; opacity:0.8;">' + escapeHtml(narrationText) + '</div>' : '') + '</td>' +
+        '<td>' + escapeHtml(d.account) + (narrationText ? '<div style="font-size:12px; opacity:0.8;">' + escapeHtml(narrationText) + '</div>' : '') +
+        '<div class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></div>' +
+        '</td>' +
         '<td>' + (i + 1) + '</td>' +
         '<td class="debit-amount">' + Number(d.amount).toFixed(2) + '</td>' +
-        '<td></td>' +
-        '<td class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></td>';
+        '<td></td>';
 
       if (!ledger[d.account]) ledger[d.account] = [];
       ledger[d.account].push({
@@ -916,15 +940,16 @@ function rebuild() {
 
     for (var k = 0; k < entry.credits.length; k++) {
       var c = entry.credits[k];
+      totalCr += Number(c.amount);
       var row2 = tbody.insertRow();
       row2.innerHTML =
         '<td>' + escapeHtml(entry.date) + '</td>' +
-        '<td>' + escapeHtml(c.account) + '</td>' +
-        '<td>' + escapeHtml(c.account) + (narrationText ? '<div style="font-size:12px; opacity:0.8;">' + escapeHtml(narrationText) + '</div>' : '') + '</td>' +
+        '<td>' + escapeHtml(c.account) + (narrationText ? '<div style="font-size:12px; opacity:0.8;">' + escapeHtml(narrationText) + '</div>' : '') +
+        '<div class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></div>' +
+        '</td>' +
         '<td>' + (i + 1) + '</td>' +
         '<td></td>' +
-        '<td class="credit-amount">' + Number(c.amount).toFixed(2) + '</td>' +
-        '<td class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></td>';
+        '<td class="credit-amount">' + Number(c.amount).toFixed(2) + '</td>';
 
       if (!ledger[c.account]) ledger[c.account] = [];
       ledger[c.account].push({
@@ -938,6 +963,13 @@ function rebuild() {
       });
     }
   }
+
+  totalDrEl.textContent = totalDr.toFixed(2);
+  totalCrEl.textContent = totalCr.toFixed(2);
+
+  var matched = totalDr.toFixed(2) === totalCr.toFixed(2);
+  statusText.textContent = matched ? 'Matched' : 'Not Matched';
+  statusText.style.color = matched ? 'var(--blue-ink)' : 'var(--red-ink)';
 
   buildLedger();
   renderTrialBalance();
