@@ -816,7 +816,6 @@ function saveEntry() {
     return;
   }
 
-  journal.push({ date: date, debits: debits, credits: credits });
   journal.push({ date: date, narration: narration, debits: debits, credits: credits });
 
   persist();
