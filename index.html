@@ -515,6 +515,7 @@ select:focus {
 <button type="button" class="active" onclick="showPage(0)">Entry</button>
 <button type="button" onclick="showPage(1)">Journal</button>
 <button type="button" onclick="showPage(2)">Ledger</button>
+<button type="button" onclick="showPage(3)">Trial Balance</button>
 </nav>
 
 <div class="utility-bar">
@@ -530,7 +531,6 @@ select:focus {
 <input id="date" type="date" aria-label="Transaction Date">
 </div>
 
-<!-- ✅ NARRATION ADDED (same UI style, no redesign) -->
 <div class="input-group">
 <label for="narration">Narration</label>
 <input id="narration" type="text" aria-label="Narration" placeholder="Narration (Optional)">
@@ -609,6 +609,34 @@ select:focus {
 <div class="empty-state-icon">📚</div>
 <h3>No Ledger Entries Yet</h3>
 <p>Your account ledgers will appear here after creating journal entries</p>
+</div>
+</div>
+</div>
+
+<div class="page" id="trialPage">
+<div class="notebook">
+<h3 class="section-title-large">Trial Balance</h3>
+<table class="journal-table" id="trialTable">
+<thead>
+<tr>
+<th>Account</th>
+<th>Debit</th>
+<th>Credit</th>
+</tr>
+</thead>
+<tbody></tbody>
+<tfoot>
+<tr>
+<th>Total</th>
+<th id="trialTotalDr"></th>
+<th id="trialTotalCr"></th>
+</tr>
+</tfoot>
+</table>
+<div id="trialEmpty" class="empty-state">
+<div class="empty-state-icon">🧾</div>
+<h3>No Trial Balance Yet</h3>
+<p>Create journal entries to generate the trial balance</p>
 </div>
 </div>
 </div>
@@ -748,7 +776,6 @@ function saveEntry() {
   var date = document.getElementById('date').value;
   if (!date) { alert('Please enter a transaction date'); return; }
 
-  // ✅ narration
   var narration = document.getElementById('narration').value.trim();
 
   var debits = [];
@@ -790,7 +817,6 @@ function saveEntry() {
   }
 
   journal.push({ date: date, debits: debits, credits: credits });
-  // ✅ narration saved
   journal.push({ date: date, narration: narration, debits: debits, credits: credits });
 
   persist();
@@ -836,7 +862,7 @@ function clearAllData() {
   undoStack = [];
 
   try { localStorage.removeItem('journalData'); } catch(e){}
-  try { localStorage.removeItem('undoStack'); } catch(e){}
+  try { localStorage.removeItem('undoStack'); } catch(e2){}
   
 
   rebuild();
@@ -915,6 +941,7 @@ function rebuild() {
   }
 
   buildLedger();
+  renderTrialBalance();
 }
 
 function buildLedger() {
@@ -955,7 +982,6 @@ function buildLedger() {
     for (var r = 0; r < entries.length; r++) {
       var e = entries[r];
 
-      // narration appended to particulars but doesn't change structure
       var p = e.particulars ? escapeHtml(e.particulars) : '—';
       if (e.narration) {
         p += '<div style="font-size:12px; opacity:0.75;">' + escapeHtml(e.narration) + '</div>';
@@ -1018,6 +1044,53 @@ function buildLedger() {
 
     ledgerBook.appendChild(accountDiv);
   }
+}
+
+function renderTrialBalance() {
+  var trialTable = document.getElementById('trialTable');
+  var trialBody = trialTable.querySelector('tbody');
+  var trialEmpty = document.getElementById('trialEmpty');
+  var totalDrEl = document.getElementById('trialTotalDr');
+  var totalCrEl = document.getElementById('trialTotalCr');
+
+  trialBody.innerHTML = '';
+  var accounts = [];
+  for (var k in ledger) if (Object.prototype.hasOwnProperty.call(ledger, k)) accounts.push(k);
+
+  if (accounts.length === 0) {
+    trialEmpty.style.display = 'block';
+    trialTable.style.display = 'none';
+    totalDrEl.textContent = '';
+    totalCrEl.textContent = '';
+    return;
+  } else {
+    trialEmpty.style.display = 'none';
+    trialTable.style.display = 'table';
+  }
+
+  accounts.sort();
+
+  var totalDr = 0;
+  var totalCr = 0;
+
+  for (var i = 0; i < accounts.length; i++) {
+    var acc = accounts[i];
+    var entries = ledger[acc];
+    var bal = 0;
+    for (var j = 0; j < entries.length; j++) {
+      bal += (entries[j].type === 'debit' ? entries[j].amount : -entries[j].amount);
+    }
+    var row = trialBody.insertRow();
+    row.innerHTML =
+      '<td>' + escapeHtml(acc) + '</td>' +
+      '<td class="debit-amount">' + (bal > 0 ? bal.toFixed(2) : '') + '</td>' +
+      '<td class="credit-amount">' + (bal < 0 ? Math.abs(bal).toFixed(2) : '') + '</td>';
+    if (bal > 0) totalDr += bal;
+    if (bal < 0) totalCr += Math.abs(bal);
+  }
+
+  totalDrEl.textContent = totalDr.toFixed(2);
+  totalCrEl.textContent = totalCr.toFixed(2);
 }
 
 document.addEventListener('input', function(e) {
