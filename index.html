@@ -691,6 +691,7 @@ function rebuild() {
 
     var showFooterOnDebit = entry.credits.length === 0;
     var datePrinted = false;
+    var narrationShown = false;
 
     for (var j = 0; j < entry.debits.length; j++) {
       var d = entry.debits[j];
@@ -701,11 +702,17 @@ function rebuild() {
       var dateCell = datePrinted ? '' : entry.date;
       if (!datePrinted) datePrinted = true;
 
+      var narrationHtml = '';
+      if (!narrationShown && narrationText && isLastDebit) {
+        narrationHtml = '<div style="font-size:12px; opacity:0.8;">For ' + escapeHtml(narrationText) + '</div>';
+        narrationShown = true;
+      }
+
       var row = tbody.insertRow();
       row.innerHTML =
         '<td>' + escapeHtml(dateCell) + '</td>' +
         '<td>' + escapeHtml(d.account) +
-        (showFooter && narrationText ? '<div style="font-size:12px; opacity:0.8;">For ' + escapeHtml(narrationText) + '</div>' : '') +
+        narrationHtml +
         (showFooter ? '<div class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></div>' : '') +
         '</td>' +
         '<td>' + (i + 1) + '</td>' +
@@ -729,16 +736,22 @@ function rebuild() {
       totalCr += Number(c.amount);
 
       var isLastCredit = k === entry.credits.length - 1;
-      var showFooter = isLastCredit;
+      var showFooterC = isLastCredit;
       var dateCell2 = datePrinted ? '' : entry.date;
       if (!datePrinted) datePrinted = true;
+
+      var narrationHtml2 = '';
+      if (!narrationShown && narrationText && isLastCredit) {
+        narrationHtml2 = '<div style="font-size:12px; opacity:0.8;">For ' + escapeHtml(narrationText) + '</div>';
+        narrationShown = true;
+      }
 
       var row2 = tbody.insertRow();
       row2.innerHTML =
         '<td>' + escapeHtml(dateCell2) + '</td>' +
         '<td>To ' + escapeHtml(c.account) +
-        (showFooter && narrationText ? '<div style="font-size:12px; opacity:0.8;">For ' + escapeHtml(narrationText) + '</div>' : '') +
-        (showFooter ? '<div class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></div>' : '') +
+        narrationHtml2 +
+        (showFooterC ? '<div class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></div>' : '') +
         '</td>' +
         '<td>' + (i + 1) + '</td>' +
         '<td></td>' +
