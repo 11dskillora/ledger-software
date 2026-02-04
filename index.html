@@ -704,7 +704,7 @@ function rebuild() {
 
       var narrationHtml = '';
       if (!narrationShown && narrationText && isLastDebit) {
-        narrationHtml = '<div style="font-size:12px; opacity:0.8;">For ' + escapeHtml(narrationText) + '</div>';
+        narrationHtml = '<div style="font-size:12px; opacity:0.8;">' + escapeHtml(narrationText) + '</div>';
         narrationShown = true;
       }
 
