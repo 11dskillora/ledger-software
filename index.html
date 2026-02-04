@@ -115,6 +115,8 @@ input, select {
 }
 input:focus, select:focus { outline: none; border-bottom-color: var(--blue-ink); background: rgba(45, 79, 124, 0.03); }
 
+#narration { font-size: 20px; }
+
 .entry-row {
   display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 20px;
   margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.4);
@@ -227,6 +229,8 @@ input:focus, select:focus { outline: none; border-bottom-color: var(--blue-ink);
   .account-name { font-size: 26px; }
   .account-balance { font-size: 14px; padding: 6px 12px; }
   .btn { width: 100%; text-align: center; margin-right: 0; }
+
+  #narration { font-size: 22px; }
 
   .journal-table,
   .ledger-table,
@@ -678,6 +682,7 @@ function rebuild() {
     var narrationText = (entry.narration || '').trim();
 
     var showFooterOnDebit = entry.credits.length === 0;
+    var datePrinted = false;
 
     for (var j = 0; j < entry.debits.length; j++) {
       var d = entry.debits[j];
@@ -685,10 +690,12 @@ function rebuild() {
 
       var isLastDebit = j === entry.debits.length - 1;
       var showFooter = showFooterOnDebit && isLastDebit;
+      var dateCell = datePrinted ? '' : entry.date;
+      if (!datePrinted) datePrinted = true;
 
       var row = tbody.insertRow();
       row.innerHTML =
-        '<td>' + escapeHtml(entry.date) + '</td>' +
+        '<td>' + escapeHtml(dateCell) + '</td>' +
         '<td>' + escapeHtml(d.account) +
         (showFooter && narrationText ? '<div style="font-size:12px; opacity:0.8;">For ' + escapeHtml(narrationText) + '</div>' : '') +
         (showFooter ? '<div class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></div>' : '') +
@@ -715,10 +722,12 @@ function rebuild() {
 
       var isLastCredit = k === entry.credits.length - 1;
       var showFooter = isLastCredit;
+      var dateCell2 = datePrinted ? '' : entry.date;
+      if (!datePrinted) datePrinted = true;
 
       var row2 = tbody.insertRow();
       row2.innerHTML =
-        '<td>' + escapeHtml(entry.date) + '</td>' +
+        '<td>' + escapeHtml(dateCell2) + '</td>' +
         '<td>To ' + escapeHtml(c.account) +
         (showFooter && narrationText ? '<div style="font-size:12px; opacity:0.8;">For ' + escapeHtml(narrationText) + '</div>' : '') +
         (showFooter ? '<div class="action-cell"><button class="btn btn-danger" onclick="deleteJournalEntry(' + i + ')">Delete</button></div>' : '') +
